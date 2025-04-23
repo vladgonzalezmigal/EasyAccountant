@@ -66,7 +66,7 @@ export default function SignupPage() {
             try {
                 const result = await signUpNewUser(formData.email, formData.password); // Call context function
                 if (result.success) {
-                    router.push('/dashboard') // Navigate to dashboard on success
+                    router.push('/selection') // Navigate to selection on success
                 } else if (result.error) {
                     console.log("moreno error", result.error.message)
                     setSignInError(result.error as AuthError);

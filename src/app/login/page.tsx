@@ -55,7 +55,7 @@ export default function LoginPage() {
       try {
         const result = await signInUser(formData.email, formData.password);
         if (result.success) {
-          router.push('/dashboard');
+          router.push('/selection');
         } else if (result.error) {
           setLoginError(result.error as AuthError);
         }

@@ -8,7 +8,7 @@ interface AuthContextType {
   signUpNewUser: (email: string, password: string) => Promise<AuthResponse>;
   signInUser: (email: string, password: string) => Promise<AuthResponse>;
   session: Session | null;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error?: AuthError }>;
 }
 
 interface AuthResponse {
@@ -80,12 +80,15 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // Sign out
-  async function signOut(): Promise<void> {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error signing out:", error);
+    async function signOut(): Promise<{ error?: AuthError }> {
+      const { error } = await supabase.auth.signOut();
+    
+      if (error) {
+        return { error };
+      }
+    
+      return {};
     }
-  }
 
   return (
     <AuthContext.Provider
