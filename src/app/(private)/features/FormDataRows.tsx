@@ -1,12 +1,13 @@
 'use client';
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { FormData } from '@/app/(private)/types/formTypes';
 
 type FormDataRowsProps = {
     data: FormData[];
+    addRowForm?: ReactNode;
 };
 
-export function FormDataRows({ data }: FormDataRowsProps) {
+export function FormDataRows({ data, addRowForm }: FormDataRowsProps) {
     if (data.length === 0) {
         return <p className="text-gray-500 text-center mt-4">No entries found for this period.</p>;
     }
@@ -14,7 +15,8 @@ export function FormDataRows({ data }: FormDataRowsProps) {
     const keys = Object.keys(data[0]) as (keyof typeof data[0])[];
 
     return (
-        <div className="flex flex-col gap-y-4">
+        <div className="flex flex-col gap-y-4 border-2 border-blue-300 h-[400px]  overflow-y-auto">
+            {addRowForm && addRowForm}
             {/* List of Rows */}
             {data.map((item, index) => (
                 <div
@@ -23,7 +25,7 @@ export function FormDataRows({ data }: FormDataRowsProps) {
                 >
                     {/* Individual Row */}
                     {keys.map((key) => (
-                        <div key={key} className={`flex-1 `}>
+                        <div key={key} className={`flex-1 border-2 w-[100px] h-[50px] `}>
                             <p className='text-sm text-gray-800'>
                             {
                                 typeof item[key] === 'number'
