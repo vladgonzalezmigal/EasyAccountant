@@ -15,11 +15,13 @@ export function FormDataRows({ data }: FormDataRowsProps) {
 
     return (
         <div className="flex flex-col gap-y-4">
+            {/* List of Rows */}
             {data.map((item, index) => (
                 <div
                     key={index}
                     className="border flex flex-row items-center justify-between bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
                 >
+                    {/* Individual Row */}
                     {keys.map((key) => (
                         <div key={key} className={`flex-1 `}>
                             <p className='text-sm text-gray-800'>
