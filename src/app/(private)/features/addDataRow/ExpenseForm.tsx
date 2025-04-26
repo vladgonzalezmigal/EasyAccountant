@@ -45,33 +45,33 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
     };
 
     return (
-        <div className="flex gap-4 p-4 border-2">
-            <form ref={formRef} onSubmit={handleSubmit} className='flex flex-row gap-4'>
-                <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+        <div className="border border-[#DFDFDF] form-shadow [772px] rounded-full">
+            <form ref={formRef} onSubmit={handleSubmit} className='flex flex-row items-center rounded-full h-[60px] pl-10 text-gray-800'>
+                <div className="">
+                    {/* <label htmlFor="date" className="block text-sm font-medium text-gray-700">
                         Date
-                    </label>
+                    </label> */}
                     <input
                         type="text"
                         id="date"
                         name="date"
                         onChange={handleDateChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        className="input-field flex items-center justify-center "
                         placeholder={DAY.toString()}
                     />
                 </div>
 
-                <div>
-                    <label htmlFor="payment_type" className="block text-sm font-medium text-gray-700">
+                <div className='pl-12'>
+                    {/* <label htmlFor="payment_type" className="block text-sm font-medium text-gray-700">
                         Payment Type
-                    </label>
+                    </label> */}
                     <select
                         id="payment_type"
                         name="payment_type"
                         onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        className="input-field"
                     >
-                        <option value="">Select payment type</option>
+                        <option value="">Check</option>
                         {PAYMENT_TYPES.map((type) => (
                             <option key={type} value={type}>
                                 {type}
@@ -80,30 +80,31 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                     </select>
                 </div>
 
-                <div>
-                    <label htmlFor="detail" className="block text-sm font-medium text-gray-700">
+                <div className='pl-12'>
+                    {/* <label htmlFor="detail" className="block text-sm font-medium text-gray-700">
                         Detail
-                    </label>
+                    </label> */}
                     <input
                         type="text"
                         id="detail"
                         name="detail"
                         onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        className="input-field"
+                        placeholder='#'
                     />
                 </div>
 
-                <div>
-                    <label htmlFor="company" className="block text-sm font-medium text-gray-700">
+                <div className='pl-12'>
+                    {/* <label htmlFor="company" className="block text-sm font-medium text-gray-700">
                         Company
-                    </label>
+                    </label> */}
                     <select
                         id="company"
                         name="company"
                         onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        className="input-field"
                     >
-                        <option value="">Select company</option>
+                        <option value="">Company</option>
                         {COMPANIES.map((company) => (
                             <option key={company} value={company}>
                                 {company}
@@ -112,21 +113,21 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                     </select>
                 </div>
 
-                <div>
-                    <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+                <div className='pl-12'>
+                    {/* <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
                         Amount
-                    </label>
+                    </label> */}
                     <input
                         type="text"
                         id="amount"
                         name="amount"
                         onChange={handleAmountChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        className="w-[90px] h-[40px] pl-3 block rounded-full border border-gray-800 focus:border-blue-500 focus:ring-blue-500"
                         placeholder="0.00"
                     />
                 </div>
-                <div className='flex text-lg justify-center items-center rounded-full bg-blue-500 text-white w-10 h-10'>
-                    <button type="submit">
+                <div className='flex text-lg justify-center items-center rounded-full ml-[4px] bg-blue-500 text-white w-10 h-10 cursor-pointer'>
+                    <button type="submit" className='cursor-pointer'>
                         <p> + </p>
                     </button>
                 </div>

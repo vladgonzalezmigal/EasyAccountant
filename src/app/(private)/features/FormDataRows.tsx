@@ -15,17 +15,27 @@ export function FormDataRows({ data, addRowForm }: FormDataRowsProps) {
     const keys = Object.keys(data[0]) as (keyof typeof data[0])[];
 
     return (
-        <div className="flex flex-col gap-y-4 border-2 border-blue-300 h-[400px]  overflow-y-auto">
-            {addRowForm && addRowForm}
+        <div className="">
+
+        
+        <div className="flex flex-col gap-y-3  h-[304px] px-4 overflow-y-auto ">
+            {addRowForm && 
+            <div className='pt-3'>
+                {addRowForm}
+            </div>
+            }
             {/* List of Rows */}
             {data.map((item, index) => (
                 <div
                     key={index}
-                    className="border flex flex-row items-center justify-between bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                    className="border border-[#DFDFDF] flex items-center justify-between bg-white w-[772px]   px-10 rounded-2xl 
+                    shadow-sm hover:shadow-md transition-shadow duration-200"
                 >
-                    {/* Individual Row */}
+                    {/* Individual Column */}
                     {keys.map((key) => (
-                        <div key={key} className={`flex-1 border-2 w-[100px] h-[50px] `}>
+
+                        <div key={key} className={`  h-[60px] flex flex-col items-center justify-center `}>
+                            <div className=' h-[40px] w-[100px] flex items-center pl-3'>
                             <p className='text-sm text-gray-800'>
                             {
                                 typeof item[key] === 'number'
@@ -34,10 +44,15 @@ export function FormDataRows({ data, addRowForm }: FormDataRowsProps) {
                                     : item[key]?.toString()
                             }
                             </p>
+                            </div>
                         </div>
                     ))}
                 </div>
             ))}
+            
+        </div>
+        {/* Sum: TODO: provide column index to sum data  */}
+        <div className="rounded-full bg-[#DFDFDF] w-[772px] h-[4px] "></div>
         </div>
     );
 }
