@@ -4,6 +4,31 @@ export const months = [
     "September", "October", "November", "December"
 ];
 
+// Array of days in each month (non-leap year)
+const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+/**
+ * Returns the number of days in a given month
+ * @param monthIndex The month index (0-11, where 0 = January, 11 = December)
+ * @param year year parameter to check for leap years
+ * @returns The number of days in the month, or 0 if the index is out of range
+ */
+export const getDaysInMonth = (monthIndex: number, year: number): number => {
+  // Return early if the month index is out of range
+  if (monthIndex < 0 || monthIndex > 11) {
+    return 0;
+  }
+  
+  // February (index 1) in a leap year has 29 days
+  if (monthIndex === 1 && year) {
+    const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    return isLeapYear ? 29 : 28;
+  }
+  
+  return daysInMonth[monthIndex];
+};
+
+
 /**
  * Validates and formats year input
  * @param value The input year value
@@ -58,3 +83,5 @@ export function formatDate(day: string, month: string, year: string): string {
   const formattedMonth = month.padStart(2, '0');
   return `${year}-${formattedMonth}-${formattedDay}`;
 }
+
+

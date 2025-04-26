@@ -22,7 +22,7 @@ export default function ExpensesPage() {
 
     const [newExpense, setNewExpense] = useState<Expense>({
         date: '',
-        payment_type: '',
+        payment_type: 'CHECK',
         detail: '',
         company: '',
         amount: 0
@@ -30,27 +30,27 @@ export default function ExpensesPage() {
 
     const newExpenseInputChange = (field: keyof Expense, value: string | number) => {
         setNewExpense((prevData) => ({
-          ...prevData,
-          [field]: field === 'date' ? 
-          formatDate(value as string, month as string, year as string) :
-           value,
+            ...prevData,
+            [field]: field === 'date' ?
+                formatDate(value as string, month as string, year as string) :
+                value,
         }));
-      };
-      // api call: TODO: put in util function 
-      const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        console.log("value", value)
+    };
+    // api call: TODO: put in util function 
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         if (!session) {
             console.error("No session found");
             return;
         }
         e.preventDefault();
-
         const { data, error } = await supabase
-             .from('expenses')
-             .insert({
+            .from('expenses')
+            .insert({
                 ...newExpense,
                 user_id: session.user.id
-             })
-             .select('date, payment_type, detail, company, amount');
+            })
+            .select('date, payment_type, detail, company, amount');
 
         if (error) {
             console.error("Error creating expense", error);
@@ -58,19 +58,19 @@ export default function ExpensesPage() {
             // TODO: add util for resorting 
             setExpenses((prevExpenses) =>
                 [...(prevExpenses || []), data[0]].sort(
-                  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+                    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
                 )
-              );
-              // clear form 
-              setNewExpense({
+            );
+            // clear form state 
+            setNewExpense({
                 date: '',
-                payment_type: '',
+                payment_type: 'CHECK',
                 detail: '',
                 company: '',
                 amount: 0
-              });
+            });
         }
-      }
+    }
 
     // TODO: abstract initial fetch into util function 
 
@@ -96,43 +96,40 @@ export default function ExpensesPage() {
     return (
         <div className="w-full h-full flex flex-col items-center justify-center">
             {/* <BackButton url={currentPath.split('/', 4).slice(0, 3).join('/')} /> */}
-            <div>
-                <h1 className="text-[#393939] font-semibold text-3xl">
-                    Expenses for 
-                   
+            <div className="w-full text-center ">
+                <h1 className="text-[#393939] font-semibold text-3xl pb-2">
+                    Expenses
                 </h1>
-                <p className="text-xl text-[#585858]">  {months[parseInt(month as string) - 1]},  {year} </p>
+                <p className="font-semibold text-[#585858]">  {months[parseInt(month as string) - 1]},  {year} </p>
             </div>
-           
+
             {loading ? (
                 <Loading />
             ) : (
                 // Content 
-                <div className="w-full flex flex-col gap-4 justify-center items-center    my-8">
+                <div className="w-full flex flex-col gap-4 justify-center items-center my-8">
                     <div className="">
                         {/* Table Header */}
-                        <div className="px-4 bg-[#F5F5F5] border border-[#DCDCDC] h-[60px] rounded-top header-shadow flex items-center"> 
-                        <div className="flex flex-row justify-between bg-[#F5F5F5]  w-full px-10 ">
-                            {(() => {
-                                return headerTitles.map((title, index) => (
-                                    <div key={index} className="w-[100px] pl-4 ">
-                                        <p className="text-[16px] text-[#80848A]">{title}</p>
-                                    </div>
-                                ));
-                            })()}
-                        </div>
+                        <div className="px-4 bg-[#F5F5F5] border border-[#DCDCDC] h-[60px] rounded-top header-shadow flex items-center relative z-10">
+                            <div className="flex flex-row justify-between bg-[#F5F5F5] w-full px-10">
+                                {(() => {
+                                    return headerTitles.map((title, index) => (
+                                        <div key={index} className="w-[100px] pl-4">
+                                            <p className="text-[16px] text-[#80848A]">{title}</p>
+                                        </div>
+                                    ));
+                                })()}
+                            </div>
                         </div>
                         {/* Expense Data Rows */}
-                        {/* Pass in a boolean for edit mode */}
-                        {(expenses && !fetchError) ? 
-                        <div className=" border border-[#DCDCDC]">
-                            <FormDataRows data={expenses} addRowForm={
-                            <ExpenseForm onInputChange={newExpenseInputChange} 
-                            onSubmit={handleSubmit} />} />
-                        </div> :
+                        {(expenses && !fetchError) ?
+                            <div className="border border-[#DCDCDC] border-t-0 bg-[#FCFCFC] rounded-bottom header-shadow relative z-0">
+                                <FormDataRows data={expenses} colToSum={5} addRowForm={
+                                    <ExpenseForm onInputChange={newExpenseInputChange}
+                                        onSubmit={handleSubmit} />} />
+                            </div> :
                             <p>No expenses found</p>}
                     </div>
-
                 </div>
             )}
         </div>
