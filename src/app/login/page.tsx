@@ -1,22 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserAuth } from "../../context/AuthContext";
 import { useRouter } from 'next/navigation';
 import { AuthError } from '@supabase/supabase-js';
+import { FormErrors, FormData, validateForm } from '@/app/(public)/utils/formValidation';
 
 export default function LoginPage() {
   const { signInUser } = UserAuth();
   const router = useRouter();
 
-  interface formData {
-    email: string;
-    password: string;
-  }
-
-  type FormErrors = Record<keyof formData, (string | null)>;
-
-  const [formData, setFormData] = useState<formData>({
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
   });
@@ -29,52 +23,92 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [loginError, setLoginError] = useState<AuthError | null>(null);
 
-  const validateForm = () => {
-    const newErrors: FormErrors = {
-      email: null,
-      password: null,
-    };
+  // Form change handlers
 
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-
-    setFormErrors(newErrors);
-    return !Object.values(newErrors).some(value => value !== null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      try {
-        const result = await signInUser(formData.email, formData.password);
-        if (result.success) {
-          router.push('/selection');
-        } else if (result.error) {
-          setLoginError(result.error as AuthError);
-        }
-      } catch (error) {
-        setLoginError(error as AuthError);
-      } finally {
-        setLoading(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if(name === 'email') {
+      e.target.value = value.toLowerCase();
+      setFormData(prev => ({
+            ...prev,
+            email: value.toLowerCase(),
+          }));     
+      // Clear error if email is valid
+      if (formErrors.email && validateForm({...formData, email: value.toLowerCase()}).email === null) {   // Create a copy of formData with the updated email value
+        setFormErrors(prev => ({
+          ...prev,
+          email: null,
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        password: value,
+      }));
+      // Clear error if password is valid
+      if (formErrors.password && validateForm({...formData, password: value}).password === null) { 
+        setFormErrors(prev => ({
+          ...prev,
+          password: null,
+        }));
       }
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-    validateForm();
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+
+    const newErrors = validateForm(formData);
+
+    if (validateForm(formData).email !== null && name === 'email') {
+      setFormErrors(prev => ({
+        ...prev,
+        email:newErrors.email,
+      }));
+    } else if (validateForm(formData).password !== null && name === 'password') {
+      setFormErrors(prev => ({
+        ...prev,
+        password: newErrors.password,
+      }));
+    }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setLoginError(null); // Clear login error for better UX
+
+    const newErrors = validateForm(formData);
+
+    if (Object.values(newErrors).some(value => value !== null)) {
+      setFormErrors(newErrors); // Show errors if validation fails
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const result = await signInUser(formData.email, formData.password);
+      if (result.success) {
+        router.push('/selection');
+      } else if (result.error) {
+        setLoginError(result.error as AuthError);
+      }
+    } catch (error) {
+      setLoginError(error as AuthError);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+
+  useEffect(() => {
+    // Reset errors when the component mounts or when the user logs out
+    setFormErrors({
+      email: null,
+      password: null,
+    });
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -84,7 +118,7 @@ export default function LoginPage() {
             Log in
           </h2>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {formErrors.email && (
             <div className="text-red-600 text-sm text-center">{formErrors.email}</div>
@@ -103,9 +137,10 @@ export default function LoginPage() {
                 placeholder="Email"
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
               />
             </div>
-            
+
             <div>
               {formErrors.password && (
                 <div className="text-red-600 text-sm text-center">{formErrors.password}</div>
@@ -122,6 +157,7 @@ export default function LoginPage() {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
+                onBlur={handleBlur}
               />
             </div>
           </div>
