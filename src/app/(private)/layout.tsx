@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { UserAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-
+import { Loading } from "../components/Loading";
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -14,21 +14,24 @@ const ProtectedLayout = ({ children }: LayoutProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!session) {
-        console.log("no session: ", session);
+    // needs to make sure session is not loading
+    console.log("private layout: ", session);
+    if (!session && !loading) { // only push to login if session promise resolves to null
       router.push("/login"); 
-    } else {
+    } else if (session === "loading") {
+      setLoading(true);
+    } else { 
       setLoading(false);
     }
-  }, [session, router]);
+  }, [session, router, loading]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return <div className="">
-     {children}
-  </div>;
+  return loading ? (
+    <Loading />
+  ) : (
+    <div className="">
+      {children}
+    </div>
+  );
 };
 
 export default ProtectedLayout;

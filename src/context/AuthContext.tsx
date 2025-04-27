@@ -7,7 +7,7 @@ import supabase from "@/config/supaBaseConfig";
 interface AuthContextType {
   signUpNewUser: (email: string, password: string) => Promise<AuthResponse>;
   signInUser: (email: string, password: string) => Promise<AuthResponse>;
-  session: Session | null;
+  session: Session | null | string;
   signOut: () => Promise<{ error?: AuthError }>;
 }
 
@@ -23,7 +23,7 @@ interface AuthResponse {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<Session | null | string>("loading");
 
   // Sign up
   const signUpNewUser = async (email: string, password: string): Promise<AuthResponse> => {
@@ -71,10 +71,12 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("getting session: ", session);
       setSession(session);
     });
 
     supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("setting session on change : ", session);
       setSession(session);
     });
   }, []);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserAuth } from "@/context/AuthContext";
 import { months } from "@/app/(private)/utils/dateUtils";
