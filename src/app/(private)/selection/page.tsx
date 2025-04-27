@@ -1,6 +1,5 @@
 'use client';
 
-import SignOutBtn from "../components/SignOutBtn";
 import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
@@ -14,8 +13,8 @@ export default function DashboardPage() {
   };
 
   return (
+    <div>
       <div className="container mx-auto max-w-5xl px-4 py-8">
-        <SignOutBtn />
         <h1 className="mb-8 text-3xl font-bold">Select Document Type</h1>
         <div className="flex flex-col space-y-4">
           {formOptions.map((option) => (
@@ -28,6 +27,7 @@ export default function DashboardPage() {
             </button>
           ))}
         </div>
+      </div>
       </div>
   )
 }

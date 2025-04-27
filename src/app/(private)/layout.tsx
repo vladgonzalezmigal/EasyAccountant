@@ -26,7 +26,9 @@ const ProtectedLayout = ({ children }: LayoutProps) => {
     return <div>Loading...</div>;
   }
 
-  return <>{children}</>;
+  return <div className="">
+     {children}
+  </div>;
 };
 
 export default ProtectedLayout;
