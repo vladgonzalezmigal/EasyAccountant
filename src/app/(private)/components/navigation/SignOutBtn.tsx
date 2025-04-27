@@ -26,10 +26,10 @@ const SignOutBtn = () => {
 
   return (
     <>
-    <div className="flex justify-center">
+    <div className="h-full">
       <button
         onClick={handleSignOut}
-        className="py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+        className="py-2 px-4 text-gray-800 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
       >
         Sign out
       </button>

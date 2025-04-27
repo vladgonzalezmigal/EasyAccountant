@@ -25,6 +25,26 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.main-theme {
+  background-color: #B6E8E4;
+}
+
+.back-arrow {
+  color: #80848A;
+}
+
+.back-arrow:hover {
+  color: #5a5e63;  /* Darker version of the original #80848A gray */
+}
+
+.active-page-text {
+  color: #2D2D2D;
+}
+
+.inactive-page-text {
+  color: #4D4D4D;
+}
+
 .input-field {
   width: 100px;
   height: 40px;

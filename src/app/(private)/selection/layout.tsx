@@ -1,43 +1,40 @@
 'use client';
 
-import React from "react";
-import Navbar from "../components/Navbar";
+import React, { useEffect, useRef } from "react";
+import Navbar from "../components/navigation/Navbar";
 import { usePathname } from "next/navigation";
+import { drawDottedBackground } from "../utils/styling";
+import { getBackConfig } from "../utils/nav";
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
 }
 
 export default function PrivateLayout({ children }: PrivateLayoutProps) {
-  const pathname = usePathname(); // Next.js hook
+  const pathname = usePathname();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { backURL } = getBackConfig(pathname);
 
-  // Centralized navigation logic
-  const getNavConfig = (path: string) => {
-    switch (true) {
-      case path.includes('/expenses'):
-        return {
-          backURL: '/selection',
-          title: 'Expenses',
-          subtitle: 'Track your spending'
-        };
-      case path.includes('/sales'):
-        return {
-          backURL: '/selection',
-          title: 'Sales',
-          subtitle: 'Record your revenue'
-        };
-      default:
-        return {
-          title: 'Dashboard'
-        };
-    }
-  };
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const cleanup = drawDottedBackground(canvas);
+    return cleanup;
+  }, []);
 
   return (
     <div className="flex">
-      <Navbar />
-      <div className="w-full h-screen">
-        {children}
+      <Navbar backURL={backURL} />
+      {/* Main content */}
+      <div className="w-full h-screen relative flex flex-col items-center justify-center">
+        <canvas 
+          ref={canvasRef} 
+          className="absolute top-0 left-0 w-full h-full pointer-events-none"
+        />
+        <div className="relative z-10">
+          {children}
+        </div>
       </div>
     </div>
   );
