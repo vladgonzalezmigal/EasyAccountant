@@ -5,6 +5,7 @@ import { UserAuth } from "../../context/AuthContext";
 import { useRouter } from 'next/navigation';
 import { AuthError } from '@supabase/supabase-js';
 import { FormErrors, FormData, validateForm } from '@/app/(public)/utils/formValidation';
+import LoadingWave from '../components/LoadingWave';
 
 export default function LoginPage() {
   const { signInUser } = UserAuth();
@@ -168,7 +169,7 @@ export default function LoginPage() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? <LoadingWave /> : 'Sign in'}
             </button>
           </div>
           {loginError && (
