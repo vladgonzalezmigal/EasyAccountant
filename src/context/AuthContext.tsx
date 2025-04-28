@@ -3,11 +3,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User, AuthError } from '@supabase/supabase-js';
 import supabase from "@/config/supaBaseConfig";
-
+import { SessionState } from "@/types/authTypes";
 interface AuthContextType {
   signUpNewUser: (email: string, password: string) => Promise<AuthResponse>;
   signInUser: (email: string, password: string) => Promise<AuthResponse>;
-  session: Session | null;
+  session: SessionState;
   signOut: () => Promise<{ error?: AuthError }>;
 }
 
@@ -23,7 +23,7 @@ interface AuthResponse {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<SessionState>("loading");
 
   // Sign up
   const signUpNewUser = async (email: string, password: string): Promise<AuthResponse> => {
@@ -55,7 +55,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // If no error, return success
-      console.log("Sign-in success:", data);
       return { success: true, data }; // Return the user data
     } catch (error) {
       // Handle unexpected issues

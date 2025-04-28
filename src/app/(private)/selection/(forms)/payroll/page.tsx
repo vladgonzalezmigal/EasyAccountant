@@ -1,5 +1,5 @@
 'use client';
-import DocumentSelection from "@/app/(private)/features/DocumentSelection";
+import DocumentSelection from "@/app/(private)/features/handleForms/components/DocumentSelection";
 export default function PayrollSelectionPage() {
 
   return (

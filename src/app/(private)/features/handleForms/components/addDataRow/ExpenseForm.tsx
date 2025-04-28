@@ -41,7 +41,6 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
         }
         if (value === "") { // default option is selected
             setCompanyError(true);
-            console.log("company error", companyError)
         } else {
             setCompanyError(false);
         }
@@ -103,7 +102,6 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
         e.preventDefault();
         if (!companySelected) {
             setCompanyError(true);
-            console.log("company error not selected", )
             return;
         }
         onSubmit(e);
@@ -179,7 +177,7 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                         placeholder="0.00"
                     />
                 </div>
-                <div className={`flex text-lg justify-center items-center rounded-full ml-[4px] ${formError ? 'bg-red-500 cursor-not-allowed' : 'bg-blue-500 cursor-pointer'} text-white w-10 h-10`}>
+                <div className={`flex text-lg justify-center items-center rounded-full ml-[2px] ${formError ? 'bg-red-500 cursor-not-allowed' : 'bg-blue-500 cursor-pointer'} text-white w-8 h-8`}>
                     <button 
                         type="submit" 
                         disabled={formError}

@@ -45,6 +45,35 @@ body {
   color: #4D4D4D;
 }
 
+.row-delete-inactive{
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #ef4444; /* red-500 */
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.row-delete-inactive:hover {
+  background-color: #ef4444; /* red-500 */
+}
+
+.row-delete-active {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #510000; /* red-500 */
+  background-color: #ef4444; /* red-500 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+
 .input-field {
   width: 100px;
   height: 40px;
@@ -95,4 +124,35 @@ body {
 .rounded-bottom {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
+}
+
+.loader {
+  width: 60px;
+  aspect-ratio: 2;
+  --_g: no-repeat radial-gradient(circle closest-side,#fff 90%,#00000000);
+  background: 
+    var(--_g) 0%   50%,
+    var(--_g) 50%  50%,
+    var(--_g) 100% 50%;
+  background-size: calc(100%/3) 50%;
+  animation: l3 1s infinite linear;
+}
+
+.loader-inverse {
+  width: 60px;
+  aspect-ratio: 2;
+  --_g: no-repeat radial-gradient(circle closest-side,#000 90%,#00000000);
+  background: 
+    var(--_g) 0%   50%,
+    var(--_g) 50%  50%,
+    var(--_g) 100% 50%;
+  background-size: calc(100%/3) 50%;
+  animation: l3 1s infinite linear;
+}
+
+@keyframes l3 {
+    20%{background-position:0%   0%, 50%  50%,100%  50%}
+    40%{background-position:0% 100%, 50%   0%,100%  50%}
+    60%{background-position:0%  50%, 50% 100%,100%   0%}
+    80%{background-position:0%  50%, 50%  50%,100% 100%}
 }

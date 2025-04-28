@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { months } from '../utils/dateUtils';
-import { validateYearInput } from '../utils/dateUtils';
+import { months } from '../../../utils/dateUtils';
+import { validateYearInput } from '../../../utils/dateUtils';
 
 export default function DocumentSelection() {
 

@@ -42,8 +42,8 @@ export default function SignupPage() {
             newErrors.email = 'Please enter a valid email address';
         }
 
-        // Password validation
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\+\-=\[\]{};':"\\|,.<>\/?`~]).+$/;
+        // Password validation for 6 characters and at least one uppercase, lowercase, number, and special character
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$/;
 
         if (!formData.password) {
             newErrors.password = 'Password is required';
@@ -68,7 +68,6 @@ export default function SignupPage() {
                 if (result.success) {
                     router.push('/selection') // Navigate to selection on success
                 } else if (result.error) {
-                    console.log("moreno error", result.error.message)
                     setSignInError(result.error as AuthError);
                 }
             } catch (error) {
