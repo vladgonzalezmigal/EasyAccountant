@@ -14,14 +14,12 @@ const ProtectedLayout = ({ children }: LayoutProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // needs to make sure session is not loading
-    console.log("private layout: ", session);
-    if (!session && !loading) { // only push to login if session promise resolves to null
+    if (!session) { // only push to login if session promise resolves to null
       router.push("/login"); 
     } else if (session === "loading") {
       setLoading(true);
-    } else { 
-      setLoading(false);
+    } else  { 
+       setLoading(false);
     }
   }, [session, router, loading]);
 

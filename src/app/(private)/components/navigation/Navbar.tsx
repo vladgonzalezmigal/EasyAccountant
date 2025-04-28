@@ -20,46 +20,45 @@ export default function Navbar({ backURL }: NavbarProps) {
     const pages: Pages[] = ["sales", "expenses", "payroll"];
 
     return (
-        <div className="h-screen bg-white w-[172px] lg:w-[344px] px-2 lg:px-4 py-9 
-         border-r border-r-2 border-[#D9D9D9] flex flex-col justify-between">
+        <div className="h-screen bg-white w-[172px] lg:w-[344px] px-4 lg:px-6 py-8 
+         border-r border-r-2 border-[#E5E7EB] flex flex-col justify-between shadow-sm">
             {/* Main Navigation */}
             <div>
-                <div className="flex w-full justify-between items-center mb-16"> 
-                <HomeButton />
-                {backURL && <BackButton url={backURL} />}   
+                <div className="flex w-full justify-between items-center mb-12"> 
+                    <HomeButton />
+                    {backURL && <BackButton url={backURL} />}   
                 </div>
-                <div className="flex flex-col ">
+                <div className="flex flex-col space-y-6">
                     <div>
-                        <p className="font-semibold text-[#585858] text-[14px] ">Pages</p>
+                        <p className="font-semibold text-[#6B7280] text-[13px] tracking-wide">Pages</p>
                     </div>
                     {/* Links */}
-                    <div className="flex flex-col gap-y-2 py-2">
+                    <div className="flex flex-col gap-y-2.5">
                         {pages.map((page) => (
                             <Link 
                                 key={page}
                                 href={getPagesLink(pathname, page)}
-                                className={`w-full h-[48px] hover:bg-gray-100 gap-y-2 rounded-lg pl-2 flex items-center ${page === activePage ? 'main-theme' : ''}`}
+                                className={`w-full h-[48px] hover:bg-gray-50 gap-y-2 rounded-lg pl-3 flex items-center transition-colors duration-200 ${page === activePage ? 'main-theme shadow-sm' : ''}`}
                             >
                                 {/* Icon */}
-                                <div className="w-6 h-6 mr-2">
+                                <div className="w-6 h-6 mr-3">
                                     {page === "sales" && <SalesIcon className={page === activePage ? 'active-page-text' : 'inactive-page-text'} />}
                                     {page === "expenses" && <ExpensesIcon className={page === activePage ? 'active-page-text' : 'inactive-page-text'} />}
                                     {page === "payroll" && <PayrollIcon className={page === activePage ? 'active-page-text' : 'inactive-page-text'} />}
                                 </div>
-                                <p className={`text-[18px] capitalize ${page === activePage ? 'active-page-text' : 'inactive-page-text'}`}>{page}</p>
+                                <p className={`text-[16px] capitalize ${page === activePage ? 'active-page-text font-medium' : 'inactive-page-text'}`}>{page}</p>
                             </Link>
                         ))}
                     </div>
                     {/* Other links */}
-                    <div>
-                        <p className="font-semibold text-[#585858] text-[14px] pb-1">Other</p>
+                    <div className="pt-4">
+                        <p className="font-semibold text-[#6B7280] text-[13px] tracking-wide">Other</p>
                     </div>
                 </div>
             </div>
-            <div>
+            <div className="pt-6 border-t border-[#E5E7EB]">
                 <SignOutBtn />
             </div>
-            
         </div>
     );
 } 

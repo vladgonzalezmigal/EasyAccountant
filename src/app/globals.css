@@ -45,6 +45,35 @@ body {
   color: #4D4D4D;
 }
 
+.row-delete-inactive{
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #ef4444; /* red-500 */
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.row-delete-inactive:hover {
+  background-color: #ef4444; /* red-500 */
+}
+
+.row-delete-active {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #510000; /* red-500 */
+  background-color: #ef4444; /* red-500 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+
 .input-field {
   width: 100px;
   height: 40px;
