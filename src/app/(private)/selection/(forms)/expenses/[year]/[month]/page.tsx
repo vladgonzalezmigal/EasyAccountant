@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserAuth } from "@/context/AuthContext";
 import { months } from "@/app/(private)/utils/dateUtils";
-import supabase from "@/config/supaBaseConfig";
 import { Expense } from "@/app/(private)/types/formTypes";
 import { FormDataRows } from "@/app/(private)/features/handleForms/components/FormDataRows";
 import ExpenseForm from "@/app/(private)/features/handleForms/components/addDataRow/ExpenseForm";
@@ -125,21 +124,16 @@ export default function ExpensesPage() {
         }
     };
 
-    // TODO: abstract initial fetch into util function, making 
-
     useEffect(() => {
         const fetchExpenses = async () => {
-            const { data, error } = await supabase
-                .from('expenses')
-                .select('id, date, payment_type, detail,company, amount ')
-                .gte('date', startDate)
-                .lt('date', endDate)
-                .order('date', { ascending: false }); // newest first 
-            if (error) {
-                setFetchError(error.message);
+            const dataType = {id: -1, date: '', payment_type: 'CHECK', detail: '',company: '',amount: 0} as Expense;
+            const readRes = await performCrudOperation('read', { tableName: 'expenses', dataType: dataType, startDate, endDate });
+            if (typeof readRes !== 'string' && !readRes.data) {
+                setFetchError(readRes.error);
+                return;
+            } else if (typeof readRes !== 'string' && readRes.data) {
+                setExpenses(readRes.data as Expense[]);
             }
-            // add id but exclude from table row display 
-            setExpenses(data);
             setLoading(false);
         }
         fetchExpenses();

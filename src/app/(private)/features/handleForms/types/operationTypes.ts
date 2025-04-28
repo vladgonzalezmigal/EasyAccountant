@@ -17,6 +17,7 @@ export type OperationValidationParams = DeleteValidationParams;
 // params for performing opertion
 export interface OperationPerformParams {   
     tableName: string; // All operations must have this field
+    dataType?: FormData;
 }
 
 // Create-specific parameters
@@ -25,8 +26,16 @@ export interface PerformCreateParams extends OperationPerformParams {
     user_id: string;
 }
 
+// Read-specific parameters
+export interface PerformReadParams extends OperationPerformParams {
+    startDate: string;
+    endDate: string;
+}
+
 // Delete-specific parameters
 export interface PerformDeleteParams extends OperationPerformParams {
     rowsToDelete: number[];  // IDs of rows to delete
 }
+
+export type PerformCrudParams = PerformCreateParams | PerformReadParams | PerformDeleteParams;
 

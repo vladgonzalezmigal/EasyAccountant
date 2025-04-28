@@ -1,5 +1,5 @@
 import supabase from "@/config/supaBaseConfig";
-import { CrudOperation, CrudResponseData, PerformCreateParams } from "../types/operationTypes";
+import { CrudOperation, CrudResponseData, PerformCreateParams, PerformCrudParams, PerformReadParams } from "../types/operationTypes";
 import { FormData } from "@/app/(private)/types/formTypes";
 import { PerformDeleteParams } from "../types/operationTypes";
 import { PostgrestError } from '@supabase/supabase-js';
@@ -10,7 +10,7 @@ export abstract class PerformOperationHandler {
 
     constructor(
         protected operation: CrudOperation,
-        protected params: (PerformDeleteParams | PerformCreateParams) // Params containing tableName and other operation-specific data
+        protected params: PerformCrudParams // Params containing tableName and other operation-specific data
     ) {
         if (!this.params.tableName) { 
             this.errorState = "Table name is required";
@@ -35,17 +35,23 @@ export abstract class PerformOperationHandler {
 const omitId = (obj: FormData, arr: string[] = ['id']) =>
     Object.fromEntries(Object.entries(obj).filter(([k]) => !arr.includes(k)));
 
+const getQueryColumns = (dataType: FormData): string => {
+    return Object.keys(dataType).join(',');
+}
+
 const handleApiResponse = (apiData: FormData[] | null, apiError: PostgrestError | null): CrudResponseData => {
     if (apiError) {
         return {
             data: null,
             error: apiError.message || "Unknown error"
         };
+    } else {
+        return {
+            data: apiData as FormData[],
+            error: null
+        };
     }
-    return {
-        data: apiData as FormData[],
-        error: null
-    };
+    
 };
 
 // Create operation handler
@@ -58,7 +64,6 @@ export class PerformCreateOperationHandler extends PerformOperationHandler {
     // Perform async operation for create
     async perform(): Promise<CrudResponseData> {
         const createParams = this.params as PerformCreateParams;
-        const queryColumns: string = Object.keys(createParams.createData).join(',');
         try {
             const { data: apiData, error: apiError } = await supabase 
                 .from(createParams.tableName)
@@ -66,7 +71,39 @@ export class PerformCreateOperationHandler extends PerformOperationHandler {
                     ...omitId(createParams.createData),
                     user_id: createParams.user_id
                 })
-                .select(queryColumns);
+                .select(getQueryColumns(createParams.createData));
+
+            return handleApiResponse(apiData as unknown as FormData[], apiError);
+        } catch (err) { // network error or other error
+            return {
+                data: null,
+                error: err instanceof Error ? err.message : "Unexpected error occurred"
+            };
+        }
+    }
+}
+
+// Read operation handler
+
+export class PerformReadOperationHandler extends PerformOperationHandler {
+    constructor(params: PerformReadParams) {
+        super('read', params);
+    }
+
+    // Perform async operation for read
+    async perform(): Promise<CrudResponseData> {
+        const readParams = this.params as PerformReadParams;
+        if (!readParams.dataType) {
+            this.errorState = "Data type is required";
+            return { data: null, error: this.errorState };
+        }
+        try {
+            const { data: apiData, error: apiError } = await supabase 
+                .from(readParams.tableName)
+                .select(getQueryColumns(readParams.dataType))
+                .gte('date', readParams.startDate)
+                .lt('date', readParams.endDate)
+                .order('date', { ascending: false }); // newest first 
 
             return handleApiResponse(apiData as unknown as FormData[], apiError);
         } catch (err) {
@@ -75,8 +112,7 @@ export class PerformCreateOperationHandler extends PerformOperationHandler {
                 error: err instanceof Error ? err.message : "Unexpected error occurred"
             };
         }
-    }
-}
+} }
 
 // Delete operation handler
 export class PerformDeleteOperationHandler extends PerformOperationHandler {
@@ -103,3 +139,5 @@ export class PerformDeleteOperationHandler extends PerformOperationHandler {
         }
     }
 }
+
+// 

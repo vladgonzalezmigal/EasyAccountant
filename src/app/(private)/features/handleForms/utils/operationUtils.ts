@@ -2,11 +2,11 @@
 import { SessionState } from "@/types/authTypes";
 import { CrudOperation, DeleteValidationParams, OperationValidationParams,
      PerformCreateParams,
-     PerformDeleteParams } from "@/app/(private)/features/handleForms/types/operationTypes";
+     PerformDeleteParams, PerformReadParams } from "@/app/(private)/features/handleForms/types/operationTypes";
 import {  CanDeleteOperationHandler, CanCreateOperationHandler } from "./validationHandler";
-import { PerformCreateOperationHandler, PerformDeleteOperationHandler } from "./operationHandler";
+import { PerformCreateOperationHandler, PerformDeleteOperationHandler, PerformReadOperationHandler } from "./operationHandler";
 import { Session } from "@supabase/supabase-js";
-import { CrudResponseData } from "../types/operationTypes";
+import { CrudResponseData, PerformCrudParams } from "../types/operationTypes";
 
 /**
  * Validates if the current session can perform the requested operation
@@ -55,7 +55,7 @@ export function canPerformOperation(
 
 export function performCrudOperation(
     operation: CrudOperation,
-    params: (PerformDeleteParams | PerformCreateParams)
+    params: PerformCrudParams
 ): Promise<CrudResponseData> | string {
     let handler: { execute: () => Promise<CrudResponseData> } | undefined;
 
@@ -65,6 +65,9 @@ export function performCrudOperation(
             break;
         case 'create':
             handler = new PerformCreateOperationHandler(params as PerformCreateParams);
+            break;
+        case 'read':
+            handler = new PerformReadOperationHandler(params as PerformReadParams);
             break;
         default:
             return "Invalid operation";
