@@ -57,7 +57,7 @@ export const validateDateInput = (
     }
 
     return {
-        isValid: true
+        isValid: true,
     };
 };
 

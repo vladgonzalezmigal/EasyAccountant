@@ -1,5 +1,5 @@
 import supabase from "@/config/supaBaseConfig";
-import { CrudOperation, CrudResponseData, PerformCreateParams, PerformCrudParams, PerformReadParams } from "../types/operationTypes";
+import { CrudOperation, CrudResponseData, PerformCreateParams, PerformCrudParams, PerformReadParams, PerformUpdateParams } from "../types/operationTypes";
 import { FormData } from "@/app/(private)/types/formTypes";
 import { PerformDeleteParams } from "../types/operationTypes";
 import { PostgrestError } from '@supabase/supabase-js';
@@ -113,6 +113,36 @@ export class PerformReadOperationHandler extends PerformOperationHandler {
             };
         }
 } }
+
+// Update operation handler
+export class PerformUpdateOperationHandler extends PerformOperationHandler {
+    constructor(params: PerformUpdateParams) {
+        super('update', params as PerformUpdateParams);
+    }
+
+    // Perform async operation for update
+    async perform(): Promise<CrudResponseData> {
+        const updateParams = this.params as PerformUpdateParams;
+        const updatedRowsWithUserId = updateParams.editedRows.map(row => ({
+            ...row,
+            user_id: updateParams.user_id
+          }));
+        console.log("editedRows post upsert", updatedRowsWithUserId);
+        try {
+            const { data: apiData, error: apiError } = await supabase
+                .from(updateParams.tableName)
+                .upsert(updatedRowsWithUserId)
+                .select(getQueryColumns(updateParams.editedRows[0]))
+
+            return handleApiResponse(apiData as unknown as FormData[], apiError);
+        } catch (err) {
+            return {
+                data: null,
+                error: err instanceof Error ? err.message : "Unexpected error occurred"
+            };
+        }
+    }
+}
 
 // Delete operation handler
 export class PerformDeleteOperationHandler extends PerformOperationHandler {

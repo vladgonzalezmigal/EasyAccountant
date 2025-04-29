@@ -94,9 +94,11 @@ export default function ExpensesPage() {
 
 
         // if validation passes add to edited rows
-        const updatedValue = validationResult.value !== undefined ? validationResult.value : value;
+        let updatedValue = validationResult.value !== undefined ? validationResult.value : value;
+        if (key === 'date') {
+            updatedValue = formatDate(updatedValue as string, month as string, year as string);
+        }
         setEditedRows(prev => {
-            console.log(prev);
             const existing = prev.find(row => row.id === id);
             if (existing) {
                 return prev.map(row =>
@@ -113,9 +115,9 @@ export default function ExpensesPage() {
         });
     };
 
-    
 
-    const newRowToDelete = (id: number) => { 
+
+    const newRowToDelete = (id: number) => {
         setRowsToDelete((prevRows) => {
             return prevRows.includes(id)
                 ? prevRows.filter(rowId => rowId !== id) // Remove the id if it's already in the array
@@ -142,19 +144,19 @@ export default function ExpensesPage() {
             return;
         } else if (typeof createRes !== 'string' && createRes.data) {
             const createData = createRes.data as Expense[];
-             setExpenses((prevExpenses) =>
-                    [...(prevExpenses || []), createData[0]].sort(
-                        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-                    )
-                );
-                // clear form state 
-                setNewExpense({id: -1, date: '', payment_type: 'CHECK', detail: '', company: '',amount: 0});
+            setExpenses((prevExpenses) =>
+                [...(prevExpenses || []), createData[0]].sort(
+                    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+                )
+            );
+            // clear form state 
+            setNewExpense({ id: -1, date: '', payment_type: 'CHECK', detail: '', company: '', amount: 0 });
         }
         setCudLoading(false);
     }
 
     const canDelete: boolean = (rowsToDelete.length > 0);
-    const canEdit: boolean = (editedRows.length > 0);
+    const canEdit: boolean = (editedRows.length > 0) && (Object.keys(validationErrors).length === 0);
 
     const handleSubmitDelete = async () => {
 
@@ -179,9 +181,9 @@ export default function ExpensesPage() {
             setExpenses((prevExpenses) =>
                 prevExpenses ? prevExpenses.filter(expense => !deletedIds.includes(expense.id)) : null
             );
+            setRowsToDelete([]);
+            setDeleteMode(false);
         }
-        setRowsToDelete([]);
-        setDeleteMode(false);
         setCudLoading(false);
     }
 
@@ -193,10 +195,55 @@ export default function ExpensesPage() {
         }
     };
 
+    const handleSubmitEdit = async () => {
+        const validationResult: string | Session = canPerformOperation(session, 'update', { editedRows, validationErrors });
+        if (typeof validationResult === 'string') {
+            setCudError(validationResult);
+            return;
+        }
+        setCudLoading(true);
+        setCudError(null);
+        console.log("passed validation", editedRows);
+        const updateRes = await performCrudOperation('update', { tableName: 'expenses', editedRows, user_id: validationResult.user.id });
+        if (typeof updateRes !== 'string' && !updateRes.data) {
+            setCudError(updateRes.error);
+            console.log("error", updateRes.error);
+        } else if (typeof updateRes !== 'string' && updateRes.data) {
+            const updateData = updateRes.data as Expense[];
+            console.log("updateData", updateData);
+            // update the expenses array with the updated rows
+            setExpenses((prevExpenses) => {
+                if (!prevExpenses) return updateData;
+
+                // Create a map of updated expenses by ID for quick lookup
+                const updatedExpensesMap = new Map(
+                    updateData.map(expense => [expense.id, expense])
+                );
+
+                // Replace existing expenses with updated ones based on ID
+                return prevExpenses.map(expense =>
+                    updatedExpensesMap.has(expense.id)
+                        ? updatedExpensesMap.get(expense.id)!
+                        : expense
+                );
+            });
+            // clear edit form state 
+            setEditedRows([]);
+            setValidationErrors({});
+            setEditMode(false);
+        }
+        setCudLoading(false);
+    }
+
     const handleEdit = () => {
         if (editMode && !deleteMode && canEdit) { // can only make api call if there are rows to edit
-            // handleSubmitEdit();
+            handleSubmitEdit();
+            // console.log(" edit mode submit");
+            // setEditMode(prevMode => !prevMode);
+        } else if (editMode && !deleteMode && (Object.keys(validationErrors).length > 0)) { // cancel by resetting edit mode
             setEditMode(prevMode => !prevMode);
+            setValidationErrors({});
+            setEditedRows([]);
         } else if (!deleteMode) {
             setEditMode(prevMode => !prevMode);
         }
@@ -204,7 +251,7 @@ export default function ExpensesPage() {
 
     useEffect(() => {
         const fetchExpenses = async () => {
-            const dataType = {id: -1, date: '', payment_type: 'CHECK', detail: '',company: '',amount: 0} as Expense;
+            const dataType = { id: -1, date: '', payment_type: 'CHECK', detail: '', company: '', amount: 0 } as Expense;
             const readRes = await performCrudOperation('read', { tableName: 'expenses', dataType: dataType, startDate, endDate });
             if (typeof readRes !== 'string' && !readRes.data) {
                 setFetchError(readRes.error);
@@ -276,7 +323,7 @@ export default function ExpensesPage() {
                                 {/* Extra Options */}
                                 <div className="w-full bg-[#F4FFFE]  border border-2 -z-30 ">
                                     <div className="flex flex-row gap-x-4 py-4 items-center justify-center">
-                                    {/* Delete Button */}
+                                        {/* Delete Button */}
                                         <div className="flex flex-col items-center gap-y-2">
                                             <button
                                                 onClick={handleDelete}
@@ -301,12 +348,14 @@ export default function ExpensesPage() {
                                                 disabled={cudLoading}
                                                 className={`cursor-pointer rounded-full w-16 h-16 flex items-center justify-center ${cudLoading ? 'bg-gray-400' :
                                                     editMode ? 'bg-yellow-500' :
-                                                    editMode ? 'bg-blue-600' : 'bg-blue-300'
+                                                        editMode ? 'bg-blue-600' : 'bg-blue-300'
                                                     }`}>
                                                 {cudLoading ?
                                                     <span className="text-white">...</span> :
                                                     editMode ?
-                                                        <span className="text-white">✓</span> :
+                                                        (Object.keys(validationErrors).length > 0) ?
+                                                            <span className="text-white">c</span> :
+                                                            <span className="text-white">✓</span> :
                                                         <span className="text-white">✕</span>
                                                 }
                                             </button>
