@@ -3,7 +3,7 @@
 import { ChangeEvent, useRef, useState } from 'react';
 import { Expense } from '@/app/(private)/types/formTypes';
 import { useParams } from 'next/navigation';
-import { validateDateInput, validateAmountInput } from '@/app/(private)/features/utils/formValidation';
+import { validateDateInput, validateAmountInput } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
 
 interface ExpenseFormProps {
     onInputChange: (name: keyof Expense, value: string | number) => void;

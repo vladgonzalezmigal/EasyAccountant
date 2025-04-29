@@ -84,4 +84,17 @@ export function formatDate(day: string, month: string, year: string): string {
   return `${year}-${formattedMonth}-${formattedDay}`;
 }
 
+/**
+ * Extracts the day part from a date string in 'YYYY-MM-DD' format
+ * @param dateString - A date string in 'YYYY-MM-DD' format
+ * @returns The day part as a string (DD)
+ */
+export function getDateString(dateString: string): string {
+  // Split the date string by '-' and get the day part (index 2)
+  const parts = dateString.split('-');
+  if (parts.length === 3) {
+    return parts[2];
+  }
+  return '';
+}
 

@@ -1,10 +1,34 @@
 import { getDaysInMonth } from '@/app/(private)/utils/dateUtils';
+import { FormData } from '@/app/(private)/types/formTypes';
 
-interface ValidationResult {
+export interface ValidationResult {
     isValid: boolean;
     error?: string;
     value?: string;
 }
+
+export const PAYMENT_TYPES = ['CASH', 'CARD', "CHECK"].map(type => type.toUpperCase())
+export const COMPANIES = ['JETRO', 'SUPREMA'].map(type => type.toUpperCase())
+
+export const fieldConfig: Record<string, { type: 'input' | 'select'; options?: string[] }> = {
+    date: { type: 'input' },
+    amount: { type: 'input' },
+    detail: { type: 'input' },
+    company: { type: 'select', options: COMPANIES }, // todo pull from db 
+    payment_type: { type: 'select', options: PAYMENT_TYPES },
+};
+
+export const isFieldEdited = (
+    candidateForm: FormData | undefined,
+    displayForm: Record<string, string | number>,
+    candidateKey: keyof FormData
+): boolean => {
+    if (!candidateForm) {
+        return false;
+    }
+    
+    return candidateForm[candidateKey] !== displayForm[candidateKey];
+};
 
 export const validateDateInput = (
     value: string,
@@ -45,6 +69,14 @@ export const validateAmountInput = (value: string): ValidationResult => {
             error: "Amount cannot be empty"
         };
     }
+
+    // handle leading zeros
+    // if (value.startsWith('0')) {
+    //     return {
+    //         isValid: false,
+    //         error: "Amount cannot start with 0"
+    //     };
+    // }
 
     // Handle non-numeric input 
     if (!/^\d*\.?\d*$/.test(value)) {
