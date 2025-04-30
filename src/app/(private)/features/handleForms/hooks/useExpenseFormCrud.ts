@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Expense } from '@/app/(private)/types/formTypes';
 import { performCrudOperation, canPerformOperation } from '../utils/operationUtils';
 import { SessionState } from '@/types/authTypes';
-import { FormData } from '@/app/(private)/types/formTypes';
 
 // export type 
 type expenseFormCrudHandlers = {
@@ -38,7 +37,7 @@ export function useFormCrud({
   const [cudLoading, setCudLoading] = useState(false);
   const [cudError, setCudError] = useState<string | null>(null);
 
-  const handleSubmitCreate = async (e: React.FormEvent<HTMLFormElement>, newRow: FormData) => {
+  const handleSubmitCreate = async (e: React.FormEvent<HTMLFormElement>, newRow: Expense) => {
     e.preventDefault();
 
     const validationResult = canPerformOperation(session, 'create');
