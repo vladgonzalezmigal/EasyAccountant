@@ -9,6 +9,7 @@ import Link from "next/link";
 import SalesIcon from "../svgs/SalesIcon";
 import ExpensesIcon from "../svgs/ExpensesIcon";
 import PayrollIcon from "../svgs/PayrollIcon";
+import StoreLinks from "./StoreLinks";
 
 interface NavbarProps {
     backURL?: string;
@@ -35,6 +36,7 @@ export default function Navbar({ backURL }: NavbarProps) {
                     {/* Links */}
                     <div className="flex flex-col gap-y-2.5">
                         {pages.map((page) => (
+                            <div key={page}>
                             <Link 
                                 key={page}
                                 href={getPagesLink(pathname, page)}
@@ -47,7 +49,11 @@ export default function Navbar({ backURL }: NavbarProps) {
                                     {page === "payroll" && <PayrollIcon className={page === activePage ? 'active-page-text' : 'inactive-page-text'} />}
                                 </div>
                                 <p className={`text-[16px] capitalize ${page === activePage ? 'active-page-text font-medium' : 'inactive-page-text'}`}>{page}</p>
+                                {/* Store sublinks */}
+                               
                             </Link>
+                             {page === "sales" && <StoreLinks />}
+                            </div>
                         ))}
                     </div>
                     {/* Other links */}

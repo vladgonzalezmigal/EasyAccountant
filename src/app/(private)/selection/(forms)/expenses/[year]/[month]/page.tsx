@@ -166,6 +166,7 @@ export default function ExpensesPage() {
             {fetchLoading ? (
                 <Loading />
             ) : (
+                // Table Component
                 <ExpenseSalesTable
                     fetchError={fetchError}
                     formDataProps={{
