@@ -3,7 +3,8 @@
 import { ChangeEvent, useRef, useState } from 'react';
 import { Expense } from '@/app/(private)/types/formTypes';
 import { useParams } from 'next/navigation';
-import { validateDateInput, validateAmountInput } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
+import { validateDateInput, validateAmountInput, validateCompanyInput, DEFAULT_COMPANY } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
+import { formatDate } from '@/app/(private)/utils/dateUtils';
 
 interface ExpenseFormProps {
     onInputChange: (name: keyof Expense, value: string | number) => void;
@@ -12,7 +13,6 @@ interface ExpenseFormProps {
 
 const PAYMENT_TYPES = ['CHECK', 'CASH', 'CARD'] as const;
 const COMPANIES = ['JETRO', 'SUPREMA'] as const;
-const DEFAULT_COMPANY = 'Company';
 const today = new Date();
 const DAY = today.getDate(); // Gets day without leading zero
 
@@ -22,12 +22,12 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
 
     // form validation errors
     const [dateError, setDateError] = useState<string | null>(null);
-    const [companyError, setCompanyError] = useState<boolean>(false);
+    const [companyError, setCompanyError] = useState<string | null>(null);
     const [amountError, setAmountError] = useState<string | null>(null);
-    const [companySelected, setCompanySelected] = useState<boolean>(false);
+    const [companySelected, setCompanySelected] = useState<string>(DEFAULT_COMPANY);
 
 
-    const formError : boolean = (dateError || companyError || amountError) ? true : false;
+    const formError: boolean = (dateError || companyError || amountError) ? true : false;
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -36,24 +36,21 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
 
     const handleCompanyChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target;
-        if (!companySelected) {
-            setCompanySelected(true);
-        }
-        if (value === "") { // default option is selected
-            setCompanyError(true);
+        const validation = validateCompanyInput(value);
+        e.target.value = validation.value;
+        console.log(validation.value);
+        setCompanySelected(validation.value);
+        if (validation.isValid) {
+            setCompanyError(null);
+            onInputChange(name as keyof Expense, value);
         } else {
-            setCompanyError(false);
+            setCompanyError(validation.error || "please select different company");
         }
-        onInputChange(name as keyof Expense, value);
+
     };
 
     const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        // Handle non-numeric input and leading zeros
-        if (!/^\d*$/.test(value) || value === '0') {
-            e.target.value = value === '0' ? '' : value.replace(/\D/g, '');
-            return;
-        }
 
         const validation = validateDateInput(
             value,
@@ -61,38 +58,35 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
             parseInt(year as string)
         );
 
+        e.target.value = validation.value;
+
         if (validation.isValid) {
             if (dateError) {
                 setDateError(null);
             }
-            onInputChange(name as keyof Expense, value);
+            const postValue = formatDate(validation.value, month as string, year as string);
+            onInputChange(name as keyof Expense, postValue);
         } else {
             setDateError(validation.error || null);
-            // If non-numeric input, reset to previous valid value
-            e.target.value = e.target.value.replace(/\D/g, '');
         }
     };
-
-
 
     const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         const validation = validateAmountInput(value);
 
-        if (validation.value) {
-            e.target.value = validation.value;
-        }
+        e.target.value = validation.value;
 
         if (validation.isValid) {
             if (amountError) {
                 setAmountError(null);
             }
             // If the value is valid but doesn't have a decimal, add .00
-            let formattedValue = validation.value || value;
-            if (validation.isValid && !formattedValue.includes('.')) {
-                formattedValue = `${formattedValue}.00`;
+            let postValue = validation.value;
+            if (validation.isValid && !postValue.includes('.')) {
+                postValue = `${postValue}.00`;
             }
-            onInputChange(name as keyof Expense, formattedValue);
+            onInputChange(name as keyof Expense, postValue);
         } else {
             setAmountError(validation.error || null);
         }
@@ -100,12 +94,14 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!companySelected) {
-            setCompanyError(true);
+        if (companySelected === DEFAULT_COMPANY) {
+            setCompanyError("Please select a company");
             return;
         }
         onSubmit(e);
         formRef.current?.reset();
+        // Reset company selection to default after form submission
+        setCompanySelected(DEFAULT_COMPANY);
     };
 
     return (
@@ -177,15 +173,17 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                         placeholder="0.00"
                     />
                 </div>
-                <div className={`flex text-lg justify-center items-center rounded-full ml-[2px] ${formError ? 'bg-red-500 cursor-not-allowed' : 'bg-blue-500 cursor-pointer'} text-white w-8 h-8`}>
-                    <button 
-                        type="submit" 
-                        disabled={formError}
-                        className='cursor-pointer disabled:cursor-not-allowed'
-                    >
+                <button
+                    type="submit"
+                    disabled={formError}
+                    className='cursor-pointer disabled:cursor-not-allowed'
+                >
+                    <div className={`flex text-lg justify-center items-center rounded-full ml-[2px] ${formError ? 'bg-red-500 cursor-not-allowed' : 'bg-blue-500 cursor-pointer'} text-white w-8 h-8`}>
+
                         <p>{formError ? 'x' : '+'}</p>
-                    </button>
-                </div>
+
+                    </div>
+                </button>
             </form>
         </div>
     );

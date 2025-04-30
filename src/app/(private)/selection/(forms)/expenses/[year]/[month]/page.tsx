@@ -22,7 +22,7 @@ export default function ExpensesPage() {
     const [expenses, setExpenses] = useState<Expense[] | null>(null);
     const [fetchLoading, setFetchLoading] = useState(true);
     // create mode state 
-    const [newExpense,] = useState<Expense>({
+    const [newExpense, setNewExpense] = useState<Expense>({
         id: -1,
         date: '',
         payment_type: 'CHECK',
@@ -39,14 +39,11 @@ export default function ExpensesPage() {
     const [rowsToDelete, setRowsToDelete] = useState<number[]>([]);
 
     // use the useExpenseFormCrud hook to handle the cud operations
-    const { handleSubmitDelete, handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useExpenseFormCrud({ session, setExpenses, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'expenses' })
+    const { handleSubmitDelete, handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useExpenseFormCrud({ session, setExpenses, setNewExpense, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'expenses' })
 
     const newExpenseInputChange = (field: keyof Expense, value: string | number) => {
-        // Since we're creating the expense object inline in ExpenseSalesTable,
-        // we can just pass the formatted value directly to handleSubmitCreate
-        if (field === 'date') {
-            return formatDate(value as string, month as string, year as string);
-        }
+        // value is validated & formatted by the ExpenseForm component
+        setNewExpense(prev => ({ ...prev, [field]: value }));
         return value;
     };
 

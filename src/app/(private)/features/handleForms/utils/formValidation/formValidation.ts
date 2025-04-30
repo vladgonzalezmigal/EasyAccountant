@@ -4,7 +4,7 @@ import { FormData } from '@/app/(private)/types/formTypes';
 export interface ValidationResult {
     isValid: boolean;
     error?: string;
-    value?: string;
+    value: string;
 }
 
 export const PAYMENT_TYPES = ['CASH', 'CARD', "CHECK"].map(type => type.toUpperCase())
@@ -35,12 +35,15 @@ export const validateDateInput = (
     month: number,
     year: number
 ): ValidationResult => {
-    // Check if input is numeric
-    if (!/^\d*$/.test(value)) {
+    
+    // Handle non-numeric input and leading zeros
+    if (!/^\d*$/.test(value) || value === '0') {
+        const returnVal = value === '0' ? '' : value.replace(/\D/g, '');
         return {
             isValid: false,
-            error: 'Only numeric input is allowed'
-        };
+            value: returnVal,
+            error: 'Only numeric input with no leading zeros is allowed'
+        }
     }
 
     // Get max days for the given month and year
@@ -52,12 +55,14 @@ export const validateDateInput = (
     if (!dateInRange) {
         return {
             isValid: false,
+            value: value,
             error: `Day must be between 1-${maxDay}`
         };
     }
 
     return {
         isValid: true,
+        value: value
     };
 };
 
@@ -66,31 +71,32 @@ export const validateAmountInput = (value: string): ValidationResult => {
     if (!value || value.trim() === '') {
         return {
             isValid: false,
+            value: value,
             error: "Amount cannot be empty"
         };
     }
 
-    // handle leading zeros
-    // if (value.startsWith('0')) {
-    //     return {
-    //         isValid: false,
-    //         error: "Amount cannot start with 0"
-    //     };
-    // }
+    if (value === '00') {
+        return {
+            isValid: false,
+            value: '0',
+            error: "Amount cannot be 00"
+        };
+    }
 
     // Handle non-numeric input 
     if (!/^\d*\.?\d*$/.test(value)) {
         if ((value.match(/\./g) || []).length > 1) {  // edge case: if there are more than one decimal point
-            const returnVal = value.replace(/[^\d]/g, '');
             return {
                 isValid: true,
-                value: returnVal
+                value: value.replace(/[^\d]/g, '')
             };
         }
         // Remove any non-numeric characters (including the decimal point)
         return {
             isValid: false,
-            value: value.replace(/[^\d]/g, '')
+            value: value.replace(/[^\d]/g, ''),
+            error: "Only numeric input is allowed"
         };
     }
 
@@ -100,13 +106,30 @@ export const validateAmountInput = (value: string): ValidationResult => {
         if (parts.length > 1 && parts[1].length !== 2) {
             return {
                 isValid: false,
-                error: "Need exactly 2 decimals"
+                value: value,
+                error: "Need exactly 2 digits after decimal point"
             };
         }
     }
 
     return {
         isValid: true,
-        value
+        value: value
     };
 }; 
+export const DEFAULT_COMPANY = 'Company';
+
+export const validateCompanyInput = (value: string): ValidationResult => {
+    if (value === "" || value === DEFAULT_COMPANY) {
+        return {
+            isValid: false,
+            value: DEFAULT_COMPANY,
+            error: "Please select a company"
+        };
+    }
+
+    return {
+        isValid: true,
+        value: value
+    };
+};
