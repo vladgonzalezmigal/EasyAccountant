@@ -5,52 +5,42 @@ import { useEffect, useState } from "react";
 import { UserAuth } from "@/context/AuthContext";
 import { months } from "@/app/(private)/utils/dateUtils";
 import { Expense } from "@/app/(private)/types/formTypes";
-import { FormDataRows } from "@/app/(private)/features/handleForms/components/FormDataRows";
-import ExpenseForm from "@/app/(private)/features/handleForms/components/addDataRow/ExpenseForm";
 import { Loading } from "@/app/components/Loading";
 import { getMonthDateRange, formatDate } from "@/app/(private)/utils/dateUtils";
-import { canPerformOperation, performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
-import { Session } from "@supabase/supabase-js";
+import { performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
 import { validateExpenseInput } from "@/app/(private)/features/handleForms/utils/formValidation/editRowValidation";
+import useExpenseFormCrud from "@/app/(private)/features/handleForms/hooks/useExpenseFormCrud";
+import ExpenseSalesTable from "@/app/(private)/features/handleForms/components/ExpenseSalesTable";
+import ExpenseForm from "@/app/(private)/features/handleForms/components/addDataRow/ExpenseForm";
 
 export default function ExpensesPage() {
     const { year, month } = useParams();
     const { session } = UserAuth();
-    // End Date is exclusive 
-    const { startDate, endDate } = getMonthDateRange(year as string, month as string);
+    // fetch state, 
+    const { startDate, endDate } = getMonthDateRange(year as string, month as string); // End Date is exclusive 
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [expenses, setExpenses] = useState<Expense[] | null>(null);
-    const [loading, setLoading] = useState(true);
-    // Delete or edit mode
+    const [fetchLoading, setFetchLoading] = useState(true);
+    // edit mode state 
     const [editMode, setEditMode] = useState<boolean>(false);
     const [editedRows, setEditedRows] = useState<Expense[]>([]);
-
     const [validationErrors, setValidationErrors] = useState<Record<number, Set<number>>>({});
-    // handle data in the child for reusability 
-
+    // delete mode state 
     const [deleteMode, setDeleteMode] = useState<boolean>(false);
     const [rowsToDelete, setRowsToDelete] = useState<number[]>([]);
-    const [cudError, setCudError] = useState<string | null>(null);
-    const [cudLoading, setCudLoading] = useState<boolean>(false);
 
-
-    const [newExpense, setNewExpense] = useState<Expense>({
-        id: -1,
-        date: '',
-        payment_type: 'CHECK',
-        detail: '',
-        company: '',
-        amount: 0
-    })
+    // use the useExpenseFormCrud hook to handle the cud operations
+    const { handleSubmitDelete, handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useExpenseFormCrud({ session, setExpenses, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'expenses' })
 
     const newExpenseInputChange = (field: keyof Expense, value: string | number) => {
-        setNewExpense((prevData) => ({
-            ...prevData,
-            [field]: field === 'date' ?
-                formatDate(value as string, month as string, year as string) :
-                value,
-        }));
+        // Since we're creating the expense object inline in ExpenseSalesTable,
+        // we can just pass the formatted value directly to handleSubmitCreate
+        if (field === 'date') {
+            return formatDate(value as string, month as string, year as string);
+        }
+        return value;
     };
+
     const editExpenseRowValidation = (key: keyof Expense, value: string) => {
         return validateExpenseInput(key, value, parseInt(month as string), parseInt(year as string));
     }
@@ -92,7 +82,6 @@ export default function ExpensesPage() {
             });
         }
 
-
         // if validation passes add to edited rows
         let updatedValue = validationResult.value !== undefined ? validationResult.value : value;
         if (key === 'date') {
@@ -115,8 +104,6 @@ export default function ExpensesPage() {
         });
     };
 
-
-
     const newRowToDelete = (id: number) => {
         setRowsToDelete((prevRows) => {
             return prevRows.includes(id)
@@ -125,121 +112,20 @@ export default function ExpensesPage() {
         });
     }
 
-    const handleSubmitCreate = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const validationResult: string | Session = canPerformOperation(session, 'create', { rowsToDelete });
-
-        if (typeof validationResult === 'string') {
-            setCudError(validationResult);
-            return;
-        }
-
-        setCudLoading(true);
-        setCudError(null);
-
-        const createRes = await performCrudOperation('create', { tableName: 'expenses', createData: newExpense, user_id: validationResult.user.id });
-
-        if (typeof createRes !== 'string' && !createRes.data) {
-            setCudError(createRes.error);
-            return;
-        } else if (typeof createRes !== 'string' && createRes.data) {
-            const createData = createRes.data as Expense[];
-            setExpenses((prevExpenses) =>
-                [...(prevExpenses || []), createData[0]].sort(
-                    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-                )
-            );
-            // clear form state 
-            setNewExpense({ id: -1, date: '', payment_type: 'CHECK', detail: '', company: '', amount: 0 });
-        }
-        setCudLoading(false);
-    }
-
     const canDelete: boolean = (rowsToDelete.length > 0);
     const canEdit: boolean = (editedRows.length > 0) && (Object.keys(validationErrors).length === 0);
 
-    const handleSubmitDelete = async () => {
-
-        const validationResult: string | Session = canPerformOperation(session, 'delete', { rowsToDelete });
-
-        if (typeof validationResult === 'string') {
-            setCudError(validationResult);
-            return;
-        }
-        setCudLoading(true);
-        setCudError(null);
-
-        const deleteRes = await performCrudOperation('delete', { tableName: 'expenses', rowsToDelete });
-
-        if (typeof deleteRes !== 'string' && !deleteRes.data) {
-            setCudError(deleteRes.error);
-            return;
-        } else if (typeof deleteRes !== 'string' && deleteRes.data) {
-            const expenseData = deleteRes.data as Expense[];
-            const deletedIds: number[] = expenseData.map((expense: Expense) => expense.id);
-            // Remove the deleted rows from the expenses array
-            setExpenses((prevExpenses) =>
-                prevExpenses ? prevExpenses.filter(expense => !deletedIds.includes(expense.id)) : null
-            );
-            setRowsToDelete([]);
-            setDeleteMode(false);
-        }
-        setCudLoading(false);
-    }
-
     const handleDelete = () => {
         if (canDelete && !editMode) { // can only make api call if there are rows to delete
-            handleSubmitDelete();
+            handleSubmitDelete(rowsToDelete);
         } else if (!editMode) {
             setDeleteMode(prevMode => !prevMode);
         }
     };
 
-    const handleSubmitEdit = async () => {
-        const validationResult: string | Session = canPerformOperation(session, 'update', { editedRows, validationErrors });
-        if (typeof validationResult === 'string') {
-            setCudError(validationResult);
-            return;
-        }
-        setCudLoading(true);
-        setCudError(null);
-        console.log("passed validation", editedRows);
-        const updateRes = await performCrudOperation('update', { tableName: 'expenses', editedRows, user_id: validationResult.user.id });
-        if (typeof updateRes !== 'string' && !updateRes.data) {
-            setCudError(updateRes.error);
-            console.log("error", updateRes.error);
-        } else if (typeof updateRes !== 'string' && updateRes.data) {
-            const updateData = updateRes.data as Expense[];
-            console.log("updateData", updateData);
-            // update the expenses array with the updated rows
-            setExpenses((prevExpenses) => {
-                if (!prevExpenses) return updateData;
-
-                // Create a map of updated expenses by ID for quick lookup
-                const updatedExpensesMap = new Map(
-                    updateData.map(expense => [expense.id, expense])
-                );
-
-                // Replace existing expenses with updated ones based on ID
-                return prevExpenses.map(expense =>
-                    updatedExpensesMap.has(expense.id)
-                        ? updatedExpensesMap.get(expense.id)!
-                        : expense
-                );
-            });
-            // clear edit form state 
-            setEditedRows([]);
-            setValidationErrors({});
-            setEditMode(false);
-        }
-        setCudLoading(false);
-    }
-
     const handleEdit = () => {
         if (editMode && !deleteMode && canEdit) { // can only make api call if there are rows to edit
-            handleSubmitEdit();
-            // console.log(" edit mode submit");
-            // setEditMode(prevMode => !prevMode);
+            handleSubmitEdit(editedRows, validationErrors);
         } else if (editMode && !deleteMode && (Object.keys(validationErrors).length > 0)) { // cancel by resetting edit mode
             setEditMode(prevMode => !prevMode);
             setValidationErrors({});
@@ -259,15 +145,14 @@ export default function ExpensesPage() {
             } else if (typeof readRes !== 'string' && readRes.data) {
                 setExpenses(readRes.data as Expense[]);
             }
-            setLoading(false);
+            setFetchLoading(false);
         }
         fetchExpenses();
     }, [startDate, endDate]);
 
-    const headerTitles: string[] = ["Date", "Type", "Detail", "Company", "Amount"];
-
     return (
         <div className="w-full h-full flex flex-col items-center justify-center">
+            {/* Title & Error Message */}
             <div className="w-full text-center ">
                 <h1 className="text-[#393939] font-semibold text-3xl pb-2">
                     Expenses
@@ -278,97 +163,54 @@ export default function ExpensesPage() {
                 </div>
             </div>
 
-            {loading ? (
+            {fetchLoading ? (
                 <Loading />
             ) : (
-                // Content 
-                <div className="w-full flex flex-col gap-4 justify-center items-center mb-8">
-                    <div className="">
-                        {/* Table Header */}
-                        <div className="px-4 bg-[#F5F5F5] border border-[#DCDCDC] h-[60px] rounded-top header-shadow flex items-center relative z-10">
-                            <div className="flex flex-row justify-between bg-[#F5F5F5] w-full px-10">
-                                {(() => {
-                                    return headerTitles.map((title, index) => (
-                                        <div key={index} className="w-[100px] pl-4">
-                                            <p className="text-[16px] text-[#80848A]">{title}</p>
-                                        </div>
-                                    ));
-                                })()}
-                            </div>
-                        </div>
-                        {/* Table Data */}
-                        {(expenses && !fetchError) ?
-                            // Table Data Rows
-                            <div>
-                                <div className="border border-[#DCDCDC] border-t-0 bg-[#FCFCFC] rounded-bottom header-shadow relative z-0">
-                                    <FormDataRows
-                                        data={expenses}
-                                        deleteConfig={{
-                                            mode: deleteMode,
-                                            rows: rowsToDelete,
-                                            onRowSelect: newRowToDelete
-                                        }}
-                                        editConfig={{
-                                            mode: editMode,
-                                            editedRows: editedRows,
-                                            onRowEdit: newRowToEditInputChange,
-                                            validationFunction: editExpenseRowValidation,
-                                            validationErrors: validationErrors
-                                        }}
-                                        colToSum={5}
-                                        addRowForm={
-                                            <ExpenseForm onInputChange={newExpenseInputChange}
-                                                onSubmit={handleSubmitCreate} />} />
-                                </div>
-                                {/* Extra Options */}
-                                <div className="w-full bg-[#F4FFFE]  border border-2 -z-30 ">
-                                    <div className="flex flex-row gap-x-4 py-4 items-center justify-center">
-                                        {/* Delete Button */}
-                                        <div className="flex flex-col items-center gap-y-2">
-                                            <button
-                                                onClick={handleDelete}
-                                                disabled={cudLoading}
-                                                className={`cursor-pointer rounded-full w-16 h-16 flex items-center justify-center ${cudLoading ? 'bg-gray-400' :
-                                                    deleteMode ? 'bg-yellow-500' :
-                                                        canDelete ? 'bg-red-600' : 'bg-red-300'
-                                                    }`}>
-                                                {cudLoading ?
-                                                    <span className="text-white">...</span> :
-                                                    deleteMode ?
-                                                        <span className="text-white">✓</span> :
-                                                        <span className="text-white">✕</span>
-                                                }
-                                            </button>
-                                            <p> Delete </p>
-                                        </div>
-                                        {/* Edit Button */}
-                                        <div className="flex flex-col items-center gap-y-2">
-                                            <button
-                                                onClick={handleEdit}
-                                                disabled={cudLoading}
-                                                className={`cursor-pointer rounded-full w-16 h-16 flex items-center justify-center ${cudLoading ? 'bg-gray-400' :
-                                                    editMode ? 'bg-yellow-500' :
-                                                        editMode ? 'bg-blue-600' : 'bg-blue-300'
-                                                    }`}>
-                                                {cudLoading ?
-                                                    <span className="text-white">...</span> :
-                                                    editMode ?
-                                                        (Object.keys(validationErrors).length > 0) ?
-                                                            <span className="text-white">c</span> :
-                                                            <span className="text-white">✓</span> :
-                                                        <span className="text-white">✕</span>
-                                                }
-                                            </button>
-                                            <p> Edit </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            :
-                            <p>No expenses found</p>}
-                    </div>
-                </div>
+                <ExpenseSalesTable
+                    fetchError={fetchError}
+                    formDataProps={{
+                        rowData: expenses,
+                        deleteConfig: {
+                            mode: deleteMode,
+                            rows: rowsToDelete,
+                            onRowSelect: newRowToDelete
+                        },
+                        editConfig: {
+                            mode: editMode,
+                            editedRows: editedRows,
+                            onRowEdit: newRowToEditInputChange,
+                            validationFunction: editExpenseRowValidation,
+                            validationErrors: validationErrors
+                        },
+                        addRowForm: (
+                            <ExpenseForm 
+                                onInputChange={newExpenseInputChange}
+                                onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, {
+                                    id: -1,
+                                    date: '',
+                                    payment_type: 'CHECK',
+                                    detail: '',
+                                    company: '',
+                                    amount: 0
+                                })} 
+                            />
+                        )
+                    }}
+                    actionBtnsProps={{
+                        deleteBtnProps: {
+                            handleDelete,
+                            deleteMode,
+                            canDelete
+                        },
+                        editBtnProps: {
+                            handleEdit,
+                            editMode,
+                            validationErrors
+                        }
+                    }}
+                    cudLoading={cudLoading}
+                    headerTitles={["Date", "Type", "Detail", "Company", "Amount"]}
+                />
             )}
         </div>
     )
