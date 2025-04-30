@@ -1,12 +1,12 @@
 // utils/canPerformOperation.ts
 import { SessionState } from "@/types/authTypes";
-import { CrudOperation, DeleteValidationParams, OperationValidationParams,
+import { CrudOperation, DeleteValidationParams, OperationValidationParams, UpdateValidationParams,
      PerformCreateParams,
-     PerformDeleteParams } from "@/app/(private)/features/handleForms/types/operationTypes";
-import {  CanDeleteOperationHandler, CanCreateOperationHandler } from "./validationHandler";
-import { PerformCreateOperationHandler, PerformDeleteOperationHandler } from "./operationHandler";
+     PerformDeleteParams, PerformUpdateParams, PerformReadParams } from "@/app/(private)/features/handleForms/types/operationTypes";
+import {  CanDeleteOperationHandler, CanCreateOperationHandler, CanUpdateOperationHandler } from "./validationHandler";
+import { PerformCreateOperationHandler, PerformDeleteOperationHandler, PerformReadOperationHandler, PerformUpdateOperationHandler } from "./operationHandler";
 import { Session } from "@supabase/supabase-js";
-import { CrudResponseData } from "../types/operationTypes";
+import { CrudResponseData, PerformCrudParams } from "../types/operationTypes";
 
 /**
  * Validates if the current session can perform the requested operation
@@ -34,8 +34,7 @@ export function canPerformOperation(
             // handler = new ReadOperationHandler(session, params as ReadParams);
             break;
         case 'update':
-            // TODO: Implement UpdateOperationHandler
-            // handler = new UpdateOperationHandler(session, params as UpdateParams);
+            handler = new CanUpdateOperationHandler(session, params as UpdateValidationParams);
             break;
         default:
             return "Invalid operation";
@@ -55,7 +54,7 @@ export function canPerformOperation(
 
 export function performCrudOperation(
     operation: CrudOperation,
-    params: (PerformDeleteParams | PerformCreateParams)
+    params: PerformCrudParams
 ): Promise<CrudResponseData> | string {
     let handler: { execute: () => Promise<CrudResponseData> } | undefined;
 
@@ -65,6 +64,12 @@ export function performCrudOperation(
             break;
         case 'create':
             handler = new PerformCreateOperationHandler(params as PerformCreateParams);
+            break;
+        case 'read':
+            handler = new PerformReadOperationHandler(params as PerformReadParams);
+            break;
+        case 'update':
+            handler = new PerformUpdateOperationHandler(params as PerformUpdateParams);
             break;
         default:
             return "Invalid operation";

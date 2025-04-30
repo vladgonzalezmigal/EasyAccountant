@@ -7,16 +7,21 @@ export interface CrudResponseData {
     error: string | null;
 }
 
+export interface UpdateValidationParams {
+    editedRows: FormData[]; // rows that have been edited
+    validationErrors: Record<number, Set<number>>; // validation errors by row ID and column index
+}
 
 export interface DeleteValidationParams {
     rowsToDelete: number[]; // ids of rows to delete
 }
 
-export type OperationValidationParams = DeleteValidationParams;
+export type OperationValidationParams = DeleteValidationParams | UpdateValidationParams;
 
 // params for performing opertion
 export interface OperationPerformParams {   
     tableName: string; // All operations must have this field
+    dataType?: FormData;
 }
 
 // Create-specific parameters
@@ -25,8 +30,22 @@ export interface PerformCreateParams extends OperationPerformParams {
     user_id: string;
 }
 
+// Read-specific parameters
+export interface PerformReadParams extends OperationPerformParams {
+    startDate: string;
+    endDate: string;
+}
+
+// Update-specific parameters
+export interface PerformUpdateParams extends OperationPerformParams {
+    editedRows: FormData[]; // rows that have been edited
+    user_id: string;
+}
+
 // Delete-specific parameters
 export interface PerformDeleteParams extends OperationPerformParams {
     rowsToDelete: number[];  // IDs of rows to delete
 }
+
+export type PerformCrudParams = PerformCreateParams | PerformReadParams | PerformDeleteParams | PerformUpdateParams;
 

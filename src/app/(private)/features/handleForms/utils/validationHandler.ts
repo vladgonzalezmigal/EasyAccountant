@@ -1,7 +1,7 @@
 // utils/operationHandler.ts
 import { SessionState } from "@/types/authTypes";
 import { Session } from "@supabase/supabase-js";
-import { CrudOperation, DeleteValidationParams, OperationValidationParams,} from "@/app/(private)/features/handleForms/types/operationTypes";
+import { CrudOperation, DeleteValidationParams, OperationValidationParams, UpdateValidationParams,} from "@/app/(private)/features/handleForms/types/operationTypes";
 
 export abstract class CanPerformOperationHandler {
     constructor(
@@ -43,6 +43,23 @@ export class CanCreateOperationHandler extends CanPerformOperationHandler {
     }
 }
 
+// Update operation validation handler 
+export class CanUpdateOperationHandler extends CanPerformOperationHandler {
+    constructor(session: SessionState, params: UpdateValidationParams) {
+        super(session, 'update', params); // Pass session and operation type to the base class
+    }
+
+    validate(callerSession: Session): Session | string {
+        const updateParams = this.params as UpdateValidationParams;
+        if (Object.keys(updateParams.validationErrors).length > 0) {
+            return "Fix the errors in the form";
+        } else if (updateParams.editedRows.length === 0) {
+            return "No rows selected for update";
+        }
+        return callerSession;
+    }
+}
+
 // Delete operation validation handler 
 export class CanDeleteOperationHandler extends CanPerformOperationHandler {
     constructor(session: SessionState, params: DeleteValidationParams) {
@@ -51,7 +68,8 @@ export class CanDeleteOperationHandler extends CanPerformOperationHandler {
 
     // Specific validation for delete operation
     validate(callerSession: Session): string | Session {
-        if (!this.params?.rowsToDelete || this.params.rowsToDelete.length === 0) {
+        const deleteParams = this.params as DeleteValidationParams;
+        if (!deleteParams?.rowsToDelete || deleteParams.rowsToDelete.length === 0) {
             return "No rows selected for deletion";
         } 
         return callerSession;
