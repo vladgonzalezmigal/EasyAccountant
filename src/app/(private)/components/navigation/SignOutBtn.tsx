@@ -17,7 +17,7 @@ const SignOutBtn = () => {
     // For example: await signOutUser();
     try {
       await signOut();
-      router.push('/login');
+      router.push('/');
     } catch (error) {
       setSignOutError(error as AuthError);
     }

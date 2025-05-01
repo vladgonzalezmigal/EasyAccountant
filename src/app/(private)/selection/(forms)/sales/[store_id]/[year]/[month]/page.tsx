@@ -12,6 +12,7 @@ import { FormDataRows } from "@/app/(private)/features/handleForms/components/Fo
 import TableHeader from "@/app/(private)/features/handleForms/components/TableHeader";
 import { formatSalesData } from "@/app/(private)/features/handleForms/utils/formDataDisplay/formDataDisplay";
 import SalesForm from "@/app/(private)/features/handleForms/components/addDataRow/SalesForm";
+
 export default function SalesFormPage() {
     const { store_id, year, month } = useParams();
     const { storeState } = useStore();
@@ -75,10 +76,8 @@ export default function SalesFormPage() {
     }    
 
     const headerTitles = ["Date", "Sales", "Taxes", "Daily ", "Total"];
+
     return (
-        // make page title reusable 
-        // after pulling data in chronological order, make the next default value previous date + month, except for last day 
-        // in which case check if there is entry for each day, then don't show add 
         <div>
             <TablePageTitle docTitle={`Sales`} docSubtitle={store_name} />
             {fetchError ? <div>{fetchError}</div> :

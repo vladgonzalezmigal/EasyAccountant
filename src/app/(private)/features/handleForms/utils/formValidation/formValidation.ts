@@ -133,3 +133,5 @@ export const validateCompanyInput = (value: string): ValidationResult => {
         value: value
     };
 };
+
+// sales page related tasks 
