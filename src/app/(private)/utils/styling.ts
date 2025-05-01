@@ -1,3 +1,10 @@
+// import { SVGProps } from 'react';
+
+export interface SVGIconProps {
+    className?: string;
+    style?: React.CSSProperties;
+}
+
 export const drawDottedBackground = (canvas: HTMLCanvasElement) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;

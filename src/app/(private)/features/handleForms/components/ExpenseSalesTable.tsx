@@ -60,7 +60,7 @@ export default function ExpenseSalesTable({
                 {(formDataProps.rowData && !fetchError) ?
                     // Table Data Rows
                     <div>
-                        <div className="border border-[#ECECEE] table-input-shadow border-y-2 border-t-0 bg-[#FDFDFD] rounded-bottom  relative z-0">
+                        <div className="relative z-10 border border-[#ECECEE] table-input-shadow border-y-2 border-t-0 bg-[#FDFDFD] rounded-bottom  relative z-0">
                             <FormDataRows
                                 data={formDataProps.rowData}
                                 deleteConfig={formDataProps.deleteConfig}

@@ -149,6 +149,12 @@ body {
   border-bottom-right-radius: 20px;
 }
 
+.action-btn-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #4A4A4A;
+ }
+
 .loader {
   width: 60px;
   aspect-ratio: 2;

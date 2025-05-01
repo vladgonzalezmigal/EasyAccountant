@@ -1,9 +1,6 @@
-interface ExpensesIconProps {
-  style?: React.CSSProperties;
-  className?: string;
-}
+import { SVGIconProps } from '@/app/(private)/utils/styling';
 
-export default function ExpensesIcon({ style, className }: ExpensesIconProps) {
+export default function ExpensesIcon({ style, className }: SVGIconProps) {
   return (
     <svg 
       width="15" 
