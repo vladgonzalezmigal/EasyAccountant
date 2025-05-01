@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Expense } from '@/app/(private)/types/formTypes';
 import { performCrudOperation, canPerformOperation } from '../utils/operationUtils';
 import { SessionState } from '@/types/authTypes';
-import { FormData } from '@/app/(private)/types/formTypes';
 
 // export type 
 type expenseFormCrudHandlers = {
@@ -16,7 +15,8 @@ type expenseFormCrudHandlers = {
 
 type UseFormCrudProps = {
   session: SessionState;
-  setExpenses: (React.Dispatch<React.SetStateAction<(Expense[] | null)>>);
+  setExpenses: React.Dispatch<React.SetStateAction<Expense[] | null>>;
+  setNewExpense: React.Dispatch<React.SetStateAction<Expense>>;
   setEditedRows: React.Dispatch<React.SetStateAction<Expense[]>>;
   setValidationErrors: React.Dispatch<React.SetStateAction<Record<number, Set<number>>>>;
   setRowsToDelete: React.Dispatch<React.SetStateAction<number[]>>;
@@ -28,6 +28,7 @@ type UseFormCrudProps = {
 export function useFormCrud({
   session,
   setExpenses,
+  setNewExpense,
   setEditedRows,
   setValidationErrors,
   setRowsToDelete,
@@ -38,7 +39,7 @@ export function useFormCrud({
   const [cudLoading, setCudLoading] = useState(false);
   const [cudError, setCudError] = useState<string | null>(null);
 
-  const handleSubmitCreate = async (e: React.FormEvent<HTMLFormElement>, newRow: FormData) => {
+  const handleSubmitCreate = async (e: React.FormEvent<HTMLFormElement>, newExpense: Expense) => {
     e.preventDefault();
 
     const validationResult = canPerformOperation(session, 'create');
@@ -53,18 +54,26 @@ export function useFormCrud({
 
     const createRes = await performCrudOperation('create', {
       tableName,
-      createData: newRow,
+      createData: newExpense,
       user_id: validationResult.user.id,
     });
 
     if (typeof createRes !== 'string' && createRes.data) {
       if (tableName === 'expenses' && setExpenses) {
-        const newExpense = createRes.data as Expense[];
+        const newExpenseData = createRes.data as Expense[];
         setExpenses((prevExpenses) =>
-          [...(prevExpenses || []), newExpense[0]].sort(
+          [...(prevExpenses || []), newExpenseData[0]].sort(
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
           )
         );
+        setNewExpense({
+            id: -1,
+            date: '',
+            payment_type: 'CHECK',
+            detail: '',
+            company: '',
+            amount: 0
+          });
       }
     } else {
       setCudError(typeof createRes === 'string' ? createRes : createRes.error);

@@ -21,7 +21,16 @@ export default function ExpensesPage() {
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [expenses, setExpenses] = useState<Expense[] | null>(null);
     const [fetchLoading, setFetchLoading] = useState(true);
-    // edit mode state 
+    // create mode state 
+    const [newExpense, setNewExpense] = useState<Expense>({
+        id: -1,
+        date: '',
+        payment_type: 'CHECK',
+        detail: '',
+        company: '',
+        amount: 0
+    });
+    // update mode state 
     const [editMode, setEditMode] = useState<boolean>(false);
     const [editedRows, setEditedRows] = useState<Expense[]>([]);
     const [validationErrors, setValidationErrors] = useState<Record<number, Set<number>>>({});
@@ -30,14 +39,11 @@ export default function ExpensesPage() {
     const [rowsToDelete, setRowsToDelete] = useState<number[]>([]);
 
     // use the useExpenseFormCrud hook to handle the cud operations
-    const { handleSubmitDelete, handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useExpenseFormCrud({ session, setExpenses, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'expenses' })
+    const { handleSubmitDelete, handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useExpenseFormCrud({ session, setExpenses, setNewExpense, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'expenses' })
 
     const newExpenseInputChange = (field: keyof Expense, value: string | number) => {
-        // Since we're creating the expense object inline in ExpenseSalesTable,
-        // we can just pass the formatted value directly to handleSubmitCreate
-        if (field === 'date') {
-            return formatDate(value as string, month as string, year as string);
-        }
+        // value is validated & formatted by the ExpenseForm component
+        setNewExpense(prev => ({ ...prev, [field]: value }));
         return value;
     };
 
@@ -186,14 +192,7 @@ export default function ExpensesPage() {
                         addRowForm: (
                             <ExpenseForm 
                                 onInputChange={newExpenseInputChange}
-                                onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, {
-                                    id: -1,
-                                    date: '',
-                                    payment_type: 'CHECK',
-                                    detail: '',
-                                    company: '',
-                                    amount: 0
-                                })} 
+                                onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, newExpense)} 
                             />
                         )
                     }}

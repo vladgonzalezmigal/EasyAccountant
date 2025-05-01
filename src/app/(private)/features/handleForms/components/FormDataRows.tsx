@@ -47,8 +47,7 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                     return (
                         <div
                             key={id}
-                            className="border border-[#DFDFDF] relative flex items-center justify-between bg-white w-[772px] px-10 rounded-2xl 
-                            shadow-md hover:shadow-lg transition-shadow duration-200"
+                            className="table-row-style "
                         >
                             {displayKeys.map((displayKey, index) => {
                                 return (
@@ -76,7 +75,7 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                                                     />
                                                 )
                                             ) : (
-                                                <p className='text-[16px] text-[#585858]'>
+                                                <p className='table-row-text'>
                                                     {formatDisplayValue(displayData[displayKey])}
                                                 </p>
                                             )}
@@ -99,7 +98,7 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
             <div>
                 {/* Sum Row  */}
                 <div className="rounded-full bg-[#DFDFDF] w-[772px] h-[4px]"></div>
-                <div className='flex justify-between pl-14 pr-10 text-[24px] py-4 text-gray-600 font-semibold'>
+                <div className='flex justify-between pl-14 pr-10 text-[24px] py-4 text-[#4A4A4A] font-semibold'>
                     <p>Total</p>
                     <p>${sumColumn(data, (colToSum + 1)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>

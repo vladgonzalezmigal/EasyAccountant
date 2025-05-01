@@ -40,7 +40,7 @@ export const EditInputForm = ({
             name={name}
             value={value}
             onChange={onChange}
-            className={`w-[100px] h-[40px] border-2 ${hasError ? 'border-red-500' : active ? 'border-blue-200' : 'border-transparent'}`}
+            className={`w-[100px] h-[40px] text-[#A0A0A0] border-2 rounded-full ${hasError ? 'border-red-500' : active ? 'border-[#8ABBFD]' : 'border-transparent'}`}
             placeholder={(name === 'date') ? getDateString(placeholder as string) : placeholder || ''}
         />
     );
