@@ -1,6 +1,6 @@
 'use client';
 
-import { Expense, Sales } from "@/app/(private)/types/formTypes";
+import { Expense, SalesDisplay } from "@/app/(private)/types/formTypes";
 import { FormDataRows } from "@/app/(private)/features/handleForms/components/FormDataRows";
 import TableHeader from "@/app/(private)/features/handleForms/components/TableHeader";
 import ActionBtns from "@/app/(private)/features/handleForms/components/ActionBtns";
@@ -14,7 +14,7 @@ interface ValidationResult {
 interface ExpenseSalesTableProps {
     fetchError: string | null;
     formDataProps: {
-        rowData: (Expense[] | null) | (Sales[] | null);
+        rowData: (Expense[] | null) | (SalesDisplay[] | null);
         deleteConfig: {
             mode: boolean;
             rows: number[];

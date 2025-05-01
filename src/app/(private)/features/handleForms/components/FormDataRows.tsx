@@ -31,8 +31,6 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
         return <p className="text-gray-500 text-center mt-4">No entries found for this period.</p>;
     }
 
-    const displayKeys = Object.keys(data[0]).filter(key => key !== 'id') as (keyof typeof data[0])[];
-
     return (
         <div className="w-full flex flex-col items-center">
             <div className="flex flex-col gap-y-3 h-[304px] lg:px-4 overflow-y-auto">
@@ -42,14 +40,20 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                     </div>
                 }
                 {data.map((item) => {
-                    const { id, ...displayData } = item as { id: number } & Record<string, string | number>;
+                    // Extract id and only keep the last 5 properties for display
+                    const { id, ...rest } = item as { id: number } & Record<string, string | number>;
+                    const lastFiveKeys =  Object.keys(rest).slice(-5) as (keyof typeof data[0])[];;
+                    const displayData = lastFiveKeys.reduce((obj, key) => {
+                        obj[key] = rest[key];
+                        return obj;
+                    }, {} as Record<string, string | number>);
 
                     return (
                         <div
                             key={id}
                             className="table-row-style "
                         >
-                            {displayKeys.map((displayKey, index) => {
+                            {lastFiveKeys.map((displayKey, index) => {
                                 return (
                                     <div key={displayKey} className={`h-[60px] flex flex-col items-center justify-center`}>
                                         <div className='h-[40px] w-[100px] flex items-center pl-3'>

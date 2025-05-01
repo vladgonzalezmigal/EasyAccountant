@@ -1,6 +1,6 @@
 import supabase from "@/config/supaBaseConfig";
 import { CrudOperation, CrudResponseData, PerformCreateParams, PerformCrudParams, PerformReadParams, PerformUpdateParams } from "../types/operationTypes";
-import { FormData } from "@/app/(private)/types/formTypes";
+import { FormData, Sales } from "@/app/(private)/types/formTypes";
 import { PerformDeleteParams } from "../types/operationTypes";
 import { PostgrestError } from '@supabase/supabase-js';
 
@@ -85,6 +85,31 @@ export class PerformCreateOperationHandler extends PerformOperationHandler {
 
 // Read operation handler
 
+function buildReadQuery(table: string, params: PerformReadParams) {
+
+    if (!params.dataType) {
+        return { data: null, error: "Data type is required " };
+    }
+    const baseQuery = supabase.from(params.tableName).select(getQueryColumns(params.dataType));
+
+    switch (table) {
+        case 'sales':
+            const dataType = params.dataType as Sales;
+            return baseQuery // todo filter by store_id
+                .eq('store_id', dataType.store_id)
+                .gte('date', params.startDate)
+                .lt('date', params.endDate)
+                .order('date', { ascending: false });
+        case 'expenses':
+            return baseQuery
+                .gte('date', params.startDate)
+                .lt('date', params.endDate)
+                .order('date', { ascending: false }); // newest first 
+        default:
+            return baseQuery;
+    }
+}
+
 export class PerformReadOperationHandler extends PerformOperationHandler {
     constructor(params: PerformReadParams) {
         super('read', params);
@@ -97,14 +122,15 @@ export class PerformReadOperationHandler extends PerformOperationHandler {
             this.errorState = "Data type is required";
             return { data: null, error: this.errorState };
         }
-        try {
-            const { data: apiData, error: apiError } = await supabase 
-                .from(readParams.tableName)
-                .select(getQueryColumns(readParams.dataType))
-                .gte('date', readParams.startDate)
-                .lt('date', readParams.endDate)
-                .order('date', { ascending: false }); // newest first 
+        
+        const readQuery = buildReadQuery(readParams.tableName, readParams);
+        
+        if ('error' in readQuery) {
+            return { data: null, error: readQuery.error };
+        }
 
+        try {
+            const { data: apiData, error: apiError } = await readQuery; 
             return handleApiResponse(apiData as unknown as FormData[], apiError);
         } catch (err) {
             return {
@@ -112,7 +138,8 @@ export class PerformReadOperationHandler extends PerformOperationHandler {
                 error: err instanceof Error ? err.message : "Unexpected error occurred"
             };
         }
-} }
+    }
+}
 
 // Update operation handler
 export class PerformUpdateOperationHandler extends PerformOperationHandler {
