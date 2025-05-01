@@ -89,6 +89,14 @@ body {
   color: #A0A0A0;
 }
 
+.marketing-input-field {
+  width: 100px;
+  height: 40px;
+  padding-left: 0.75rem; /* pl-3 */
+  display: block;
+  border-radius: 9999px; /* rounded-full */
+}
+
 .input-field-error {
   width: 100px;
   height: 40px;

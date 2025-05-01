@@ -29,7 +29,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthContextProvider>
-          {children}
+          { <div className="min-h-screen bg-[#FAFAFA]">
+            {children}
+          </div>
+          }
         </AuthContextProvider>
       </body>
     </html>

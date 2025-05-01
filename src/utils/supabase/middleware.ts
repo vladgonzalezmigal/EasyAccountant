@@ -38,7 +38,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const marketingRoutes = ['/login', '/signup', '/'] // TODO: add defualt 404 page 
+  const marketingRoutes = ['/signup', '/'] // TODO: add defualt 404 page 
 
   if (
     !user && !marketingRoutes.includes(request.nextUrl.pathname) 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { login } from './actions';
+import { login } from '../../utils/AuthActions';
 import { useRouter } from 'next/navigation';
 import { FormErrors, AuthFormData, validateForm } from '@/app/(public)/utils/formValidation';
 import LoadingWave from '@/app/components/LoadingWave';
@@ -110,14 +110,20 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
-    <div className="text-center">
+    <div className="max-w-[500px] h-[400px] w-full space-y-8 p-8 bg-white rounded-lg shadow-xl flex justify-center border border-[#DFDFDF]">
+    <div className=" w-[280px] flex items-center flex-col">
+        
+      
+    <div className="text-left w-full flex justify-between">
       <h2 className="text-4xl font-light tracking-wider text-gray-900">
         Log in
       </h2>
+      <div className="w-[44px] h-[44px] rounded-full bg-[#B6E8E4]">
+
+      </div>
     </div>
 
-    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+    <form className="mt-8 space-y-6  w-full" onSubmit={handleSubmit}>
       {formErrors.email && (
         <div className="text-red-600 text-sm text-center">{formErrors.email}</div>
       )}
@@ -164,7 +170,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group relative w-full flex justify-center h-[52px] flex items-center justify-center border border-transparent text-lg  rounded-full text-[#2F2F2F] bg-[#B6E8E4] hover:bg-[#DFF4F3]  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? <LoadingWave /> : 'Sign in'}
         </button>
@@ -173,6 +179,7 @@ export default function LoginPage() {
         <div className="text-red-600 text-sm text-center">{loginError}</div>
       )}
     </form>
+    </div>
   </div>
   );
 }

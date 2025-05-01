@@ -2,9 +2,11 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { AuthFormData } from '../(public)/utils/formValidation'
+import { AuthFormData } from '../app/(public)/utils/formValidation'
 
 import { createClient } from '@/utils/supabase/server'
+
+// This file assumes redirect is handled by caller 
 
 export async function login(loginFormData: AuthFormData): Promise<{ success: false; error: string } | void> {
   const supabase = await createClient()
@@ -22,7 +24,6 @@ export async function login(loginFormData: AuthFormData): Promise<{ success: fal
   }
 
   revalidatePath('/selection', 'layout')
-//   redirect('/selection')
 }
 
 export async function signup(formData: FormData) {
@@ -43,4 +44,13 @@ export async function signup(formData: FormData) {
 
   revalidatePath('/', 'layout')
   redirect('/')
+}
+
+
+export async function signOut(): Promise<{ error?: string } | void> {
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    return { error: error.message };
+  }
 }

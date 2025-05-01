@@ -2,24 +2,20 @@
 
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { UserAuth } from "@/context/AuthContext";
-import { AuthError } from '@supabase/supabase-js';
+import { signOut } from '@/utils/AuthActions';
 
 const SignOutBtn = () => {
-  const { signOut } = UserAuth();
-  const [signOutError, setSignOutError] = useState<AuthError | null>(null);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
 
   const router = useRouter();
 
   const handleSignOut = async (e: React.MouseEvent<HTMLButtonElement> ) => {
      e.preventDefault();
-    // Here you would typically call your sign out function
-    // For example: await signOutUser();
     try {
       await signOut();
       router.push('/');
     } catch (error) {
-      setSignOutError(error as AuthError);
+      setSignOutError(error as string);
     }
     
   };
@@ -35,7 +31,7 @@ const SignOutBtn = () => {
       </button>
     </div>
     <div>
-        {signOutError && <p className="text-red-500">{signOutError.message}</p>}
+        {signOutError && <p className="text-red-500">{signOutError}</p>}
     </div>
     </>
   );
