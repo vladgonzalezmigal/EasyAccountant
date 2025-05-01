@@ -5,7 +5,7 @@ import { Expense,  } from '@/app/(private)/types/formTypes';
 interface ValidationResult {
     isValid: boolean;
     error?: string;
-    value?: string;
+    value: string;
 }
 
 /**

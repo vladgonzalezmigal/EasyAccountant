@@ -5,6 +5,7 @@ import { Expense } from '@/app/(private)/types/formTypes';
 import { useParams } from 'next/navigation';
 import { validateDateInput, validateAmountInput, validateCompanyInput, DEFAULT_COMPANY } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
 import { formatDate } from '@/app/(private)/utils/dateUtils';
+import PlusIcon from '@/app/(private)/components/svgs/PlusIcon';
 
 interface ExpenseFormProps {
     onInputChange: (name: keyof Expense, value: string | number) => void;
@@ -12,7 +13,7 @@ interface ExpenseFormProps {
 }
 
 const PAYMENT_TYPES = ['CHECK', 'CASH', 'CARD'] as const;
-const COMPANIES = ['JETRO', 'SUPREMA'] as const;
+const COMPANIES = ['JETRO', 'SUPREMA'] as const; // TODO: get companies from database
 const today = new Date();
 const DAY = today.getDate(); // Gets day without leading zero
 
@@ -38,7 +39,6 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
         const { name, value } = e.target;
         const validation = validateCompanyInput(value);
         e.target.value = validation.value;
-        console.log(validation.value);
         setCompanySelected(validation.value);
         if (validation.isValid) {
             setCompanyError(null);
@@ -105,7 +105,7 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
     };
 
     return (
-        <div className="border border-[#DFDFDF] bg-white form-shadow [772px] rounded-full">
+        <div className="border  border-[#DFF4F3] bg-white table-input-shadow [772px] rounded-full">
             <form ref={formRef} onSubmit={handleSubmit} className='flex flex-row items-center rounded-full h-[60px] pl-10 text-gray-800'>
                 <div className="">
                     <input
@@ -124,9 +124,8 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                         id="payment_type"
                         name="payment_type"
                         onChange={handleChange}
-                        className="input-field"
+                        className="input-field text-[#585858]"
                     >
-                        {/* <option value="">Check</option> */}
                         {PAYMENT_TYPES.map((type) => (
                             <option key={type} value={type}>
                                 {type}
@@ -178,10 +177,14 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                     disabled={formError}
                     className='cursor-pointer disabled:cursor-not-allowed'
                 >
-                    <div className={`flex text-lg justify-center items-center rounded-full ml-[2px] ${formError ? 'bg-red-500 cursor-not-allowed' : 'bg-blue-500 cursor-pointer'} text-white w-8 h-8`}>
+                    <div className={`flex text-lg justify-center items-center rounded-full ml-[3.5px] ${formError ? 'bg-red-500 cursor-not-allowed' : 'bg-[#DFF4F3] cursor-pointer border border-[#8ABBFD]'} text-white w-7 h-7`}>
 
-                        <p>{formError ? 'x' : '+'}</p>
-
+                        <div>{formError ? 'x' : 
+                            <div className='h-4 w-4 flex items-center justify-center'>
+                            <PlusIcon className='text-[#0C3C74]'/>
+                            </div>
+                            }
+                            </div>
                     </div>
                 </button>
             </form>

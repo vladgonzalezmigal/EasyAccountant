@@ -47,8 +47,7 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                     return (
                         <div
                             key={id}
-                            className="border border-[#DFDFDF] relative flex items-center justify-between bg-white w-[772px] px-10 rounded-2xl 
-                            shadow-md hover:shadow-lg transition-shadow duration-200"
+                            className="table-row-style "
                         >
                             {displayKeys.map((displayKey, index) => {
                                 return (
@@ -76,7 +75,7 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                                                     />
                                                 )
                                             ) : (
-                                                <p className='text-[16px] text-[#585858]'>
+                                                <p className='table-row-text'>
                                                     {formatDisplayValue(displayData[displayKey])}
                                                 </p>
                                             )}

@@ -8,7 +8,7 @@ import { ReactNode } from "react";
 
 interface ValidationResult {
     isValid: boolean;
-    value?: string;
+    value: string;
 }
 
 interface ExpenseSalesTableProps {
