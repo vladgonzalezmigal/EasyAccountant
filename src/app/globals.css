@@ -15,7 +15,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #fafafa;
-    --foreground: #ededed;
+    --foreground: #171717;
   }
 }
 
@@ -152,7 +152,7 @@ body {
 .action-btn-text {
     font-size: 16px;
     font-weight: 600;
-    color: #4A4A4A;
+    
  }
 
 .loader {
