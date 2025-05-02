@@ -3,7 +3,6 @@
 import { useParams } from "next/navigation";
 import { useStore } from "@/store";
 import TablePageTitle from "@/app/(private)/features/handleForms/components/TablePageTitle";
-import { UserAuth } from "@/context/AuthContext";
 import { getMonthDateRange } from "@/app/(private)/utils/dateUtils";
 import { useEffect, useState } from "react";
 import { Sales, SalesDisplay } from "@/app/(private)/types/formTypes";
@@ -23,7 +22,6 @@ export default function SalesFormPage() {
         store_name = "searching...";
     }
 
-    const { session } = UserAuth();
     // fetch state, 
     const [fetchLoading, setFetchLoading] = useState(true);
     const { startDate, endDate } = getMonthDateRange(year as string, month as string); // End Date is exclusive 

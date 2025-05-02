@@ -127,7 +127,7 @@ export default function LoginPage() {
       
       <div className="">
         <div className="pb-4">
-          <label htmlFor="email" className="block text-[20px] font-medium text-[#80848A] ">
+          <label htmlFor="email" className="block text-[20px] font-medium text-[#585858] ">
             Email
           </label>
           <div className="w-full h-[12px] items-center justify-center pb-2 ">
@@ -153,7 +153,7 @@ export default function LoginPage() {
       
         <div className="">
           
-          <label htmlFor="password" className="block text-[20px] font-medium text-[#80848A] mb-3">
+          <label htmlFor="password" className="block text-[20px] font-medium text-[#585858] mb-3">
             Password
           </label>
           {formErrors.password && (

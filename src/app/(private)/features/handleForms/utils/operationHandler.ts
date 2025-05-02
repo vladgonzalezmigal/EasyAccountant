@@ -1,4 +1,4 @@
-import supabase from "@/config/supaBaseConfig";
+import supabase from "@/utils/supabase/supaBaseConfig";
 import { CrudOperation, CrudResponseData, PerformCreateParams, PerformCrudParams, PerformReadParams, PerformUpdateParams } from "../types/operationTypes";
 import { FormData, Sales } from "@/app/(private)/types/formTypes";
 import { PerformDeleteParams } from "../types/operationTypes";
@@ -10,7 +10,8 @@ export abstract class PerformOperationHandler {
 
     constructor(
         protected operation: CrudOperation,
-        protected params: PerformCrudParams // Params containing tableName and other operation-specific data
+        protected params: PerformCrudParams, // Params containing tableName and other operation-specific data
+        protected user_id?: string
     ) {
         if (!this.params.tableName) { 
             this.errorState = "Table name is required";
@@ -57,8 +58,8 @@ const handleApiResponse = (apiData: FormData[] | null, apiError: PostgrestError 
 // Create operation handler
 
 export class PerformCreateOperationHandler extends PerformOperationHandler {
-    constructor(params: PerformCreateParams) {
-        super('create', params);
+    constructor(params: PerformCreateParams, user_id: string) {
+        super('create', params, user_id);
     }
 
     // Perform async operation for create
@@ -69,7 +70,7 @@ export class PerformCreateOperationHandler extends PerformOperationHandler {
                 .from(createParams.tableName)
                 .insert({
                     ...omitId(createParams.createData),
-                    user_id: createParams.user_id
+                    user_id: this.user_id
                 })
                 .select(getQueryColumns(createParams.createData));
 
@@ -130,7 +131,8 @@ export class PerformReadOperationHandler extends PerformOperationHandler {
         }
 
         try {
-            const { data: apiData, error: apiError } = await readQuery; 
+            const { data: apiData, error: apiError } = await readQuery;
+            console.log("apiData from read operation", apiData);
             return handleApiResponse(apiData as unknown as FormData[], apiError);
         } catch (err) {
             return {
@@ -143,8 +145,8 @@ export class PerformReadOperationHandler extends PerformOperationHandler {
 
 // Update operation handler
 export class PerformUpdateOperationHandler extends PerformOperationHandler {
-    constructor(params: PerformUpdateParams) {
-        super('update', params as PerformUpdateParams);
+    constructor(params: PerformUpdateParams, user_id: string) {
+        super('update', params as PerformUpdateParams, user_id);
     }
 
     // Perform async operation for update
@@ -152,7 +154,7 @@ export class PerformUpdateOperationHandler extends PerformOperationHandler {
         const updateParams = this.params as PerformUpdateParams;
         const updatedRowsWithUserId = updateParams.editedRows.map(row => ({
             ...row,
-            user_id: updateParams.user_id
+            user_id: this.user_id
           }));
         console.log("editedRows post upsert", updatedRowsWithUserId);
         try {
@@ -160,7 +162,6 @@ export class PerformUpdateOperationHandler extends PerformOperationHandler {
                 .from(updateParams.tableName)
                 .upsert(updatedRowsWithUserId)
                 .select(getQueryColumns(updateParams.editedRows[0]))
-
             return handleApiResponse(apiData as unknown as FormData[], apiError);
         } catch (err) {
             return {

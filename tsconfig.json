@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/config/supaBaseConfig.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/utils/supabase/supaBaseConfig.ts", "src/app/(private)/features/handleForms/utils/actions"],
   "exclude": ["node_modules"]
 }

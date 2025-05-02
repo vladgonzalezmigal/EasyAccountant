@@ -1,77 +1,128 @@
-// utils/operationHandler.ts
-import { SessionState } from "@/types/authTypes";
-import { Session } from "@supabase/supabase-js";
+// utils/validationHandler.ts 
+/**
+ * Validation Handler Module
+ * 
+ * This module implements the Strategy pattern for validating CRUD operations
+ * before they are executed. It provides a set of handler classes that encapsulate
+ * the validation logic for different operations (create, read, update, delete).
+ * 
+ * The module works with the operation types defined in operationTypes.ts and
+ * integrates with the authentication system to ensure users have appropriate
+ * permissions for their requested operations.
+ * 
+ * Each handler implements operation-specific validation rules while sharing
+ * common validation logic through the abstract base class.
+ */
+
+
+import { User } from "@supabase/supabase-js";
 import { CrudOperation, DeleteValidationParams, OperationValidationParams, UpdateValidationParams,} from "@/app/(private)/features/handleForms/types/operationTypes";
 
 export abstract class CanPerformOperationHandler {
     constructor(
-        protected session: SessionState,
+        protected user: User,
         protected operation: CrudOperation,
         protected params?: OperationValidationParams
     ) {}
 
     // Shared session validation logic
-    protected validateSession(): string | Session {
-        if (!this.session || typeof this.session === 'string') {
-            return "No session found";
+    protected validateSession(): User | string {
+        if (!this.user) {
+            return "No user found";
         }
-        return this.session;
+        return this.user;
     }
 
     // Abstract method to be implemented by each operation type
-    abstract validate(callerSession: Session): string | Session;
+    abstract validate(user: User): string | User;
 
     // Execute the operation after validation
-    execute(): string | Session {
-        const sessionError = this.validateSession();
-        if (typeof sessionError === 'string') {
-            return sessionError;
+    execute(): string | User {
+        const user = this.validateSession();
+        if (typeof user === 'string') {
+            return user;
         } 
-        return this.validate(sessionError); // Each subclass can add its specific validation here
-        
+        return this.validate(user); // Each subclass can add its specific validation here   
     }
 }
 
 // Create operation validation handler 
 export class CanCreateOperationHandler extends CanPerformOperationHandler {
-    constructor(session: SessionState) {
-        super(session, 'create'); // Pass session and operation type to the base class
+    constructor(user: User) {
+        super(user, 'create'); // Pass session and operation type to the base class
     }
 
-    validate(callerSession: Session): Session {
-        return callerSession;
+    validate(user: User): User {
+        return user;
     }
 }
 
 // Update operation validation handler 
-export class CanUpdateOperationHandler extends CanPerformOperationHandler {
-    constructor(session: SessionState, params: UpdateValidationParams) {
-        super(session, 'update', params); // Pass session and operation type to the base class
+
+function findUpdateDataError(params: UpdateValidationParams) : string | boolean {
+
+    // shared validation errors
+    if (Object.keys(params.validationErrors).length > 0) {
+        return "Fix the errors in the form";
+    } else if (params.editedRows.length === 0) {
+        return "No rows selected for update";
     }
 
-    validate(callerSession: Session): Session | string {
+    switch (params.tableName) {
+        case 'sales':
+            return false;
+        case 'expenses':
+            return false;
+        default:
+            return "table name not found";
+    }
+}
+
+export class CanUpdateOperationHandler extends CanPerformOperationHandler {
+    constructor(user: User, params: UpdateValidationParams) {
+        super(user, 'update', params); // Pass session and operation type to the base class
+    }
+
+    validate(user: User): User | string {
         const updateParams = this.params as UpdateValidationParams;
-        if (Object.keys(updateParams.validationErrors).length > 0) {
-            return "Fix the errors in the form";
-        } else if (updateParams.editedRows.length === 0) {
-            return "No rows selected for update";
+        const error = findUpdateDataError(updateParams);
+        if (error && typeof error === 'string') {
+            return error;
         }
-        return callerSession;
+        return user;
     }
 }
 
 // Delete operation validation handler 
+
+function findDeleteValidationErrors(params: DeleteValidationParams) : string | boolean {
+    // shared validation errors
+    if (params?.rowsToDelete || params.rowsToDelete.length === 0) {
+        return "No rows selected for deletion";
+    } 
+
+    switch (params.tableName) {
+        case 'sales':
+            return false;
+        case 'expenses':
+            return false;
+        default:
+            return "table name not found";
+    }
+}
+
 export class CanDeleteOperationHandler extends CanPerformOperationHandler {
-    constructor(session: SessionState, params: DeleteValidationParams) {
-        super(session, 'delete', params); // Pass session and operation type to the base class
+    constructor(user: User, params: DeleteValidationParams) {
+        super(user, 'delete', params); // Pass session and operation type to the base class
     }
 
     // Specific validation for delete operation
-    validate(callerSession: Session): string | Session {
+    validate(user: User): string | User {
         const deleteParams = this.params as DeleteValidationParams;
-        if (!deleteParams?.rowsToDelete || deleteParams.rowsToDelete.length === 0) {
-            return "No rows selected for deletion";
-        } 
-        return callerSession;
+        const error = findDeleteValidationErrors(deleteParams);
+        if (error && typeof error === 'string') {
+            return error;
+        }
+        return user;
     }
 }

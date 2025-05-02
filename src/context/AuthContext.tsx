@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User, AuthError } from '@supabase/supabase-js';
-import supabase from "@/config/supaBaseConfig";
+import supabase from "@/utils/supabase/supaBaseConfig";
 import { SessionState } from "@/types/authTypes";
 interface AuthContextType {
   signUpNewUser: (email: string, password: string) => Promise<AuthResponse>;

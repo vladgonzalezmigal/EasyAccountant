@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Expense } from '@/app/(private)/types/formTypes';
-import { performCrudOperation, canPerformOperation } from '../utils/operationUtils';
-import { SessionState } from '@/types/authTypes';
+import { postRequest } from '../utils/actions/crudOps';
 
 // export type 
 type expenseFormCrudHandlers = {
@@ -14,7 +13,6 @@ type expenseFormCrudHandlers = {
 
 
 type UseFormCrudProps = {
-  session: SessionState;
   setExpenses: React.Dispatch<React.SetStateAction<Expense[] | null>>;
   setNewExpense: React.Dispatch<React.SetStateAction<Expense>>;
   setEditedRows: React.Dispatch<React.SetStateAction<Expense[]>>;
@@ -26,7 +24,6 @@ type UseFormCrudProps = {
 };
 
 export function useFormCrud({
-  session,
   setExpenses,
   setNewExpense,
   setEditedRows,
@@ -42,56 +39,53 @@ export function useFormCrud({
   const handleSubmitCreate = async (e: React.FormEvent<HTMLFormElement>, newExpense: Expense) => {
     e.preventDefault();
 
-    const validationResult = canPerformOperation(session, 'create');
+    setCudLoading(true);
 
-    if (typeof validationResult === 'string') {
-      setCudError(validationResult);
+    const createRes = await postRequest('create', {
+      tableName,
+      createData: newExpense,
+    });
+
+    if (typeof createRes === 'string') {
+      setCudError(createRes);
+      setCudLoading(false);
       return;
     }
 
-    setCudLoading(true);
     setCudError(null);
 
-    const createRes = await performCrudOperation('create', {
-      tableName,
-      createData: newExpense,
-      user_id: validationResult.user.id,
-    });
-
-    if (typeof createRes !== 'string' && createRes.data) {
-      if (tableName === 'expenses' && setExpenses) {
-        const newExpenseData = createRes.data as Expense[];
-        setExpenses((prevExpenses) =>
-          [...(prevExpenses || []), newExpenseData[0]].sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
-        );
-        setNewExpense({
-            id: -1,
-            date: '',
-            payment_type: 'CHECK',
-            detail: '',
-            company: '',
-            amount: 0
-          });
-      }
-    } else {
-      setCudError(typeof createRes === 'string' ? createRes : createRes.error);
+    if (createRes.data) {
+      const newExpenseData = createRes.data as Expense[];
+      setExpenses((prevExpenses) =>
+        [...(prevExpenses || []), newExpenseData[0]].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
+      );
+      setNewExpense({
+        id: -1,
+        date: '',
+        payment_type: 'CHECK',
+        detail: '',
+        company: '',
+        amount: 0
+      });
     }
     setCudLoading(false);
   };
 
   const handleSubmitDelete = async (rowsToDelete: number[]) => {
-    const validationResult = canPerformOperation(session, 'delete', { rowsToDelete });
-    if (typeof validationResult === 'string') {
-      setCudError(validationResult);
+
+    setCudLoading(true);
+
+    const deleteRes = await postRequest('delete', { tableName, rowsToDelete });
+
+    if (typeof deleteRes === 'string') {
+      setCudError(deleteRes);
+      setCudLoading(false);
       return;
     }
 
-    setCudLoading(true);
     setCudError(null);
-
-    const deleteRes = await performCrudOperation('delete', { tableName, rowsToDelete });
 
     if (typeof deleteRes !== 'string' && deleteRes.data) {
       const expenseData = deleteRes.data as Expense[];
@@ -103,8 +97,6 @@ export function useFormCrud({
       }
       setRowsToDelete([]);
       setDeleteMode(false);
-    } else {
-      setCudError(typeof deleteRes === 'string' ? deleteRes : deleteRes.error);
     }
     setCudLoading(false);
   };
@@ -113,23 +105,21 @@ export function useFormCrud({
     editedRows: Expense[],
     validationErrors: Record<number, Set<number>>
   ) => {
-    const validationResult = canPerformOperation(session, 'update', { editedRows, validationErrors });
-
-    if (typeof validationResult === 'string') {
-      setCudError(validationResult);
-      return;
-    }
 
     setCudLoading(true);
-    setCudError(null);
 
-    const updateRes = await performCrudOperation('update', {
-      tableName,
+    const updateRes = await postRequest('update', { tableName, editedRows }, {
       editedRows,
-      user_id: validationResult.user.id,
+      tableName,
+      validationErrors
     });
 
-    if (typeof updateRes !== 'string' && updateRes.data) {
+    if (typeof updateRes === 'string') {
+      setCudError(updateRes);
+      setCudLoading(false);
+      return;
+    } else {
+      setCudError(null);
       const updateData = updateRes.data as Expense[];
 
       setExpenses((prevExpenses) => {
@@ -151,8 +141,6 @@ export function useFormCrud({
       setEditedRows([]);
       setValidationErrors({});
       setEditMode(false);
-    } else {
-      setCudError(typeof updateRes === 'string' ? updateRes : updateRes.error);
     }
     setCudLoading(false);
   };

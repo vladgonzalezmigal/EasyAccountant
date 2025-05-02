@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { UserAuth } from "@/context/AuthContext";
 import { months } from "@/app/(private)/utils/dateUtils";
 import { Expense } from "@/app/(private)/types/formTypes";
 import { Loading } from "@/app/components/Loading";
@@ -12,10 +11,10 @@ import { validateExpenseInput } from "@/app/(private)/features/handleForms/utils
 import useExpenseFormCrud from "@/app/(private)/features/handleForms/hooks/useExpenseFormCrud";
 import ExpenseSalesTable from "@/app/(private)/features/handleForms/components/ExpenseSalesTable";
 import ExpenseForm from "@/app/(private)/features/handleForms/components/addDataRow/ExpenseForm";
+import { getUser } from "@/app/(private)/features/handleForms/utils/actions/crudOps";
 
 export default function ExpensesPage() {
     const { year, month } = useParams();
-    const { session } = UserAuth();
     // fetch state, 
     const { startDate, endDate } = getMonthDateRange(year as string, month as string); // End Date is exclusive 
     const [fetchError, setFetchError] = useState<string | null>(null);
@@ -39,7 +38,7 @@ export default function ExpensesPage() {
     const [rowsToDelete, setRowsToDelete] = useState<number[]>([]);
 
     // use the useExpenseFormCrud hook to handle the cud operations
-    const { handleSubmitDelete, handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useExpenseFormCrud({ session, setExpenses, setNewExpense, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'expenses' })
+    const { handleSubmitDelete, handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useExpenseFormCrud({ setExpenses, setNewExpense, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'expenses' })
 
     const newExpenseInputChange = (field: keyof Expense, value: string | number) => {
         // value is validated & formatted by the ExpenseForm component
@@ -143,12 +142,15 @@ export default function ExpensesPage() {
 
     useEffect(() => {
         const fetchExpenses = async () => {
+            const user_id = await getUser();
+            console.log("user id found ", user_id)
             const dataType = { id: -1, date: '', payment_type: 'CHECK', detail: '', company: '', amount: 0 } as Expense;
             const readRes = await performCrudOperation('read', { tableName: 'expenses', dataType: dataType, startDate, endDate });
             if (typeof readRes !== 'string' && !readRes.data) {
                 setFetchError(readRes.error);
                 return;
             } else if (typeof readRes !== 'string' && readRes.data) {
+                console.log("readRes from expenses page", readRes);
                 setExpenses(readRes.data as Expense[]);
             }
             setFetchLoading(false);
