@@ -73,6 +73,16 @@ body {
   cursor: pointer;
 }
 
+.sales-input-field {
+  width: 100px;
+  height: 40px;
+  padding-left: 0.75rem; /* pl-3 */
+  /* display: block; */
+  border-radius: 9999px; /* rounded-full */
+  border-width: 1px;
+  border-color: transparent;
+  color: #585858;
+}
 
 .input-field {
   width: 100px;

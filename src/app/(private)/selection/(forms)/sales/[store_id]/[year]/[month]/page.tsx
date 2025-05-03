@@ -3,14 +3,16 @@
 import { useParams } from "next/navigation";
 import { useStore } from "@/store";
 import TablePageTitle from "@/app/(private)/features/handleForms/components/TablePageTitle";
-import { getMonthDateRange, getDaysInMonth } from "@/app/(private)/utils/dateUtils";
+import { getMonthDateRange, getDaysInMonth, formatDate } from "@/app/(private)/utils/dateUtils";
 import { useEffect, useState } from "react";
 import { Sales, SalesDisplay } from "@/app/(private)/types/formTypes";
-import { performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
 import { FormDataRows } from "@/app/(private)/features/handleForms/components/FormDataRows";
 import TableHeader from "@/app/(private)/features/handleForms/components/TableHeader";
 import { formatSalesData } from "@/app/(private)/features/handleForms/utils/formDataDisplay/formDataDisplay";
 import SalesForm from "@/app/(private)/features/handleForms/components/addDataRow/SalesForm";
+import { getRequest } from "@/app/(private)/features/handleForms/utils/actions/crudOps";
+import useSalesFormCrud from "@/app/(private)/features/handleForms/hooks/useSalesFormCrud";
+import { validateDateSequence } from "@/app/(private)/features/handleForms/utils/formValidation/formValidation";
 
 export default function SalesFormPage() {
     const { store_id, year, month } = useParams();
@@ -28,6 +30,27 @@ export default function SalesFormPage() {
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [sales, setSales] = useState<Sales[] | null>(null); // appended amount calculated in parent & 
     const [salesDisplay, setSalesDisplay] = useState<SalesDisplay[] | null>(null);
+
+    // create mode state
+    const datesArray = sales ? sales.map(sale => sale.date) : [];
+    const nextDate = validateDateSequence(datesArray,
+    getDaysInMonth(parseInt(month as string, 10)-1,parseInt(year as string)));
+    const createSalesDate = (typeof nextDate === "number") ? formatDate(nextDate.toString(), month as string, year as string) : '0'; 
+
+    const [newSale, setNewSale] = useState<Sales>({
+        id: -1,
+        store_id: parseInt(store_id as string),  // check if store_id in DB on backend 
+        date: createSalesDate,
+        sales: 0,
+        taxes: 0,
+    });
+    const newSaleInputChange = (field: keyof Sales, value: string | number) => {
+        // value is validated & formatted by the SalesForm component
+        setNewSale(prev => ({ ...prev, [field]: value }));
+        console.log(newSale);
+        return value;
+    };
+
     // update mode state 
     const [editMode, setEditMode] = useState<boolean>(false);
     const [editedRows, setEditedRows] = useState<Sales[]>([]);
@@ -51,16 +74,20 @@ export default function SalesFormPage() {
         });
     }
 
+    // api hooks
+    const {  handleSubmitCreate,} = useSalesFormCrud({ setSales, setNewSale, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'sales' })
+
+
     useEffect(() => {
         const fetchSales = async () => {
             const dataType = { id: -1, store_id: parseInt(store_id as string), date: '', sales: 0, taxes: 0 } as Sales;
-            const readRes = await performCrudOperation('read', { tableName: 'sales', dataType: dataType, startDate, endDate });
+            const readRes = await getRequest({ tableName: 'sales', dataType: dataType, startDate, endDate });
             if (typeof readRes !== 'string' && !readRes.data) {
                 setFetchError(readRes.error);
                 return;
             } else if (typeof readRes !== 'string' && readRes.data) {
                 setSales(readRes.data as Sales[]);
-                setSalesDisplay(formatSalesData(readRes.data as Sales[])); // data passed in descending order
+                setSalesDisplay(formatSalesData(readRes.data as Sales[]));
             }
             setFetchLoading(false);
         }
@@ -72,7 +99,6 @@ export default function SalesFormPage() {
     }    
 
     const headerTitles = ["Date", "Sales", "Taxes", "Daily ", "Total"];
-    let datesArray = sales ? sales.map(sale => sale.date) : [];
 
     return (
         <div>
@@ -102,7 +128,9 @@ export default function SalesFormPage() {
                             onRowEdit: newRowToEditInputChange,
                             }}
                             colToSum={5}
-                            addRowForm={<SalesForm dates={datesArray} daysInMonth={getDaysInMonth(parseInt(month as string, 10),parseInt(year as string))} />}
+                            addRowForm={<SalesForm formDone={(createSalesDate === '0')} createSalesDate={createSalesDate}
+                            onInputChange={newSaleInputChange}
+                            onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, newSale)}/>}
                         />}
                             
                         </div>
