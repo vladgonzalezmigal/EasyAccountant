@@ -135,3 +135,77 @@ export const validateCompanyInput = (value: string): ValidationResult => {
 };
 
 // sales page related tasks 
+
+/**
+ * Validates an array of dates to check if they are all from the same month
+ * and if all days in the month are present.
+ * 
+ * @param dates - Array of date strings in 'YYYY-MM-DD' format
+ * @param daysInMonth - Number of days in the month
+ * @returns "Form complete!" if all dates in the month are present,
+ *          the next date (last date + 1) if incomplete,
+ *          or "Something went wrong" if dates span multiple months
+ */
+export const validateDateSequence = (dates: string[], daysInMonth: number): string | number => {
+    if (!dates.length) { // first day of month 
+        return 1;
+    }
+
+    // Extract year and month from date strings (format: 'YYYY-MM-DD')
+    const parsedDates = dates.map(dateStr => {
+        const [year, month, day] = dateStr.split('-').map(part => parseInt(part, 10));
+        return { year, month, day };
+    });
+    
+    // Sort dates by year, month, and day
+    parsedDates.sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        if (a.month !== b.month) return a.month - b.month;
+        return a.day - b.day;
+    });
+    
+    // Check if all dates are from the same month and year
+    const firstDate = parsedDates[0];
+    const month = firstDate.month;
+    const year = firstDate.year;
+    
+    const allSameMonth = parsedDates.every(date => 
+        date.month === month && date.year === year
+    );
+    
+    if (!allSameMonth) {
+        return "Form has mixed months";
+    }
+    
+    // Check if we have all days in the month
+    if (parsedDates.length === daysInMonth) {
+        // Verify each day is present (1 through daysInMonth)
+        const daysPresent = new Set(parsedDates.map(date => date.day));
+        
+        if (daysPresent.size === daysInMonth && 
+            Array.from({ length: daysInMonth }, (_, i) => i + 1).every(day => daysPresent.has(day))) {
+            return "Form complete!";
+        }
+    }
+    
+    // Find the next day that's missing
+    const existingDays = new Set(parsedDates.map(date => date.day));
+    
+    // Find the first missing day
+    for (let day = 1; day <= daysInMonth; day++) {
+        if (!existingDays.has(day)) {
+            return day;
+        }
+    }
+    
+    // If we've entered all days but there's still an issue, check for the next day after the last one
+    const lastDate = parsedDates[parsedDates.length - 1];
+    
+    // Calculate next day without using Date object
+    if (lastDate.day < daysInMonth) {
+        return lastDate.day + 1;
+    } else {
+        // We've reached the end of the month
+        return "Form complete!";
+    }
+};

@@ -1,9 +1,7 @@
-// app/lib/actions/createSalesRow.ts (must be in a Server Component context)
+// create supabaseclient and perform crud operations 
 
-'use server'
-
-import { createClient } from '@/utils/supabase/server';
-import { PerformCrudValidationParams, PerformCrudParams, CrudResponseData } from '../../types/operationTypes';
+import { createClient } from '@/utils/supabase/client';
+import { PerformCrudValidationParams, PerformCrudParams, CrudResponseData, PerformReadParams } from '../../types/operationTypes';
 import { CrudOperation } from '../../types/operationTypes';
 import { canPerformOperation, performCrudOperation } from '../operationUtils';
 
@@ -12,10 +10,8 @@ export async function postRequest(
     operationParams: PerformCrudParams,
     validationParams?: PerformCrudValidationParams,
 ): Promise<CrudResponseData> {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data: { user },} = await supabase.auth.getUser()
-
-  console.log("user from postRequest", user);
 
   if (!user || !user.id) {
     return { data: null, error: 'User id not found' };
@@ -26,29 +22,33 @@ export async function postRequest(
    if (typeof validationResult === 'string') {
     return { data: null, error: validationResult };
    }
-   // perform operation passing in user-id  
-   // if 
-   const res = await performCrudOperation(operation, operationParams);
+   const res = await performCrudOperation(operation, operationParams, supabase, user.id);
 
    if (typeof res === 'string') {
     return { data: null, error: res };
+   } else if (res.error) {
+    return { data: null, error: res.error };
+   } else {
+    return { data: res.data, error: null };
    }
-
-   return { data: res.data, error: null };
 }
-
-export async function getUser(
-    // operation: CrudOperation,
-    // operationParams: PerformCrudParams,
-): Promise<string> {
-    const supabase = await createClient();
+// function to fetch data 
+export async function getRequest(
+    operationParams: PerformReadParams,
+): Promise<CrudResponseData> {
+    const supabase = createClient();
     const { data: { user },} = await supabase.auth.getUser()
 
-    console.log("user from getRequest", user);
-
     if (!user || !user.id) {
-        return "user id not found"
+        return { data: null, error: 'User id not found' };
     } else {
-        return user.id
+        const res = await performCrudOperation('read', operationParams, supabase);
+        if (typeof res === 'string') {
+            return { data: null, error: res };
+        } else if (res.error) {
+            return { data: null, error: res.error };
+        } else {
+            return { data: res.data, error: null };
+        }
     }
 }

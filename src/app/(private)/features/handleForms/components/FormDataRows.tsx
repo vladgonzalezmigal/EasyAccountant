@@ -27,15 +27,15 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
         editConfig.onRowEdit(id, name as keyof FormData, value, colNumber);
     };
 
-    if (data.length === 0) {
-        return <p className="text-gray-500 text-center mt-4">No entries found for this period.</p>;
-    }
+    // if (data.length === 0) {
+    //     return <p className="text-gray-500 text-center mt-4">No entries found for this period.</p>;
+    // }
 
     return (
         <div className="w-full flex flex-col items-center">
             <div className="flex flex-col gap-y-3 h-[304px] lg:px-4 overflow-y-auto">
                 {addRowForm &&
-                    <div className='pt-3'>
+                    <div className={`pt-3 ${(data.length === 0) ? 'h-full w-full flex items-center justify-center' : ''}  `}>
                         {addRowForm}
                     </div>
                 }

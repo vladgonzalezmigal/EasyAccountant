@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useStore } from "@/store";
 import TablePageTitle from "@/app/(private)/features/handleForms/components/TablePageTitle";
-import { getMonthDateRange } from "@/app/(private)/utils/dateUtils";
+import { getMonthDateRange, getDaysInMonth } from "@/app/(private)/utils/dateUtils";
 import { useEffect, useState } from "react";
 import { Sales, SalesDisplay } from "@/app/(private)/types/formTypes";
 import { performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
@@ -61,9 +61,7 @@ export default function SalesFormPage() {
             } else if (typeof readRes !== 'string' && readRes.data) {
                 setSales(readRes.data as Sales[]);
                 setSalesDisplay(formatSalesData(readRes.data as Sales[])); // data passed in descending order
-                console.log("formatted readRes from sales is", formatSalesData(readRes.data as Sales[]))
             }
-            console.log("readRes from sales is", readRes)
             setFetchLoading(false);
         }
         fetchSales();
@@ -74,6 +72,7 @@ export default function SalesFormPage() {
     }    
 
     const headerTitles = ["Date", "Sales", "Taxes", "Daily ", "Total"];
+    let datesArray = sales ? sales.map(sale => sale.date) : [];
 
     return (
         <div>
@@ -103,7 +102,7 @@ export default function SalesFormPage() {
                             onRowEdit: newRowToEditInputChange,
                             }}
                             colToSum={5}
-                            addRowForm={<SalesForm/>}
+                            addRowForm={<SalesForm dates={datesArray} daysInMonth={getDaysInMonth(parseInt(month as string, 10),parseInt(year as string))} />}
                         />}
                             
                         </div>

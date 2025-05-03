@@ -97,7 +97,7 @@ export class CanUpdateOperationHandler extends CanPerformOperationHandler {
 
 function findDeleteValidationErrors(params: DeleteValidationParams) : string | boolean {
     // shared validation errors
-    if (params?.rowsToDelete || params.rowsToDelete.length === 0) {
+    if (params.rowsToDelete.length === 0) {
         return "No rows selected for deletion";
     } 
 

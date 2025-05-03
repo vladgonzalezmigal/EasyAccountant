@@ -1,5 +1,5 @@
 
-import supabase from "@/utils/supabase/supaBaseConfig";
+import supabase from "@/utils/supabase/supaBaseClientConfig";
 import { Store, StoreResponse } from "../types/storeTypes";
 import { PostgrestError } from "@supabase/supabase-js";
 

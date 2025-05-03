@@ -4,7 +4,7 @@ import { CrudOperation, DeleteValidationParams, PerformCrudValidationParams, Upd
      PerformDeleteParams, PerformUpdateParams, PerformReadParams } from "@/app/(private)/features/handleForms/types/operationTypes";
 import {  CanDeleteOperationHandler, CanCreateOperationHandler, CanUpdateOperationHandler } from "./validationHandler";
 import { PerformCreateOperationHandler, PerformDeleteOperationHandler, PerformReadOperationHandler, PerformUpdateOperationHandler } from "./operationHandler";
-import {  User } from "@supabase/supabase-js";
+import {  SupabaseClient, User } from "@supabase/supabase-js";
 import { CrudResponseData, PerformCrudParams } from "../types/operationTypes";
 
 /**
@@ -54,28 +54,29 @@ export function canPerformOperation(
 export function performCrudOperation(
     operation: CrudOperation,
     params: PerformCrudParams,
+    supabase: SupabaseClient,
     user_id?: string
 ): Promise<CrudResponseData> | string {
     let handler: { execute: () => Promise<CrudResponseData> } | undefined;
 
     switch (operation) {
         case 'delete':
-            handler = new PerformDeleteOperationHandler(params as PerformDeleteParams);
+            handler = new PerformDeleteOperationHandler(params as PerformDeleteParams, supabase);
             break;
         case 'create':
             if (!user_id) {
                 return "User ID is required";
             }
-            handler = new PerformCreateOperationHandler(params as PerformCreateParams, user_id);
+            handler = new PerformCreateOperationHandler(params as PerformCreateParams, supabase, user_id);
             break;
         case 'read':
-            handler = new PerformReadOperationHandler(params as PerformReadParams);
+            handler = new PerformReadOperationHandler(params as PerformReadParams, supabase);
             break;
         case 'update':
             if (!user_id) {
                 return "User ID is required";
             }
-            handler = new PerformUpdateOperationHandler(params as PerformUpdateParams, user_id);
+            handler = new PerformUpdateOperationHandler(params as PerformUpdateParams, supabase, user_id);
             break;
         default:
             return "Invalid operation";

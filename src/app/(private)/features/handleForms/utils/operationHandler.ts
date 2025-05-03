@@ -1,16 +1,16 @@
-import supabase from "@/utils/supabase/supaBaseConfig";
+// import getSupabaseClient from "@/utils/supabase/supaBaseServerConfig" 
 import { CrudOperation, CrudResponseData, PerformCreateParams, PerformCrudParams, PerformReadParams, PerformUpdateParams } from "../types/operationTypes";
 import { FormData, Sales } from "@/app/(private)/types/formTypes";
 import { PerformDeleteParams } from "../types/operationTypes";
-import { PostgrestError } from '@supabase/supabase-js';
+import { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
 // Basic handler class that can be extended for various operations
 export abstract class PerformOperationHandler {
     protected errorState: string | null = null;
-
     constructor(
         protected operation: CrudOperation,
         protected params: PerformCrudParams, // Params containing tableName and other operation-specific data
+        protected supabase: SupabaseClient,
         protected user_id?: string
     ) {
         if (!this.params.tableName) { 
@@ -19,16 +19,18 @@ export abstract class PerformOperationHandler {
     }
 
     // Abstract method to be implemented by subclasses
-    abstract perform(): Promise<CrudResponseData>;
+    abstract perform(supabase: SupabaseClient): Promise<CrudResponseData>;
 
     // Execute method that calls the perform method for specific operation
     async execute(): Promise<CrudResponseData> {
+
         if (this.errorState) {
             // If an error is already set in the constructor, return immediately
             return { data: null, error: this.errorState};
         }
-
-        return await this.perform(); // Delegate the async operation to the specific handler
+        // create supabase 
+        // const supabaseClient =  createClient()
+        return await this.perform(this.supabase); // Delegate the async operation to the specific handler
     }
 }
 
@@ -58,14 +60,14 @@ const handleApiResponse = (apiData: FormData[] | null, apiError: PostgrestError 
 // Create operation handler
 
 export class PerformCreateOperationHandler extends PerformOperationHandler {
-    constructor(params: PerformCreateParams, user_id: string) {
-        super('create', params, user_id);
+    constructor(params: PerformCreateParams, supabase: SupabaseClient, user_id: string) {
+        super('create', params, supabase, user_id);
     }
 
     // Perform async operation for create
-    async perform(): Promise<CrudResponseData> {
+    async perform(supabase: SupabaseClient): Promise<CrudResponseData> {
         const createParams = this.params as PerformCreateParams;
-        try {
+        try {           
             const { data: apiData, error: apiError } = await supabase 
                 .from(createParams.tableName)
                 .insert({
@@ -86,13 +88,11 @@ export class PerformCreateOperationHandler extends PerformOperationHandler {
 
 // Read operation handler
 
-function buildReadQuery(table: string, params: PerformReadParams) {
-
-    if (!params.dataType) {
-        return { data: null, error: "Data type is required " };
+function buildReadQuery(table: string, params: PerformReadParams, supabase: SupabaseClient ) {
+    if (!params.dataType){
+        return "inaccurate data provided"
     }
     const baseQuery = supabase.from(params.tableName).select(getQueryColumns(params.dataType));
-
     switch (table) {
         case 'sales':
             const dataType = params.dataType as Sales;
@@ -112,27 +112,30 @@ function buildReadQuery(table: string, params: PerformReadParams) {
 }
 
 export class PerformReadOperationHandler extends PerformOperationHandler {
-    constructor(params: PerformReadParams) {
-        super('read', params);
+    constructor(params: PerformReadParams, supabase: SupabaseClient) {
+        super('read', params, supabase);
     }
 
     // Perform async operation for read
-    async perform(): Promise<CrudResponseData> {
+    async perform(supabase: SupabaseClient): Promise<CrudResponseData> {
         const readParams = this.params as PerformReadParams;
         if (!readParams.dataType) {
             this.errorState = "Data type is required";
             return { data: null, error: this.errorState };
         }
+
+        if (!this.params.dataType) {
+            return { data: null, error: "Data type is required " };
+        }
         
-        const readQuery = buildReadQuery(readParams.tableName, readParams);
+        const readQuery = buildReadQuery(readParams.tableName, readParams, supabase);
         
-        if ('error' in readQuery) {
-            return { data: null, error: readQuery.error };
+        if (typeof readQuery === "string") {
+            return { data: null, error: readQuery };
         }
 
         try {
             const { data: apiData, error: apiError } = await readQuery;
-            console.log("apiData from read operation", apiData);
             return handleApiResponse(apiData as unknown as FormData[], apiError);
         } catch (err) {
             return {
@@ -145,18 +148,17 @@ export class PerformReadOperationHandler extends PerformOperationHandler {
 
 // Update operation handler
 export class PerformUpdateOperationHandler extends PerformOperationHandler {
-    constructor(params: PerformUpdateParams, user_id: string) {
-        super('update', params as PerformUpdateParams, user_id);
+    constructor(params: PerformUpdateParams, supabase: SupabaseClient, user_id: string) {
+        super('update', params as PerformUpdateParams, supabase, user_id);
     }
 
     // Perform async operation for update
-    async perform(): Promise<CrudResponseData> {
+    async perform(supabase: SupabaseClient): Promise<CrudResponseData> {
         const updateParams = this.params as PerformUpdateParams;
         const updatedRowsWithUserId = updateParams.editedRows.map(row => ({
             ...row,
             user_id: this.user_id
           }));
-        console.log("editedRows post upsert", updatedRowsWithUserId);
         try {
             const { data: apiData, error: apiError } = await supabase
                 .from(updateParams.tableName)
@@ -174,12 +176,12 @@ export class PerformUpdateOperationHandler extends PerformOperationHandler {
 
 // Delete operation handler
 export class PerformDeleteOperationHandler extends PerformOperationHandler {
-    constructor(params: PerformDeleteParams) {
-        super('delete', params as PerformDeleteParams);
+    constructor(params: PerformDeleteParams, supabase: SupabaseClient) {
+        super('delete', params as PerformDeleteParams, supabase);
     }
 
     // Perform async operation for delete
-    async perform(): Promise<CrudResponseData> {
+    async perform(supabase: SupabaseClient): Promise<CrudResponseData> {
         const deleteParams = this.params as PerformDeleteParams;
         try {
             const { data: apiData, error: apiError } = await supabase

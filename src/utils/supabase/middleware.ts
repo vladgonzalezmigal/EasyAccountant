@@ -48,7 +48,6 @@ export async function updateSession(request: NextRequest) {
     url.pathname = '/'
     return NextResponse.redirect(url)
   } else if (user && marketingRoutes.includes(request.nextUrl.pathname)) { // if auth user is at
-    console.log("user from middleware", user);
     const url = request.nextUrl.clone()
     url.pathname = '/selection'
     return NextResponse.redirect(url)

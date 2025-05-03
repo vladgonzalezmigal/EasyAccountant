@@ -46,8 +46,8 @@ export function useFormCrud({
       createData: newExpense,
     });
 
-    if (typeof createRes === 'string') {
-      setCudError(createRes);
+    if (createRes.error) {
+      setCudError(createRes.error);
       setCudLoading(false);
       return;
     }
@@ -77,10 +77,10 @@ export function useFormCrud({
 
     setCudLoading(true);
 
-    const deleteRes = await postRequest('delete', { tableName, rowsToDelete });
+    const deleteRes = await postRequest('delete', { tableName, rowsToDelete }, { tableName, rowsToDelete });
 
-    if (typeof deleteRes === 'string') {
-      setCudError(deleteRes);
+    if (deleteRes.error) {
+      setCudError(deleteRes.error);
       setCudLoading(false);
       return;
     }
@@ -114,8 +114,8 @@ export function useFormCrud({
       validationErrors
     });
 
-    if (typeof updateRes === 'string') {
-      setCudError(updateRes);
+    if (updateRes.error) {
+      setCudError(updateRes.error);
       setCudLoading(false);
       return;
     } else {

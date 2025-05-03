@@ -6,12 +6,12 @@ import { months } from "@/app/(private)/utils/dateUtils";
 import { Expense } from "@/app/(private)/types/formTypes";
 import { Loading } from "@/app/components/Loading";
 import { getMonthDateRange, formatDate } from "@/app/(private)/utils/dateUtils";
-import { performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
+// import { performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
 import { validateExpenseInput } from "@/app/(private)/features/handleForms/utils/formValidation/editRowValidation";
 import useExpenseFormCrud from "@/app/(private)/features/handleForms/hooks/useExpenseFormCrud";
 import ExpenseSalesTable from "@/app/(private)/features/handleForms/components/ExpenseSalesTable";
 import ExpenseForm from "@/app/(private)/features/handleForms/components/addDataRow/ExpenseForm";
-import { getUser } from "@/app/(private)/features/handleForms/utils/actions/crudOps";
+import { getRequest } from "@/app/(private)/features/handleForms/utils/actions/crudOps";
 
 export default function ExpensesPage() {
     const { year, month } = useParams();
@@ -55,7 +55,6 @@ export default function ExpensesPage() {
         const validationResult = editExpenseRowValidation(key as keyof Expense, value as string);
 
         if (!validationResult.isValid) {
-            console.log("validation failed");
             // Add to validation errors map if validation fails
             setValidationErrors(prev => {
                 const newErrors = { ...prev };
@@ -72,7 +71,6 @@ export default function ExpensesPage() {
 
         // if validation passes, remove from errors map if it exists
         if (validationErrors[id] && validationErrors[id].has(colNumber)) {
-            console.log("validation passed", validationErrors[id], "colNumber", colNumber);
             setValidationErrors(prev => {
                 const newErrors = { ...prev };
                 if (newErrors[id]) {
@@ -142,15 +140,13 @@ export default function ExpensesPage() {
 
     useEffect(() => {
         const fetchExpenses = async () => {
-            const user_id = await getUser();
-            console.log("user id found ", user_id)
             const dataType = { id: -1, date: '', payment_type: 'CHECK', detail: '', company: '', amount: 0 } as Expense;
-            const readRes = await performCrudOperation('read', { tableName: 'expenses', dataType: dataType, startDate, endDate });
+            const readRes = await getRequest({ tableName: 'expenses', dataType: dataType, startDate, endDate });
+            // const readRes = await performCrudOperation('read', { tableName: 'expenses', dataType: dataType, startDate, endDate });
             if (typeof readRes !== 'string' && !readRes.data) {
                 setFetchError(readRes.error);
                 return;
             } else if (typeof readRes !== 'string' && readRes.data) {
-                console.log("readRes from expenses page", readRes);
                 setExpenses(readRes.data as Expense[]);
             }
             setFetchLoading(false);
