@@ -60,6 +60,7 @@ export default function SalesTable({
                                                 editConfig={formDataProps.editConfig}
                                                 colToSum={5}
                                                 addRowForm={formDataProps.addRowForm}
+                                                tableName="sales"
                                             />
                                         </div>
                                         <ActionBtns

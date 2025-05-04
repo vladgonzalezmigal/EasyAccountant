@@ -10,13 +10,31 @@ export interface ValidationResult {
 export const PAYMENT_TYPES = ['CASH', 'CARD', "CHECK"].map(type => type.toUpperCase())
 export const COMPANIES = ['JETRO', 'SUPREMA'].map(type => type.toUpperCase())
 
-export const fieldConfig: Record<string, { type: 'input' | 'select'; options?: string[] }> = {
-    date: { type: 'input' },
-    amount: { type: 'input' },
-    detail: { type: 'input' },
-    company: { type: 'select', options: COMPANIES }, // todo pull from db 
-    payment_type: { type: 'select', options: PAYMENT_TYPES },
+export const getFieldConfig = (tableName: string): Record<string, { type: 'input' | 'select' | 'null'; options?: string[] }> => {
+    if (tableName === 'expenses') {
+        return {
+            date: { type: 'input' },
+            amount: { type: 'input' },
+            detail: { type: 'input' },
+            company: { type: 'select', options: COMPANIES }, // todo pull from db 
+            payment_type: { type: 'select', options: PAYMENT_TYPES },
+        };
+    } else if (tableName === 'sales') {
+        return {
+            date: { type: 'null' },
+            sales: { type: 'input' },
+            taxes: { type: 'input' },
+            daily_total: { type: 'null' },
+            cumulative_total: { type: 'null' },
+        };
+    }
+    
+    // Default empty config if tableName doesn't match
+    return {};
 };
+
+// For backward compatibility
+export const fieldConfig = getFieldConfig('expenses');
 
 export const isFieldEdited = (
     candidateForm: FormData | undefined,

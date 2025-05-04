@@ -67,6 +67,7 @@ export default function ExpenseTable({
                                 editConfig={formDataProps.editConfig}
                                 colToSum={5}
                                 addRowForm={formDataProps.addRowForm}
+                                tableName="expenses"
                             />
                         </div>
                         {/* Action Buttons */}

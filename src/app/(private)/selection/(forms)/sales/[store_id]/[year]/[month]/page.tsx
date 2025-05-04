@@ -86,6 +86,8 @@ export default function SalesFormPage() {
         // if validation passes add to edited rows
         const updatedValue = validationResult.value !== undefined ? validationResult.value : value;
 
+        
+
         setEditedRows(prev => {
             const existing = prev.find(row => row.id === id);
             if (existing) {
@@ -101,6 +103,7 @@ export default function SalesFormPage() {
                 }
             }
         });
+        console.log("editedRows", editedRows);
     }
 
     const canEdit: boolean = (editedRows.length > 0) && (Object.keys(validationErrors).length === 0);

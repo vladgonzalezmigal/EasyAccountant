@@ -2,7 +2,7 @@
 import React, { ChangeEvent, ReactNode } from 'react';
 import { FormData } from '@/app/(private)/types/formTypes';
 import { sumColumn } from '../../utils/analytics';
-import { fieldConfig, isFieldEdited } from '../utils/formValidation/formValidation';
+import { getFieldConfig, isFieldEdited } from '../utils/formValidation/formValidation';
 import { EditInputForm } from './editDataRow/EditInputForm';
 import { EditSelectForm } from './editDataRow/EditSelectForm';
 import { formatDisplayValue } from '../utils/formDataDisplay/formDataDisplay';
@@ -14,9 +14,10 @@ type FormDataRowsProps = {
     addRowForm?: ReactNode;
     deleteConfig?: DeleteConfig;
     editConfig: EditConfig;
+    tableName: string;
 };
 
-export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editConfig }: FormDataRowsProps) {
+export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editConfig, tableName }: FormDataRowsProps) {
     const handleEditChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: number, colNumber: number) => {
         const { name, value } = e.target;
         const validationResult = editConfig.validationFunction(name as keyof FormData, value as string);
@@ -26,6 +27,8 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
         }
         editConfig.onRowEdit(id, name as keyof FormData, value, colNumber);
     };
+
+    const fieldConfig = getFieldConfig(tableName);
 
     return (
         <div className="w-full flex flex-col items-center">
@@ -54,7 +57,11 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                                     <div key={displayKey} className={`h-[60px] flex flex-col items-center justify-center`}>
                                         <div className='h-[40px] w-[100px] flex items-center pl-3'>
                                             {editConfig.mode ? (
-                                                fieldConfig[displayKey]?.type === 'select' ? (
+                                                fieldConfig[displayKey]?.type === 'null' ? (
+                                                    <p className='table-row-text'>
+                                                        {formatDisplayValue(displayData[displayKey])}
+                                                    </p>
+                                                ) : fieldConfig[displayKey]?.type === 'select' ? (
                                                     <EditSelectForm
                                                         name={displayKey as string}
                                                         value={
