@@ -9,9 +9,10 @@ import { getMonthDateRange, formatDate } from "@/app/(private)/utils/dateUtils";
 // import { performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
 import { validateExpenseInput } from "@/app/(private)/features/handleForms/utils/formValidation/editRowValidation";
 import useExpenseFormCrud from "@/app/(private)/features/handleForms/hooks/useExpenseFormCrud";
-import ExpenseSalesTable from "@/app/(private)/features/handleForms/components/ExpenseSalesTable";
+import ExpenseTable from "@/app/(private)/features/handleForms/components/ExpenseTable";
 import ExpenseForm from "@/app/(private)/features/handleForms/components/addDataRow/ExpenseForm";
 import { getRequest } from "@/app/(private)/features/handleForms/utils/actions/crudOps";
+import { CudError } from "@/app/(private)/features/handleForms/components/formErrors/CudError";
 
 export default function ExpensesPage() {
     const { year, month } = useParams();
@@ -162,16 +163,14 @@ export default function ExpensesPage() {
                     Expenses
                 </h1>
                 <p className="font-semibold text-[#585858]">  {months[parseInt(month as string) - 1]},  {year} </p>
-                <div className="flex flex-row justify-center items-center h-[32px]">
-                    {cudError && <p className="text-red-500">{cudError}</p>}
-                </div>
+                <CudError cudError={cudError} />
             </div>
 
             {fetchLoading ? (
                 <Loading />
             ) : (
                 // Table Component
-                <ExpenseSalesTable
+                <ExpenseTable
                     fetchError={fetchError}
                     formDataProps={{
                         rowData: expenses,

@@ -12,7 +12,7 @@ type FormDataRowsProps = {
     data: FormData[];
     colToSum: number;
     addRowForm?: ReactNode;
-    deleteConfig: DeleteConfig;
+    deleteConfig?: DeleteConfig;
     editConfig: EditConfig;
 };
 
@@ -26,10 +26,6 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
         }
         editConfig.onRowEdit(id, name as keyof FormData, value, colNumber);
     };
-
-    // if (data.length === 0) {
-    //     return <p className="text-gray-500 text-center mt-4">No entries found for this period.</p>;
-    // }
 
     return (
         <div className="w-full flex flex-col items-center">
@@ -87,7 +83,7 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                                     </div>
                                 );
                             })}
-                            {deleteConfig.mode && (
+                            {deleteConfig?.mode && deleteConfig && (
                                 <div 
                                     onClick={() => deleteConfig.onRowSelect(id)}
                                     className={`absolute top-1/2 right-[5px] transform -translate-y-1/2 ${deleteConfig.rows.includes(id) ? 'row-delete-active' : 'row-delete-inactive'}`}

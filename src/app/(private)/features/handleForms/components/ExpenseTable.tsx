@@ -11,7 +11,7 @@ interface ValidationResult {
     value: string;
 }
 
-interface ExpenseSalesTableProps {
+interface ExpenseTableProps {
     fetchError: string | null;
     formDataProps: {
         rowData: (Expense[] | null) | (SalesDisplay[] | null);
@@ -45,13 +45,13 @@ interface ExpenseSalesTableProps {
     headerTitles: string[];
 }
 
-export default function ExpenseSalesTable({
+export default function ExpenseTable({
     fetchError,
     formDataProps,
     actionBtnsProps,
     cudLoading,
     headerTitles
-}: ExpenseSalesTableProps) {
+}: ExpenseTableProps) {
     return (
         <div className="w-full flex flex-col gap-4 justify-center items-center mb-8">
             <div className="">

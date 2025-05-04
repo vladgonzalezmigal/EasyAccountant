@@ -7,7 +7,6 @@ import { getNextDayInMonth } from '../utils/formValidation/formValidation';
 // export type 
 type salesFormCrudHandlers = {
     handleSubmitCreate: (e: React.FormEvent<HTMLFormElement>, newSales: Sales) => Promise<void>;
-    handleSubmitDelete: (rowsToDelete: number[]) => Promise<void>;
     handleSubmitEdit: (editedRows: Sales[], validationErrors: Record<number, Set<number>>) => Promise<void>;
     cudLoading: boolean;
     cudError: string | null;
@@ -20,9 +19,7 @@ type UseFormCrudProps = {
     setCreateSalesDate: React.Dispatch<React.SetStateAction<string | null>>;
     setEditedRows: React.Dispatch<React.SetStateAction<Sales[]>>;
     setValidationErrors: React.Dispatch<React.SetStateAction<Record<number, Set<number>>>>;
-    setRowsToDelete: React.Dispatch<React.SetStateAction<number[]>>;
     setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
-    setDeleteMode: React.Dispatch<React.SetStateAction<boolean>>;
     tableName: string;
 };
 
@@ -32,9 +29,7 @@ export function useSalesFormCrud({
     setCreateSalesDate,
     setEditedRows,
     setValidationErrors,
-    setRowsToDelete,
     setEditMode,
-    setDeleteMode,
     tableName = 'sales',
 }: UseFormCrudProps): salesFormCrudHandlers {
     const [cudLoading, setCudLoading] = useState(false);
@@ -83,33 +78,6 @@ export function useSalesFormCrud({
         setCudLoading(false);
     };
 
-    const handleSubmitDelete = async (rowsToDelete: number[]) => {
-
-        setCudLoading(true);
-
-        const deleteRes = await postRequest('delete', { tableName, rowsToDelete }, { tableName, rowsToDelete });
-
-        if (deleteRes.error) {
-            setCudError(deleteRes.error);
-            setCudLoading(false);
-            return;
-        }
-
-        setCudError(null);
-
-        if (typeof deleteRes !== 'string' && deleteRes.data) {
-            const salesData = deleteRes.data as Sales[];
-            const deletedIds: number[] = salesData.map((sale: Sales) => sale.id);
-            if (tableName === 'sales' && setSales) {
-                setSales((prevSales) =>
-                    prevSales ? prevSales.filter(sale => !deletedIds.includes(sale.id)) : null
-                );
-            }
-            setRowsToDelete([]);
-            setDeleteMode(false);
-        }
-        setCudLoading(false);
-    };
 
     const handleSubmitEdit = async (
         editedRows: Sales[],
@@ -157,7 +125,6 @@ export function useSalesFormCrud({
 
     return {
         handleSubmitCreate,
-        handleSubmitDelete,
         handleSubmitEdit,
         cudLoading,
         cudError,

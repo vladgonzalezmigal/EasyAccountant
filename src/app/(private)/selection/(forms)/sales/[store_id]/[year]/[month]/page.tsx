@@ -6,13 +6,14 @@ import TablePageTitle from "@/app/(private)/features/handleForms/components/Tabl
 import { getMonthDateRange, getDaysInMonth, formatDate } from "@/app/(private)/utils/dateUtils";
 import { useEffect, useState } from "react";
 import { Sales, SalesDisplay } from "@/app/(private)/types/formTypes";
-import { FormDataRows } from "@/app/(private)/features/handleForms/components/FormDataRows";
-import TableHeader from "@/app/(private)/features/handleForms/components/TableHeader";
 import { formatSalesData } from "@/app/(private)/features/handleForms/utils/formDataDisplay/formDataDisplay";
 import SalesForm from "@/app/(private)/features/handleForms/components/addDataRow/SalesForm";
 import { getRequest } from "@/app/(private)/features/handleForms/utils/actions/crudOps";
 import useSalesFormCrud from "@/app/(private)/features/handleForms/hooks/useSalesFormCrud";
 import { validateDateSequence } from "@/app/(private)/features/handleForms/utils/formValidation/formValidation";
+import { validateSalesInput } from "@/app/(private)/features/handleForms/utils/formValidation/editRowValidation";
+import SalesTable from "@/app/(private)/features/handleForms/components/SalesTable";
+import { CudError } from "@/app/(private)/features/handleForms/components/formErrors/CudError";
 
 export default function SalesFormPage() {
     const { store_id, year, month } = useParams();
@@ -46,26 +47,78 @@ export default function SalesFormPage() {
     const [editedRows, setEditedRows] = useState<Sales[]>([]);
     const [validationErrors, setValidationErrors] = useState<Record<number, Set<number>>>({});
     const editSalesRowValidation = (key: keyof Sales, value: string) => {
-        // return validateExpenseInput(key, value, parseInt(month as string), parseInt(year as string));
-        return { isValid: true, value: value }; // TODO  
+        return validateSalesInput(key, value);
     }
     const newRowToEditInputChange = (id: number, key: keyof Sales, value: string | number, colNumber: number) => {
         // need to add form validation 
-    }
-    // delete mode state 
-    const [deleteMode, setDeleteMode] = useState<boolean>(false);
-    const [rowsToDelete, setRowsToDelete] = useState<number[]>([]);
+        const validationResult = editSalesRowValidation(key as keyof Sales, value as string);
+        if (!validationResult.isValid) {
+            // Add to validation errors map if validation fails
+            setValidationErrors(prev => {
+                const newErrors = { ...prev };
+                // Create a new Set if it doesn't exist for this id
+                if (!newErrors[id]) {
+                    newErrors[id] = new Set<number>();
+                }
+                // Add the column number to the Set
+                newErrors[id].add(colNumber);
+                return newErrors;
+            });
+            return;
+        }
 
-    const newRowToDelete = (id: number) => {
-        setRowsToDelete((prevRows) => {
-            return prevRows.includes(id)
-                ? prevRows.filter(rowId => rowId !== id) // Remove the id if it's already in the array
-                : [...prevRows, id]; // Add the id if it's not in the array
+        // if validation passes, remove from errors map if it exists
+        if (validationErrors[id] && validationErrors[id].has(colNumber)) {
+            setValidationErrors(prev => {
+                const newErrors = { ...prev };
+                if (newErrors[id]) {
+                    // Remove the column number from the Set
+                    newErrors[id].delete(colNumber);
+                    // If Set is empty, remove the id entry
+                    if (newErrors[id].size === 0) {
+                        delete newErrors[id];
+                    }
+                }
+                return newErrors;
+            });
+        }
+
+        // if validation passes add to edited rows
+        const updatedValue = validationResult.value !== undefined ? validationResult.value : value;
+
+        setEditedRows(prev => {
+            const existing = prev.find(row => row.id === id);
+            if (existing) {
+                return prev.map(row =>
+                    row.id === id ? { ...row, [key]: updatedValue } : row
+                );
+            } else {
+                const original = sales?.find(row => row.id === id);
+                if (original) {
+                    return [...prev, { ...original, [key]: updatedValue }];
+                } else {
+                    return prev;
+                }
+            }
         });
     }
 
+    const canEdit: boolean = (editedRows.length > 0) && (Object.keys(validationErrors).length === 0);
+
+    const handleEdit = () => {
+        if (editMode && canEdit) { // can only make api call if there are rows to edit
+            handleSubmitEdit(editedRows, validationErrors);
+        } else if (editMode && (Object.keys(validationErrors).length > 0)) { // cancel by resetting edit mode
+            setEditMode(prevMode => !prevMode);
+            setValidationErrors({});
+            setEditedRows([]);
+        } else {
+            setEditMode(prevMode => !prevMode);
+        }
+    };
+
     // api hooks
-    const { handleSubmitCreate, } = useSalesFormCrud({ setSales, setNewSale,setCreateSalesDate, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'sales' })
+    const { handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useSalesFormCrud({ setSales, setNewSale, setCreateSalesDate, setValidationErrors, setEditedRows, setEditMode, tableName: 'sales' })
 
     // get next date 
     useEffect(() => {
@@ -82,13 +135,13 @@ export default function SalesFormPage() {
 
     // when createSalesDate is ready, set newSale
     useEffect(() => {
-    if (!createSalesDate) return;
-    setNewSale({
-        id: -1,
-        store_id: parseInt(store_id as string),
-        date: createSalesDate,
-        sales: 0,
-        taxes: 0,
+        if (!createSalesDate) return;
+        setNewSale({
+            id: -1,
+            store_id: parseInt(store_id as string),
+            date: createSalesDate,
+            sales: 0,
+            taxes: 0,
         });
     }, [createSalesDate, store_id]);
 
@@ -118,51 +171,42 @@ export default function SalesFormPage() {
     }
 
     const headerTitles = ["Date", "Sales", "Taxes", "Daily ", "Total"];
+
     return (
         <div>
             <TablePageTitle docTitle={`Sales`} docSubtitle={store_name} />
+            <CudError cudError={cudError} />
             {fetchError ? <div>{fetchError}</div> :
-                <div className="w-full flex flex-col gap-4 justify-center items-center mb-8">
-                    <div className="">
-                        {/* Table Header */}
-                        <TableHeader headerTitles={headerTitles} />
-                        {
-                            (sales && !fetchError) ?
-                                // Table Data Rows
-                                <div>
-                                    <div className="relative z-10 border border-[#ECECEE] table-input-shadow border-y-2 border-t-0 bg-[#FDFDFD] rounded-bottom  relative z-0">
-                                        {(salesDisplay && newSale && createSalesDate) &&
-                                        <> 
-                                            <FormDataRows
-                                                data={salesDisplay}
-                                                deleteConfig={{
-                                                    mode: deleteMode,
-                                                    rows: rowsToDelete,
-                                                    onRowSelect: newRowToDelete
-                                                }}
-                                                editConfig={{
-                                                    mode: editMode,
-                                                    editedRows: editedRows,
-                                                    validationErrors: validationErrors,
-                                                    validationFunction: editSalesRowValidation,
-                                                    onRowEdit: newRowToEditInputChange,
-                                                }}
-                                                colToSum={5}
-                                                addRowForm={<SalesForm formDone={(newSale.date === '0')} createSalesDate={createSalesDate}
-                                                    cumulativeTotal={salesDisplay[0]?.cumulative_total || 0}
-                                                    onInputChange={newSaleInputChange}
-                                                    onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, newSale)} />}
-                                            />
-                                            </>}
-                                    </div>
-
-                                </div>
-                                :
-                                <p>No expenses found</p>
+                <SalesTable
+                    fetchError={fetchError}
+                    formDataProps={{
+                        rowData: salesDisplay,
+                        editConfig: {
+                            mode: editMode,
+                            editedRows: editedRows,
+                            validationErrors: validationErrors,
+                            validationFunction: editSalesRowValidation,
+                            onRowEdit: newRowToEditInputChange,
+                        },
+                        addRowForm: <SalesForm 
+                            formDone={(newSale?.date === '0')} 
+                            createSalesDate={createSalesDate || ''}
+                            cumulativeTotal={salesDisplay?.[0]?.cumulative_total || 0}
+                            onInputChange={newSaleInputChange}
+                            onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, newSale!)} 
+                        />
+                    }}
+                    actionBtnsProps={{
+                        editBtnProps: {
+                            handleEdit: handleEdit,
+                            editMode: editMode,
+                            validationErrors: validationErrors
                         }
-                    </div>
-                </div>
+                    }}
+                    cudLoading={cudLoading}
+                    headerTitles={headerTitles}
+                />
             }
         </div>
-    )
+    );
 }
