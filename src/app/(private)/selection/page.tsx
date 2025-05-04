@@ -1,21 +1,32 @@
 'use client';
 
 import { useRouter } from "next/navigation";
+// import { useStore } from "zustand";
+import { useStore } from "@/store";
+
 
 export default function DashboardPage() {
   const router = useRouter();
-  
+  const { storeState } = useStore();
+  const { stores } = storeState;
   // Create an array of form options with type definition
   const formOptions: string[] = ["expenses", "payroll", "sales"];
   
   const handleNavigation = (option: string) => {
-    router.push(`/selection/${option}`);
+    if (stores && option === "sales") {
+      console.log("stores", stores[0].id);
+      router.push(`/selection/sales/${stores[0].id}`);
+    } else {
+      console.log("stores not reached", stores);
+
+      router.push(`/selection/${option}`);
+    }
   };
 
   return (
     <div>
       <div className="container mx-auto max-w-5xl px-4 py-8">
-        <h1 className="mb-8 text-3xl font-bold">Select Document Type</h1>
+        <h1 className="mb-8 text-3xl font-bold">Welcome, Select Document Type</h1>
         <div className="flex flex-col space-y-4">
           {formOptions.map((option) => (
             <button

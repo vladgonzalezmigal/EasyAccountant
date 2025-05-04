@@ -1,11 +1,10 @@
 // utils/canPerformOperation.ts
-import { SessionState } from "@/types/authTypes";
-import { CrudOperation, DeleteValidationParams, OperationValidationParams, UpdateValidationParams,
+import { CrudOperation, DeleteValidationParams, PerformCrudValidationParams, UpdateValidationParams,
      PerformCreateParams,
      PerformDeleteParams, PerformUpdateParams, PerformReadParams } from "@/app/(private)/features/handleForms/types/operationTypes";
 import {  CanDeleteOperationHandler, CanCreateOperationHandler, CanUpdateOperationHandler } from "./validationHandler";
 import { PerformCreateOperationHandler, PerformDeleteOperationHandler, PerformReadOperationHandler, PerformUpdateOperationHandler } from "./operationHandler";
-import { Session } from "@supabase/supabase-js";
+import {  SupabaseClient, User } from "@supabase/supabase-js";
 import { CrudResponseData, PerformCrudParams } from "../types/operationTypes";
 
 /**
@@ -16,25 +15,25 @@ import { CrudResponseData, PerformCrudParams } from "../types/operationTypes";
  * @returns A Session object if operation is allowed, or an error message string
  */
 export function canPerformOperation(
-    session: SessionState,
+    user: User,
     operation: CrudOperation,
-    params?: OperationValidationParams
-): string | Session {
-    let handler: { execute: () => string | Session } | undefined;
+    params?: PerformCrudValidationParams
+): string | User {
+    let handler: { execute: () => string | User } | undefined;
 
     switch (operation) {
         case 'delete':
-            handler = new CanDeleteOperationHandler(session, params as DeleteValidationParams);
+            handler = new CanDeleteOperationHandler(user, params as DeleteValidationParams);
             break;
         case 'create':
-            handler = new CanCreateOperationHandler(session);
+            handler = new CanCreateOperationHandler(user);
             break;
         case 'read':
             // TODO: Implement ReadOperationHandler
             // handler = new ReadOperationHandler(session, params as ReadParams);
             break;
         case 'update':
-            handler = new CanUpdateOperationHandler(session, params as UpdateValidationParams);
+            handler = new CanUpdateOperationHandler(user, params as UpdateValidationParams);
             break;
         default:
             return "Invalid operation";
@@ -54,22 +53,30 @@ export function canPerformOperation(
 
 export function performCrudOperation(
     operation: CrudOperation,
-    params: PerformCrudParams
+    params: PerformCrudParams,
+    supabase: SupabaseClient,
+    user_id?: string
 ): Promise<CrudResponseData> | string {
     let handler: { execute: () => Promise<CrudResponseData> } | undefined;
 
     switch (operation) {
         case 'delete':
-            handler = new PerformDeleteOperationHandler(params as PerformDeleteParams);
+            handler = new PerformDeleteOperationHandler(params as PerformDeleteParams, supabase);
             break;
         case 'create':
-            handler = new PerformCreateOperationHandler(params as PerformCreateParams);
+            if (!user_id) {
+                return "User ID is required";
+            }
+            handler = new PerformCreateOperationHandler(params as PerformCreateParams, supabase, user_id);
             break;
         case 'read':
-            handler = new PerformReadOperationHandler(params as PerformReadParams);
+            handler = new PerformReadOperationHandler(params as PerformReadParams, supabase);
             break;
         case 'update':
-            handler = new PerformUpdateOperationHandler(params as PerformUpdateParams);
+            if (!user_id) {
+                return "User ID is required";
+            }
+            handler = new PerformUpdateOperationHandler(params as PerformUpdateParams, supabase, user_id);
             break;
         default:
             return "Invalid operation";

@@ -2,7 +2,7 @@
 import React, { ChangeEvent, ReactNode } from 'react';
 import { FormData } from '@/app/(private)/types/formTypes';
 import { sumColumn } from '../../utils/analytics';
-import { fieldConfig, isFieldEdited } from '../utils/formValidation/formValidation';
+import { getFieldConfig, isFieldEdited } from '../utils/formValidation/formValidation';
 import { EditInputForm } from './editDataRow/EditInputForm';
 import { EditSelectForm } from './editDataRow/EditSelectForm';
 import { formatDisplayValue } from '../utils/formDataDisplay/formDataDisplay';
@@ -12,11 +12,12 @@ type FormDataRowsProps = {
     data: FormData[];
     colToSum: number;
     addRowForm?: ReactNode;
-    deleteConfig: DeleteConfig;
+    deleteConfig?: DeleteConfig;
     editConfig: EditConfig;
+    tableName: string;
 };
 
-export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editConfig }: FormDataRowsProps) {
+export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editConfig, tableName }: FormDataRowsProps) {
     const handleEditChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: number, colNumber: number) => {
         const { name, value } = e.target;
         const validationResult = editConfig.validationFunction(name as keyof FormData, value as string);
@@ -27,34 +28,40 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
         editConfig.onRowEdit(id, name as keyof FormData, value, colNumber);
     };
 
-    if (data.length === 0) {
-        return <p className="text-gray-500 text-center mt-4">No entries found for this period.</p>;
-    }
-
-    const displayKeys = Object.keys(data[0]).filter(key => key !== 'id') as (keyof typeof data[0])[];
+    const fieldConfig = getFieldConfig(tableName);
 
     return (
         <div className="w-full flex flex-col items-center">
             <div className="flex flex-col gap-y-3 h-[304px] lg:px-4 overflow-y-auto">
                 {addRowForm &&
-                    <div className='pt-3'>
+                    <div className={`pt-3 ${(data.length === 0) ? 'h-full w-full flex items-center justify-center' : ''}  `}>
                         {addRowForm}
                     </div>
                 }
                 {data.map((item) => {
-                    const { id, ...displayData } = item as { id: number } & Record<string, string | number>;
+                    // Extract id and only keep the last 5 properties for display
+                    const { id, ...rest } = item as { id: number } & Record<string, string | number>;
+                    const lastFiveKeys =  Object.keys(rest).slice(-5) as (keyof typeof data[0])[];;
+                    const displayData = lastFiveKeys.reduce((obj, key) => {
+                        obj[key] = rest[key];
+                        return obj;
+                    }, {} as Record<string, string | number>);
 
                     return (
                         <div
                             key={id}
                             className="table-row-style "
                         >
-                            {displayKeys.map((displayKey, index) => {
+                            {lastFiveKeys.map((displayKey, index) => {
                                 return (
                                     <div key={displayKey} className={`h-[60px] flex flex-col items-center justify-center`}>
                                         <div className='h-[40px] w-[100px] flex items-center pl-3'>
                                             {editConfig.mode ? (
-                                                fieldConfig[displayKey]?.type === 'select' ? (
+                                                fieldConfig[displayKey]?.type === 'null' ? (
+                                                    <p className='table-row-text'>
+                                                        {formatDisplayValue(displayData[displayKey])}
+                                                    </p>
+                                                ) : fieldConfig[displayKey]?.type === 'select' ? (
                                                     <EditSelectForm
                                                         name={displayKey as string}
                                                         value={
@@ -83,7 +90,7 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                                     </div>
                                 );
                             })}
-                            {deleteConfig.mode && (
+                            {deleteConfig?.mode && deleteConfig && (
                                 <div 
                                     onClick={() => deleteConfig.onRowSelect(id)}
                                     className={`absolute top-1/2 right-[5px] transform -translate-y-1/2 ${deleteConfig.rows.includes(id) ? 'row-delete-active' : 'row-delete-inactive'}`}

@@ -1,11 +1,11 @@
-export interface FormData {
+export interface AuthFormData {
     email: string;
     password: string;
   }
 
-  export type FormErrors = Record<keyof FormData, string | null>;
+  export type FormErrors = Record<keyof AuthFormData, string | null>;
 
-export function validateForm(formData: FormData): FormErrors {
+export function validateForm(formData: AuthFormData): FormErrors {
   const newErrors: FormErrors = {
     email: null,
     password: null,

@@ -54,7 +54,7 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
 
         const validation = validateDateInput(
             value,
-            parseInt(month as string),
+            parseInt(month as string)-1,
             parseInt(year as string)
         );
 
@@ -105,7 +105,7 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
     };
 
     return (
-        <div className="border  border-[#DFF4F3] bg-white table-input-shadow [772px] rounded-full">
+        <div className="border  border-[#DFF4F3] bg-white table-input-shadow w-[772px] rounded-full">
             <form ref={formRef} onSubmit={handleSubmit} className='flex flex-row items-center rounded-full h-[60px] pl-10 text-gray-800'>
                 <div className="">
                     <input

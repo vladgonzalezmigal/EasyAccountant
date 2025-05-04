@@ -1,12 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { UserAuth } from "../../context/AuthContext";
 import { useRouter } from 'next/navigation'
-import { AuthError } from '@supabase/supabase-js';
+import { signup } from '@/utils/AuthActions';
 
 export default function SignupPage() {
-    const { signUpNewUser } = UserAuth();
     const router = useRouter();
 
     interface formData {
@@ -27,7 +25,7 @@ export default function SignupPage() {
 
     //   const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [signInError, setSignInError] = useState<AuthError | null>(null);
+    const [signInError, setSignInError] = useState<string | null>(null);
 
     const validateForm = () => {
         const newErrors: FormErrors = {
@@ -64,17 +62,18 @@ export default function SignupPage() {
         e.preventDefault();
         if (validateForm()) {
             try {
-                const result = await signUpNewUser(formData.email, formData.password); // Call context function
-                if (result.success) {
-                    router.push('/selection') // Navigate to selection on success
-                } else if (result.error) {
-                    setSignInError(result.error as AuthError);
+                setLoading(true);
+                const result = await signup(formData);
+                if (result) {
+                  setSignInError(result.error);
+                } else {
+                  router.push('/selection');
                 }
-            } catch (error) {
-                setSignInError(error as AuthError);
-            } finally {
-                setLoading(false); // End loading state
-            }
+              } catch (error) {
+                setSignInError(error as string);
+              } finally {
+                setLoading(false);
+              }
         }
     };
 
@@ -154,7 +153,7 @@ export default function SignupPage() {
                         </button>
                     </div>
                     {signInError && (
-                        <div className="text-red-600 text-sm text-center">{signInError.message}</div>
+                        <div className="text-red-600 text-sm text-center">{signInError}</div>
                     )}
                 </form>
             </div>

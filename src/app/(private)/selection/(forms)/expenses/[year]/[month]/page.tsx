@@ -2,20 +2,20 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { UserAuth } from "@/context/AuthContext";
 import { months } from "@/app/(private)/utils/dateUtils";
 import { Expense } from "@/app/(private)/types/formTypes";
 import { Loading } from "@/app/components/Loading";
 import { getMonthDateRange, formatDate } from "@/app/(private)/utils/dateUtils";
-import { performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
+// import { performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
 import { validateExpenseInput } from "@/app/(private)/features/handleForms/utils/formValidation/editRowValidation";
 import useExpenseFormCrud from "@/app/(private)/features/handleForms/hooks/useExpenseFormCrud";
-import ExpenseSalesTable from "@/app/(private)/features/handleForms/components/ExpenseSalesTable";
+import ExpenseTable from "@/app/(private)/features/handleForms/components/ExpenseTable";
 import ExpenseForm from "@/app/(private)/features/handleForms/components/addDataRow/ExpenseForm";
+import { getRequest } from "@/app/(private)/features/handleForms/utils/actions/crudOps";
+import { CudError } from "@/app/(private)/features/handleForms/components/formErrors/CudError";
 
 export default function ExpensesPage() {
     const { year, month } = useParams();
-    const { session } = UserAuth();
     // fetch state, 
     const { startDate, endDate } = getMonthDateRange(year as string, month as string); // End Date is exclusive 
     const [fetchError, setFetchError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function ExpensesPage() {
     const [rowsToDelete, setRowsToDelete] = useState<number[]>([]);
 
     // use the useExpenseFormCrud hook to handle the cud operations
-    const { handleSubmitDelete, handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useExpenseFormCrud({ session, setExpenses, setNewExpense, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'expenses' })
+    const { handleSubmitDelete, handleSubmitCreate, handleSubmitEdit, cudLoading, cudError } = useExpenseFormCrud({ setExpenses, setNewExpense, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'expenses' })
 
     const newExpenseInputChange = (field: keyof Expense, value: string | number) => {
         // value is validated & formatted by the ExpenseForm component
@@ -56,7 +56,6 @@ export default function ExpensesPage() {
         const validationResult = editExpenseRowValidation(key as keyof Expense, value as string);
 
         if (!validationResult.isValid) {
-            console.log("validation failed");
             // Add to validation errors map if validation fails
             setValidationErrors(prev => {
                 const newErrors = { ...prev };
@@ -73,7 +72,6 @@ export default function ExpensesPage() {
 
         // if validation passes, remove from errors map if it exists
         if (validationErrors[id] && validationErrors[id].has(colNumber)) {
-            console.log("validation passed", validationErrors[id], "colNumber", colNumber);
             setValidationErrors(prev => {
                 const newErrors = { ...prev };
                 if (newErrors[id]) {
@@ -144,7 +142,8 @@ export default function ExpensesPage() {
     useEffect(() => {
         const fetchExpenses = async () => {
             const dataType = { id: -1, date: '', payment_type: 'CHECK', detail: '', company: '', amount: 0 } as Expense;
-            const readRes = await performCrudOperation('read', { tableName: 'expenses', dataType: dataType, startDate, endDate });
+            const readRes = await getRequest({ tableName: 'expenses', dataType: dataType, startDate, endDate });
+            // const readRes = await performCrudOperation('read', { tableName: 'expenses', dataType: dataType, startDate, endDate });
             if (typeof readRes !== 'string' && !readRes.data) {
                 setFetchError(readRes.error);
                 return;
@@ -164,16 +163,14 @@ export default function ExpensesPage() {
                     Expenses
                 </h1>
                 <p className="font-semibold text-[#585858]">  {months[parseInt(month as string) - 1]},  {year} </p>
-                <div className="flex flex-row justify-center items-center h-[32px]">
-                    {cudError && <p className="text-red-500">{cudError}</p>}
-                </div>
+                <CudError cudError={cudError} />
             </div>
 
             {fetchLoading ? (
                 <Loading />
             ) : (
                 // Table Component
-                <ExpenseSalesTable
+                <ExpenseTable
                     fetchError={fetchError}
                     formDataProps={{
                         rowData: expenses,

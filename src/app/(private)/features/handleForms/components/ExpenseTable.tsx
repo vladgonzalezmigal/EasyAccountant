@@ -1,6 +1,6 @@
 'use client';
 
-import { Expense, Sales } from "@/app/(private)/types/formTypes";
+import { Expense, SalesDisplay } from "@/app/(private)/types/formTypes";
 import { FormDataRows } from "@/app/(private)/features/handleForms/components/FormDataRows";
 import TableHeader from "@/app/(private)/features/handleForms/components/TableHeader";
 import ActionBtns from "@/app/(private)/features/handleForms/components/ActionBtns";
@@ -11,10 +11,10 @@ interface ValidationResult {
     value: string;
 }
 
-interface ExpenseSalesTableProps {
+interface ExpenseTableProps {
     fetchError: string | null;
     formDataProps: {
-        rowData: (Expense[] | null) | (Sales[] | null);
+        rowData: (Expense[] | null) | (SalesDisplay[] | null);
         deleteConfig: {
             mode: boolean;
             rows: number[];
@@ -45,13 +45,13 @@ interface ExpenseSalesTableProps {
     headerTitles: string[];
 }
 
-export default function ExpenseSalesTable({
+export default function ExpenseTable({
     fetchError,
     formDataProps,
     actionBtnsProps,
     cudLoading,
     headerTitles
-}: ExpenseSalesTableProps) {
+}: ExpenseTableProps) {
     return (
         <div className="w-full flex flex-col gap-4 justify-center items-center mb-8">
             <div className="">
@@ -67,6 +67,7 @@ export default function ExpenseSalesTable({
                                 editConfig={formDataProps.editConfig}
                                 colToSum={5}
                                 addRowForm={formDataProps.addRowForm}
+                                tableName="expenses"
                             />
                         </div>
                         {/* Action Buttons */}

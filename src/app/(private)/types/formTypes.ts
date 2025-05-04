@@ -7,12 +7,18 @@ export type Expense = {
     amount: number;
 };
 
-export type Sales = {
+export interface Sales {
     id: number;
-    date: string; // or Date, but Supabase returns it as string
+    store_id: number; 
+    date: string; // Supabase returns it as string
     sales: number;
     taxes: number; 
 };
+
+export interface SalesDisplay extends Sales {
+    daily_total: number;
+    cumulative_total: number;
+}
 
 export type Payroll = {
     id: number;
@@ -22,4 +28,4 @@ export type Payroll = {
     hours: number;
 };
 
-export type FormData = Expense | Sales | Payroll;
+export type FormData = Expense | Sales | SalesDisplay | Payroll;

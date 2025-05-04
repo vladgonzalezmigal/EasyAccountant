@@ -16,7 +16,7 @@ interface EditBtnConfig {
 }
 
 interface ActionBtnsProps {
-    deleteBtnConfig: DeleteBtnConfig;
+    deleteBtnConfig?: DeleteBtnConfig;
     editBtnConfig: EditBtnConfig;
     cudLoading: boolean;
 }
@@ -26,7 +26,7 @@ export default function ActionBtns({
     editBtnConfig,
     cudLoading
 }: ActionBtnsProps) {
-    const { handleDelete, deleteMode, canDelete } = deleteBtnConfig;
+    const { handleDelete, deleteMode, canDelete } = deleteBtnConfig || {};
     const { handleEdit, editMode, validationErrors } = editBtnConfig; 
 
     const clearEdits = (Object.keys(validationErrors).length > 0);
@@ -35,9 +35,10 @@ export default function ActionBtns({
         <div className="w-full relative h-[148px] bg-[#F2FBFA] border border-t-0 border-[#ECECEE] header-shadow rounded-bottom z-0 mt-[-20px]">
             <div className="flex flex-row gap-x-4 items-center justify-center absolute bottom-4 left-1/2 transform -translate-x-1/2 ">
                 {/* Delete Button */}
-                <div className="flex flex-col items-center gap-y-2">
-                    <button
-                        onClick={handleDelete}
+                {deleteBtnConfig && (
+                    <div className="flex flex-col items-center gap-y-2">
+                        <button
+                            onClick={handleDelete}
                         disabled={cudLoading}
                         className={`cursor-pointer rounded-full w-16 h-16 border-2 border-[#A72020] flex items-center justify-center ${cudLoading ? 'bg-gray-400' :
                             deleteMode ? 'bg-[#FA7B7D]' : '  bg-[#F8D2D2]'
@@ -49,8 +50,9 @@ export default function ActionBtns({
                             </span>
                         }
                     </button>
-                    <p className="action-btn-text"> Delete </p>
-                </div>
+                        <p className="action-btn-text"> Delete </p>
+                    </div>
+                )}
                 {/* Edit Button */}
                 <div className="flex flex-col items-center gap-y-2">
                     <button
