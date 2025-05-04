@@ -137,6 +137,36 @@ export const validateCompanyInput = (value: string): ValidationResult => {
 // sales page related tasks 
 
 /**
+ * Calculates the next day in the month from a given date string.
+ * 
+ * @param dateStr - Date string in 'YYYY-MM-DD' format
+ * @returns The next day as a date string in 'YYYY-MM-DD' format, or '0' if it's the last day of the month
+ */
+export const getNextDayInMonth = (dateStr: string): string => {
+    // Parse the date components
+    const [year, month, day] = dateStr.split('-').map(part => parseInt(part, 10));
+    
+    // Get the number of days in the month
+    const daysInMonth = getDaysInMonth(month - 1, year);
+    
+    // Check if it's the last day of the month
+    if (day >= daysInMonth) {
+        return '0';
+    }
+    
+    // Calculate the next day
+    const nextDay = day + 1;
+    
+    // Format the next day with leading zeros if needed
+    const formattedDay = nextDay < 10 ? `0${nextDay}` : `${nextDay}`;
+    const formattedMonth = month < 10 ? `0${month}` : `${month}`;
+    
+    // Return the next day in 'YYYY-MM-DD' format
+    return `${year}-${formattedMonth}-${formattedDay}`;
+};
+
+
+/**
  * Validates an array of dates to check if they are all from the same month
  * and if all days in the month are present.
  * 

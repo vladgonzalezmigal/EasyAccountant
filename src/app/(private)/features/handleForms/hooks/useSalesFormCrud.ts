@@ -1,156 +1,167 @@
 import { useState } from 'react';
 import { Sales } from '@/app/(private)/types/formTypes';
 import { postRequest } from '../utils/actions/crudOps';
+import { useParams } from 'next/navigation';
+import { getNextDayInMonth } from '../utils/formValidation/formValidation';
 
 // export type 
 type salesFormCrudHandlers = {
-  handleSubmitCreate: (e: React.FormEvent<HTMLFormElement>, newSales: Sales) => Promise<void>;
-  handleSubmitDelete: (rowsToDelete: number[]) => Promise<void>;
-  handleSubmitEdit: (editedRows: Sales[], validationErrors: Record<number, Set<number>>) => Promise<void>;
-  cudLoading: boolean;
-  cudError: string | null;
+    handleSubmitCreate: (e: React.FormEvent<HTMLFormElement>, newSales: Sales) => Promise<void>;
+    handleSubmitDelete: (rowsToDelete: number[]) => Promise<void>;
+    handleSubmitEdit: (editedRows: Sales[], validationErrors: Record<number, Set<number>>) => Promise<void>;
+    cudLoading: boolean;
+    cudError: string | null;
 };
 
 
 type UseFormCrudProps = {
-  setSales: React.Dispatch<React.SetStateAction<Sales[] | null>>;
-  setNewSale: React.Dispatch<React.SetStateAction<Sales>>;
-  setEditedRows: React.Dispatch<React.SetStateAction<Sales[]>>;
-  setValidationErrors: React.Dispatch<React.SetStateAction<Record<number, Set<number>>>>;
-  setRowsToDelete: React.Dispatch<React.SetStateAction<number[]>>;
-  setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
-  setDeleteMode: React.Dispatch<React.SetStateAction<boolean>>;
-  tableName: string;
+    setSales: React.Dispatch<React.SetStateAction<Sales[] | null>>;
+    setNewSale: React.Dispatch<React.SetStateAction<Sales | null>>;
+    setCreateSalesDate: React.Dispatch<React.SetStateAction<string | null>>;
+    setEditedRows: React.Dispatch<React.SetStateAction<Sales[]>>;
+    setValidationErrors: React.Dispatch<React.SetStateAction<Record<number, Set<number>>>>;
+    setRowsToDelete: React.Dispatch<React.SetStateAction<number[]>>;
+    setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
+    setDeleteMode: React.Dispatch<React.SetStateAction<boolean>>;
+    tableName: string;
 };
 
 export function useSalesFormCrud({
-  setSales,
-  setNewSale,
-  setEditedRows,
-  setValidationErrors,
-  setRowsToDelete,
-  setEditMode,
-  setDeleteMode,
-  tableName = 'sales',
+    setSales,
+    setNewSale,
+    setCreateSalesDate,
+    setEditedRows,
+    setValidationErrors,
+    setRowsToDelete,
+    setEditMode,
+    setDeleteMode,
+    tableName = 'sales',
 }: UseFormCrudProps): salesFormCrudHandlers {
-  const [cudLoading, setCudLoading] = useState(false);
-  const [cudError, setCudError] = useState<string | null>(null);
+    const [cudLoading, setCudLoading] = useState(false);
+    const [cudError, setCudError] = useState<string | null>(null);
 
-  const handleSubmitCreate = async (e: React.FormEvent<HTMLFormElement>, newSale: Sales) => {
-    e.preventDefault();
+    const { store_id } = useParams();
 
-    setCudLoading(true);
 
-    const createRes = await postRequest('create', {
-      tableName,
-      createData: newSale,
-    });
+    const handleSubmitCreate = async (e: React.FormEvent<HTMLFormElement>, newSale: Sales ) => {
+        e.preventDefault();
 
-    if (createRes.error) {
-      setCudError(createRes.error);
-      setCudLoading(false);
-      return;
-    }
+        setCudLoading(true);
 
-    setCudError(null);
+        const createRes = await postRequest('create', {
+            tableName,
+            createData: newSale,
+        });
 
-    if (createRes.data) {
-      const newSalesdata = createRes.data as Sales[];
-      setSales((prevSales) =>
-        [...(prevSales || []), newSalesdata[0]].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        )
-      );
-      setNewSale({
-        id: -1,
-        store_id: 3,  // todo replace store id 
-        date: '', // todo replace date 
-        sales: 0,
-        taxes: 0,
-      });
-    }
-    setCudLoading(false);
-  };
+        if (createRes.error) {
+            setCudError(createRes.error);
+            setCudLoading(false);
+            return;
+        }
 
-  const handleSubmitDelete = async (rowsToDelete: number[]) => {
+        setCudError(null);
 
-    setCudLoading(true);
+        if (createRes.data) {
+            const newSalesdata = createRes.data as Sales[];
+            setSales((prevSales) =>
+                [...(prevSales || []), newSalesdata[0]].sort(
+                    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+                )
+            );
+            const nextDay = getNextDayInMonth(newSalesdata[0].date);
+            setCreateSalesDate(nextDay);
+            setNewSale({
+                id: -1,
+                store_id: parseInt(store_id as string),  // todo replace store id with current one 
+                date: nextDay, // todo replace date with appropriate date 
+                sales: 0,
+                taxes: 0,
+            });
+            // setDisplaySales
 
-    const deleteRes = await postRequest('delete', { tableName, rowsToDelete }, { tableName, rowsToDelete });
+        }
+        setCudLoading(false);
+    };
 
-    if (deleteRes.error) {
-      setCudError(deleteRes.error);
-      setCudLoading(false);
-      return;
-    }
+    const handleSubmitDelete = async (rowsToDelete: number[]) => {
 
-    setCudError(null);
+        setCudLoading(true);
 
-    if (typeof deleteRes !== 'string' && deleteRes.data) {
-      const salesData = deleteRes.data as Sales[];
-      const deletedIds: number[] = salesData.map((sale: Sales) => sale.id);
-      if (tableName === 'sales' && setSales) {
-        setSales((prevSales) =>
-            prevSales ? prevSales.filter(sale => !deletedIds.includes(sale.id)) : null
-        );
-      }
-      setRowsToDelete([]);
-      setDeleteMode(false);
-    }
-    setCudLoading(false);
-  };
+        const deleteRes = await postRequest('delete', { tableName, rowsToDelete }, { tableName, rowsToDelete });
 
-  const handleSubmitEdit = async (
-    editedRows: Sales[],
-    validationErrors: Record<number, Set<number>>
-  ) => {
+        if (deleteRes.error) {
+            setCudError(deleteRes.error);
+            setCudLoading(false);
+            return;
+        }
 
-    setCudLoading(true);
+        setCudError(null);
 
-    const updateRes = await postRequest('update', { tableName, editedRows }, {
-      editedRows,
-      tableName,
-      validationErrors
-    });
+        if (typeof deleteRes !== 'string' && deleteRes.data) {
+            const salesData = deleteRes.data as Sales[];
+            const deletedIds: number[] = salesData.map((sale: Sales) => sale.id);
+            if (tableName === 'sales' && setSales) {
+                setSales((prevSales) =>
+                    prevSales ? prevSales.filter(sale => !deletedIds.includes(sale.id)) : null
+                );
+            }
+            setRowsToDelete([]);
+            setDeleteMode(false);
+        }
+        setCudLoading(false);
+    };
 
-    if (updateRes.error) {
-      setCudError(updateRes.error);
-      setCudLoading(false);
-      return;
-    } else {
-      setCudError(null);
-      const updateData = updateRes.data as Sales[];
+    const handleSubmitEdit = async (
+        editedRows: Sales[],
+        validationErrors: Record<number, Set<number>>
+    ) => {
 
-      setSales((prevSales) => {
-        if (!prevSales) return updateData;
+        setCudLoading(true);
 
-        // Create a map of updated sales by ID for quick lookup
-        const updateSalesmap = new Map(
-          updateData.map(sale => [sale.id, sale])
-        );
+        const updateRes = await postRequest('update', { tableName, editedRows }, {
+            editedRows,
+            tableName,
+            validationErrors
+        });
 
-        // Replace existing sales with updated ones based on ID
-        return prevSales.map(sale =>
-            updateSalesmap.has(sale.id)
-            ? updateSalesmap.get(sale.id)!
-            : sale
-        );
-      });
-      // clear edit form state 
-      setEditedRows([]);
-      setValidationErrors({});
-      setEditMode(false);
-    }
-    setCudLoading(false);
-  };
+        if (updateRes.error) {
+            setCudError(updateRes.error);
+            setCudLoading(false);
+            return;
+        } else {
+            setCudError(null);
+            const updateData = updateRes.data as Sales[];
 
-  return {
-    handleSubmitCreate,
-    handleSubmitDelete,
-    handleSubmitEdit,
-    cudLoading,
-    cudError,
-  };
+            setSales((prevSales) => {
+                if (!prevSales) return updateData;
+
+                // Create a map of updated sales by ID for quick lookup
+                const updateSalesmap = new Map(
+                    updateData.map(sale => [sale.id, sale])
+                );
+
+                // Replace existing sales with updated ones based on ID
+                return prevSales.map(sale =>
+                    updateSalesmap.has(sale.id)
+                        ? updateSalesmap.get(sale.id)!
+                        : sale
+                );
+            });
+            // clear edit form state 
+            setEditedRows([]);
+            setValidationErrors({});
+            setEditMode(false);
+        }
+        setCudLoading(false);
+    };
+
+    return {
+        handleSubmitCreate,
+        handleSubmitDelete,
+        handleSubmitEdit,
+        cudLoading,
+        cudError,
+    };
 }
 
 export default useSalesFormCrud;

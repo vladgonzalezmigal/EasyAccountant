@@ -18,7 +18,7 @@ export default function SalesFormPage() {
     const { store_id, year, month } = useParams();
     const { storeState } = useStore();
     const { stores } = storeState;
-    
+
     let store_name = stores?.find((store) => store.id === parseInt(store_id as string))?.store_name;
     if (!store_name) {
         store_name = "searching...";
@@ -30,24 +30,14 @@ export default function SalesFormPage() {
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [sales, setSales] = useState<Sales[] | null>(null); // appended amount calculated in parent & 
     const [salesDisplay, setSalesDisplay] = useState<SalesDisplay[] | null>(null);
-
     // create mode state
-    const datesArray = sales ? sales.map(sale => sale.date) : [];
-    const nextDate = validateDateSequence(datesArray,
-    getDaysInMonth(parseInt(month as string, 10)-1,parseInt(year as string)));
-    const createSalesDate = (typeof nextDate === "number") ? formatDate(nextDate.toString(), month as string, year as string) : '0'; 
+    const [createSalesDate, setCreateSalesDate] = useState<string | null>(null); // start empty
 
-    const [newSale, setNewSale] = useState<Sales>({
-        id: -1,
-        store_id: parseInt(store_id as string),  // check if store_id in DB on backend 
-        date: createSalesDate,
-        sales: 0,
-        taxes: 0,
-    });
+    const [newSale, setNewSale] = useState<Sales | null>(null);
     const newSaleInputChange = (field: keyof Sales, value: string | number) => {
         // value is validated & formatted by the SalesForm component
-        setNewSale(prev => ({ ...prev, [field]: value }));
-        console.log(newSale);
+        if (!newSale) return;
+        setNewSale(prev => prev ? { ...prev, [field]: value } : null);
         return value;
     };
 
@@ -57,12 +47,12 @@ export default function SalesFormPage() {
     const [validationErrors, setValidationErrors] = useState<Record<number, Set<number>>>({});
     const editSalesRowValidation = (key: keyof Sales, value: string) => {
         // return validateExpenseInput(key, value, parseInt(month as string), parseInt(year as string));
-        return {isValid: true, value: value}; // TODO  
+        return { isValid: true, value: value }; // TODO  
     }
     const newRowToEditInputChange = (id: number, key: keyof Sales, value: string | number, colNumber: number) => {
         // need to add form validation 
     }
-     // delete mode state 
+    // delete mode state 
     const [deleteMode, setDeleteMode] = useState<boolean>(false);
     const [rowsToDelete, setRowsToDelete] = useState<number[]>([]);
 
@@ -75,8 +65,32 @@ export default function SalesFormPage() {
     }
 
     // api hooks
-    const {  handleSubmitCreate,} = useSalesFormCrud({ setSales, setNewSale, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'sales' })
+    const { handleSubmitCreate, } = useSalesFormCrud({ setSales, setNewSale,setCreateSalesDate, setValidationErrors, setEditedRows, setEditMode, setRowsToDelete, setDeleteMode, tableName: 'sales' })
 
+    // get next date 
+    useEffect(() => {
+        const datesArray = sales ? sales.map(sale => sale.date) : [];
+        const nextDate = validateDateSequence(
+            datesArray,
+            getDaysInMonth(parseInt(month as string, 10) - 1, parseInt(year as string))
+        );
+        const formattedDate = (typeof nextDate === 'number')
+            ? formatDate(nextDate.toString(), month as string, year as string)
+            : '0';
+        setCreateSalesDate(formattedDate);
+    }, [sales, month, year]); // dependencies — update this list based on what causes re-calculation
+
+    // when createSalesDate is ready, set newSale
+    useEffect(() => {
+    if (!createSalesDate) return;
+    setNewSale({
+        id: -1,
+        store_id: parseInt(store_id as string),
+        date: createSalesDate,
+        sales: 0,
+        taxes: 0,
+        });
+    }, [createSalesDate, store_id]);
 
     useEffect(() => {
         const fetchSales = async () => {
@@ -94,54 +108,61 @@ export default function SalesFormPage() {
         fetchSales();
     }, [startDate, endDate, store_id]);
 
+    useEffect(() => {
+        if (!sales) return;
+        setSalesDisplay(formatSalesData(sales));
+    }, [sales]);
+
     if (fetchLoading) {
         return <div>Loading...</div>;
-    }    
+    }
 
     const headerTitles = ["Date", "Sales", "Taxes", "Daily ", "Total"];
-
     return (
         <div>
             <TablePageTitle docTitle={`Sales`} docSubtitle={store_name} />
             {fetchError ? <div>{fetchError}</div> :
-              <div className="w-full flex flex-col gap-4 justify-center items-center mb-8">
-              <div className="">
-                  {/* Table Header */}
-                  <TableHeader headerTitles={headerTitles} />
-                  {
-                     (sales && !fetchError) ?
-                      // Table Data Rows
-                      <div>
-                         <div className="relative z-10 border border-[#ECECEE] table-input-shadow border-y-2 border-t-0 bg-[#FDFDFD] rounded-bottom  relative z-0">
-                            { salesDisplay && 
-                            <FormDataRows
-                            data={salesDisplay}
-                            deleteConfig={{ 
-                                mode: deleteMode,
-                                rows: rowsToDelete,
-                                onRowSelect: newRowToDelete
-                            }}
-                            editConfig={{mode: editMode,
-                            editedRows: editedRows,
-                            validationErrors: validationErrors,
-                            validationFunction: editSalesRowValidation,
-                            onRowEdit: newRowToEditInputChange,
-                            }}
-                            colToSum={5}
-                            addRowForm={<SalesForm formDone={(createSalesDate === '0')} createSalesDate={createSalesDate}
-                            onInputChange={newSaleInputChange}
-                            onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, newSale)}/>}
-                        />}
-                            
-                        </div>
-                         
-                      </div>
-                      :
-                      <p>No expenses found</p>
-                      }
-              </div>
-          </div>
-             }
+                <div className="w-full flex flex-col gap-4 justify-center items-center mb-8">
+                    <div className="">
+                        {/* Table Header */}
+                        <TableHeader headerTitles={headerTitles} />
+                        {
+                            (sales && !fetchError) ?
+                                // Table Data Rows
+                                <div>
+                                    <div className="relative z-10 border border-[#ECECEE] table-input-shadow border-y-2 border-t-0 bg-[#FDFDFD] rounded-bottom  relative z-0">
+                                        {(salesDisplay && newSale && createSalesDate) &&
+                                        <> 
+                                            <FormDataRows
+                                                data={salesDisplay}
+                                                deleteConfig={{
+                                                    mode: deleteMode,
+                                                    rows: rowsToDelete,
+                                                    onRowSelect: newRowToDelete
+                                                }}
+                                                editConfig={{
+                                                    mode: editMode,
+                                                    editedRows: editedRows,
+                                                    validationErrors: validationErrors,
+                                                    validationFunction: editSalesRowValidation,
+                                                    onRowEdit: newRowToEditInputChange,
+                                                }}
+                                                colToSum={5}
+                                                addRowForm={<SalesForm formDone={(newSale.date === '0')} createSalesDate={createSalesDate}
+                                                    cumulativeTotal={salesDisplay[0]?.cumulative_total || 0}
+                                                    onInputChange={newSaleInputChange}
+                                                    onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, newSale)} />}
+                                            />
+                                            </>}
+                                    </div>
+
+                                </div>
+                                :
+                                <p>No expenses found</p>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     )
 }
