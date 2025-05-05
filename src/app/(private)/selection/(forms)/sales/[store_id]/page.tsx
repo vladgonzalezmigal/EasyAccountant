@@ -1,5 +1,5 @@
 'use client';
-import DocumentSelection from "@/app/(private)/features/handleForms/components/DocumentSelection";
+import DocumentSelection from "@/app/(private)/features/handleForms/components/DocSearch/DocumentSelection";
 import { useStore } from "@/store";
 import { useParams } from "next/navigation";
 export default function SalesSelectionPage() {
@@ -15,10 +15,9 @@ export default function SalesSelectionPage() {
   // const store_name : 
 
   return (
-      <div className="max-w-5xl px-4 py-8 w-full ">
-        <h1 className="mb-8 text-3xl font-bold text-[#2F2F2F]">Sales </h1>
-        <h2 className="text-[#8B8F95]"> {store_name} </h2>
-        <div className="flex px-8 w-full">
+      <div className="w-full ">
+        <h1 className="mb-10 text-3xl font-bold text-[#2F2F2F]">Sales Calendar For {store_name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')} </h1>
+        <div className=" w-full">
         <DocumentSelection />
         </div>
       </div>
