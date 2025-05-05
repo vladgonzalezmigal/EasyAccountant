@@ -105,12 +105,14 @@ export const getBackConfig = (path: string): BackConfig => {
     
     // Extract path parts
     const pathParts = path.split('/').filter(part => part);
-    
     // Check if path matches the year/month pattern (e.g., .../something/2023/01)
     if (/\/\d{4}\/\d{1,2}$/.test(path)) {
         // For year/month pattern, return everything before year
         const yearIndex = path.lastIndexOf('/', path.lastIndexOf('/') - 1);
         backURL = path.substring(0, yearIndex);
+    } else if (pathParts.length === 3 && path.includes('sales')) {
+        // For sales with 3 layers (selection/sales/storeId), go back to selection
+        backURL = '/selection';
     } else if (pathParts.length > 0) {
         // For other paths, pop off the last segment
         backURL = '/' + pathParts.slice(0, -1).join('/');
