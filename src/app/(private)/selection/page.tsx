@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-// import { useStore } from "zustand";
 import { useStore } from "@/store";
 import { months } from "../utils/dateUtils";
 import SalesIcon from "../components/svgs/SalesIcon";
 import ExpensesIcon from "../components/svgs/ExpensesIcon";
 import PayrollIcon from "../components/svgs/PayrollIcon";
+import CalendarIcon from "../components/svgs/CalendarIcon";
+import GearIcon from "../components/svgs/GearIcon";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -68,8 +69,23 @@ export default function DashboardPage() {
                   <p className="text-[#2A7D7B] text-[18px] font-semibold"> $100,000</p>
                 </div>
               </div>
-              <div>
-                <p> text</p>
+              {/* Button section */}
+              <div className="w-[100px] flex flex-col items-center justify-center"> 
+                {/* Search section */}
+                <div className="flex flex-col items-center justify-center"> 
+                  <div className="w-[52px] h-[52px] bg-[#48B4A0]/10 rounded-full flex items-center justify-center border-2 border-[#48B4A0] cursor-pointer"
+                  onClick={() => router.push(`selection/${option}/${(stores && (option === "sales") ? `${stores[0].id}` : '')}`)}>
+                    <CalendarIcon className="text-[#48B4A0] w-7 h-7" />
+                  </div>
+                  <p className="text-[#2F2F2F] font-semibold text-[12px]"> Search </p>
+                </div>
+                {/* Settings section */}
+                <div className="flex flex-col items-center justify-center"> 
+                  <div className="w-[52px] h-[52px] bg-[#005DDF]/10 rounded-full flex items-center justify-center border-2 border-[#0C3C74] cursor-pointer">
+                    <GearIcon className="text-[#0C3C74] w-7 h-7" />
+                  </div>
+                  <p className="text-[#2F2F2F] font-semibold text-[12px]"> Settings</p>
+                </div>
               </div>
             </div>
           ))}
