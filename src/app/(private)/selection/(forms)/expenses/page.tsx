@@ -1,5 +1,5 @@
 'use client';
-import DocumentSelection from "@/app/(private)/features/handleForms/components/DocumentSelection";
+import DocumentSelection from "@/app/(private)/features/handleForms/components/DocSearch/DocumentSelection";
 export default function ExpenseSelectionPage() {
 
   return (

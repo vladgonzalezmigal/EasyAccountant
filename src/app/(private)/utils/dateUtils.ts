@@ -36,14 +36,16 @@ export const getDaysInMonth = (monthIndex: number, year: number): number => {
  * @returns The validated and formatted year value
  */
 
-export const validateYearInput = (value: string, currentValue: string): string => {
+export const validateYearInput = (value: string, ): boolean => {
     // Only allow digits
-    if (!/^\d*$/.test(value)) return currentValue;
+    if (!/^\d*$/.test(value)) return false;
     
     // Prevent leading zeros
-    if (value.length === 1 && value.startsWith('0')) return currentValue;
+    if (value.startsWith('0')) return false;
+
+    if (value.length < 4) return false;
     
-    return value;
+    return true;
 };
 
 /**
