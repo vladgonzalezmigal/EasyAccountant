@@ -3,42 +3,78 @@
 import { useRouter } from "next/navigation";
 // import { useStore } from "zustand";
 import { useStore } from "@/store";
-
+import { months } from "../utils/dateUtils";
+import SalesIcon from "../components/svgs/SalesIcon";
+import ExpensesIcon from "../components/svgs/ExpensesIcon";
+import PayrollIcon from "../components/svgs/PayrollIcon";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { storeState } = useStore();
   const { stores } = storeState;
-  // Create an array of form options with type definition
-  const formOptions: string[] = ["expenses", "payroll", "sales"];
-  
+
+  // Get current month and year
+  const today = new Date();
+  const currentYear = today.getFullYear().toString();
+  const currentMonth : number = (today.getMonth())
+  const monthName = months[currentMonth];
+
+  // Create an object mapping form types to their icons
+  const formOptions = {
+    sales: SalesIcon,
+    expenses: ExpensesIcon,
+    payroll: PayrollIcon
+  };
+
   const handleNavigation = (option: string) => {
     if (stores && option === "sales") {
       console.log("stores", stores[0].id);
-      router.push(`/selection/sales/${stores[0].id}`);
-    } else {
-      console.log("stores not reached", stores);
-
-      router.push(`/selection/${option}`);
+      router.push(`/selection/sales/${stores[0].id}/${currentYear}/${(currentMonth+1)}`);
+    } else if (!stores && option === "sales") {
+      router.push(`/selection/`); // user needs to refresh the page to see the stores
+    } else  {
+      router.push(`/selection/${option}/${currentYear}/${(currentMonth+1)}`);
     }
   };
 
   return (
     <div>
-      <div className="container mx-auto max-w-5xl px-4 py-8">
-        <h1 className="mb-8 text-3xl font-bold">Welcome, Select Document Type</h1>
-        <div className="flex flex-col space-y-4">
-          {formOptions.map((option) => (
-            <button
-              key={option}
-              onClick={() => handleNavigation(option)}
-              className="w-[740px] h-[128px] bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md flex items-center justify-center transition-colors duration-200 mx-auto"
-            >
-              {option.charAt(0).toUpperCase() + option.slice(1)} 
-            </button>
+      <div className=" w-[600px] h-full">
+        <h1 className="mb-10 text-3xl text-center font-bold text-[#2F2F2F]">Welcome, Choose a Document:</h1>
+        <div className="flex flex-col space-y-4 w-full ">
+          {Object.entries(formOptions).map(([option, Icon]) => (
+            <div key={option} className="w-full flex justify-start  bg-[#FBFBFB] rounded-2xl shadow-md border border-[#DFDFDF]">
+              <div
+                key={option}
+                onClick={() => handleNavigation(option)}
+                className="w-[500px] h-[144px] bg-white px-7 hover:bg-[#F2FBFA] rounded-2xl border border-[#DFDFDF] shadow-md flex items-center justify-between transition-colors duration-200 cursor-pointer"
+              >
+                {/* Label section */}
+                <div className="flex">
+                  {/* Icon */}
+                  <div className="w-[68px] h-[68px] bg-[#DFF4F3] rounded-2xl flex items-center justify-center">
+                    <div className="w-[36px] h-[36px] flex items-center justify-center">
+                      <Icon className="text-[#2A7D7B] w-full h-full" />
+                    </div>
+                  </div>
+                  <div className="pl-4 h-[68px] flex flex-col justify-center">
+                    <p className="text-[#2F2F2F] text-[24px] font-semibold"> {option.charAt(0).toUpperCase() + option.slice(1)}</p>
+                    <p className="text-[#80848A] text-[16px] font-normal"> {monthName} {currentYear}</p>
+                  </div>
+                </div>
+                {/* Total section */}
+                <div className="w-[136px] h-[68px] bg-[#DFF4F3] rounded-2xl pl-4 flex flex-col justify-center">
+                  <p className="text-[#696969] text-[14px] font-semibold"> Total </p>
+                  <p className="text-[#2A7D7B] text-[18px] font-semibold"> $100,000</p>
+                </div>
+              </div>
+              <div>
+                <p> text</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>
-      </div>
+    </div>
   )
 }
