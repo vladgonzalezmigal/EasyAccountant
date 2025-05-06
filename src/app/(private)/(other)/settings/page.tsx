@@ -1,33 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { sections } from '@/app/(private)/features/userSettings/utils/settingsUtils';
 import { useStore } from '@/store';
 import GearIcon from '../../components/svgs/GearIcon'
 import LineBreak from '../../features/userSettings/components/LineBreak';
 
 export default function SettingsPage() {
-  const searchParams = useSearchParams();
   const { storeState, vendorState } = useStore();
   console.log("store state", storeState);
   console.log("vendor state", vendorState);
-  useEffect(() => {
-    // Check if there's a section hash in the URL
-    const hash = window.location.hash;
-    if (hash) {
-      // Remove the # character
-      const sectionId = hash.substring(1);
-      const element = document.getElementById(sectionId);
-      if (element) {
-        // Scroll to the element with smooth behavior
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  }, [searchParams]);
-
-  
-
+ 
   return (
     <div className="container px-16 py-8 max-h-screen overflow-y-auto bg-[#FAFAFA]">
         {/* Page Title  */}
