@@ -57,9 +57,12 @@ export default function DocumentSearchHeader({ onYearSelect, initialYear }: Year
         const currentYear = parseInt(yearInput);
         if (!isNaN(currentYear) && currentYear > 1) {
             const newYear = currentYear - 1;
-            setYearInput(newYear.toString());
-            setValidYear(true);
-            onYearSelect(newYear);
+            const newYearStr = newYear.toString();
+            if (validateYearInput(newYearStr)) {
+                setYearInput(newYearStr);
+                setValidYear(true);
+                onYearSelect(newYear);
+            }
         }
     };
 
@@ -68,9 +71,12 @@ export default function DocumentSearchHeader({ onYearSelect, initialYear }: Year
         const currentYear = parseInt(yearInput);
         if (!isNaN(currentYear)) {
             const newYear = currentYear + 1;
-            setYearInput(newYear.toString());
-            setValidYear(true);
-            onYearSelect(newYear);
+            const newYearStr = newYear.toString();
+            if (validateYearInput(newYearStr)) {
+                setYearInput(newYearStr);
+                setValidYear(true);
+                onYearSelect(newYear);
+            }
         }
     };
 

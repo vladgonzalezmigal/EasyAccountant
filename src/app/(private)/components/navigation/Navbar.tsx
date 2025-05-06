@@ -1,6 +1,6 @@
 'use client';
 
-import { getPagesLink, getActiveForm } from "../../utils/nav";
+import { getPagesLink, getOtherPagesLink, getActiveForm } from "../../utils/nav";
 import BackButton from "./BackButton"
 import SignOutBtn from './SignOutBtn';
 import HomeButton from "./HomeButton";
@@ -14,6 +14,9 @@ import { Store } from "../../features/userSettings/types/storeTypes";
 import { useStore } from "@/store";
 import ChevronNav from "./ChevronNav";
 import SettingsSubLinks from "./SettingsSubLinks";
+import MailIcon from "../svgs/MailIcon";
+import GearIcon from "../svgs/GearIcon";
+import CalculatorIcon from "../svgs/CalculatorIcon";
 
 interface NavbarProps {
     backURL?: string;
@@ -89,15 +92,15 @@ export default function Navbar({ backURL }: NavbarProps) {
                                 <div className="w-full ">
                                     <Link
                                         key={page}
-                                        href={getPagesLink(pathname, (page))}
+                                        href={getOtherPagesLink(pathname, (page))}
                                         className={`w-full flex justify-between h-[52px] hover:bg-[#B6E8E4] text-gray-500 hover:text-[#2A7D7B] rounded-lg pl-3 flex items-center transition-colors duration-200 ${page.includes(activePage) ? 'bg-[#DFF4F3] shadow-sm' : ''}`}
                                     >
                                         <div className="flex"> 
                                         {/* Icon */}
                                         <div className={`w-6 h-6 mr-2 flex items-center justify-center ${page.includes('sales') ? 'pb-1' : ''}`}>
-                                            {page === formPages[0] && <SalesIcon className={page.includes(activePage) ? 'text-[#2A7D7B]' : ' '} />}
-                                            {page === "expenses" && <ExpensesIcon className={page.includes(activePage) ? 'text-[#2A7D7B]' : ''} />}
-                                            {page === "payroll" && <PayrollIcon className={page.includes(activePage) ? 'text-[#2A7D7B]' : ''} />}
+                                            {page === "mail" && <MailIcon className={page.includes(activePage) ? 'text-[#2A7D7B]' : ' '} />}
+                                            {page === "settings" && <GearIcon className={page.includes(activePage) ? 'text-[#2A7D7B]' : ''} />}
+                                            {page === "analytics" && <CalculatorIcon className={page.includes(activePage) ? 'text-[#2A7D7B]' : ''} />}
                                         </div>
                                         <p className={`text-[16px] capitalize ${page === activePage ? 'text-[#2A7D7B]  font-semibold' : ''}`}>{(page === formPages[0] ? "sales" : page)}</p>
                                         </div>

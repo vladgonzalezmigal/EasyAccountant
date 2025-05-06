@@ -20,7 +20,7 @@ export default function SettingsSubLinks({ type }: SettingsSubLinksProps) {
                 className="hover:bg-gray-50 transition-colors duration-200 rounded-lg pl-2 py-2"
             >
                 <p className="text-[14px] text-[#6B7280] hover:text-[#4B5563] transition-colors duration-200 capitalize">
-                    {type}
+                    {(type === 'expenses') ? "Vendors" : "Employees"}
                 </p>
             </Link>
         </div>

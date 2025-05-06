@@ -8,6 +8,7 @@ import ExpensesIcon from "../components/svgs/ExpensesIcon";
 import PayrollIcon from "../components/svgs/PayrollIcon";
 import CalendarIcon from "../components/svgs/CalendarIcon";
 import GearIcon from "../components/svgs/GearIcon";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -81,9 +82,11 @@ export default function DashboardPage() {
                 </div>
                 {/* Settings section */}
                 <div className="flex flex-col items-center justify-center"> 
-                  <div className="w-[52px] h-[52px] bg-[#005DDF]/10 rounded-full flex items-center justify-center border-2 border-[#0C3C74] cursor-pointer">
-                    <GearIcon className="text-[#0C3C74] w-7 h-7" />
-                  </div>
+                  <Link href={`/settings#${option}`}>
+                    <div className="w-[52px] h-[52px] bg-[#005DDF]/10 rounded-full flex items-center justify-center border-2 border-[#0C3C74] cursor-pointer">
+                      <GearIcon className="text-[#0C3C74] w-7 h-7" />
+                    </div>
+                  </Link>
                   <p className="text-[#2F2F2F] font-semibold text-[12px]"> Settings</p>
                 </div>
               </div>
