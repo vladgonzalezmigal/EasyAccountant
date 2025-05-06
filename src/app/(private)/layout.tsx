@@ -11,17 +11,18 @@ interface LayoutProps {
 }
 
 const ProtectedLayout = ({ children }: LayoutProps) => {
-  const { fetchStore, isLoadingStore, storeState } = useStore();
+  const { fetchStore, fetchVendorData, isLoadingStore, isLoadingVendors, storeState, vendorState } = useStore();
 
   // (1) load user settings 
-  const loadingSettings : boolean = isLoadingStore
+  const loadingSettings : boolean = isLoadingStore || isLoadingVendors;
 
   useEffect(() => {
-    // assume user is authenticated due to middleware
+    // assume user is authenticated due to server-side auth check (middleware)
     const fetchSettings = async () => {
       try {
         await Promise.all([
-           fetchStore()
+           fetchStore(),
+           fetchVendorData()
            // fetchEmails()
            // fetchEmployees()
         ]);
@@ -30,13 +31,13 @@ const ProtectedLayout = ({ children }: LayoutProps) => {
       }
     };
 
-    const missingSettings = (storeState.stores === null)
+    const missingSettings = (storeState.stores === null) || (vendorState.vendors === null);
 
     if (missingSettings) { // only fetch settings if user is authenticated and settings are missing
       console.log("fetching settings called");
        fetchSettings();
     }
-  }, [fetchStore, storeState]);
+  }, [fetchStore, fetchVendorData, storeState, vendorState]);
 
   return (loadingSettings) ? (
     <Loading />

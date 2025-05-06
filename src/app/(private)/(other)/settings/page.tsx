@@ -1,0 +1,62 @@
+'use client';
+
+import { sections } from '@/app/(private)/features/userSettings/utils/settingsUtils';
+import { useStore } from '@/store';
+import GearIcon from '../../components/svgs/GearIcon'
+import LineBreak from '../../features/userSettings/components/LineBreak';
+
+export default function SettingsPage() {
+  const { storeState, vendorState } = useStore();
+  console.log("store state", storeState);
+  console.log("vendor state", vendorState);
+ 
+  return (
+    <div className="container px-16 py-8 max-h-screen overflow-y-auto bg-[#FAFAFA]">
+        {/* Page Title  */}
+        <div className="flex items-center h-[52px] w-full justify-begin mb-4">
+            <GearIcon className="w-8 h-8 text-[#2F2F2F] mr-2"/>
+            <h1 className="text-[32px] font-bold text-[#2F2F2F] pl-2">Settings</h1>
+        </div>
+        <LineBreak className="mb-6"/>
+      <div className="mb-8">
+        {/* Divider */}
+        <div className="flex flex-wrap gap-4">
+          {sections.map((section) => (
+            <a 
+              key={section.id}
+              href={`#${section.id}`}
+              className="w-[100px] py-2 flex items-center justify-center bg-[#DFF4F3] text-[#2A7D7B] rounded-lg hover:bg-[#B6E8E4] transition-colors duration-200"
+            >
+              {section.title}
+            </a>
+          ))}
+        </div>
+      </div>
+     {/* Main Settings Content */}
+      <div className="space-y-8">
+        {sections.map((section) => (
+            <div key={section.id}> 
+          <section 
+            key={section.id} 
+            id={section.id}
+            className=" max-w-[900px] "
+          >
+            {/* Section Header */}
+            <div className="flex items-center gap-4 mb-4 border-y-2 border-y-[#B6E8E4]   py-4 ">
+              <div className="w-12 h-12 bg-[#DFF4F3] rounded-full flex items-center justify-center">
+                <section.icon className="text-[#2A7D7B] w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-semibold text-[#4A4A4A]">{section.title}</h2>
+            </div>
+            {/* Settings content  */}
+            <div className=" rounded-lg py-4">
+                {section.content && section.content()}
+            </div>
+          </section>
+          <LineBreak className="mt-8"/>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
