@@ -1,14 +1,10 @@
 'use client';
 
 import { sections } from '@/app/(private)/features/userSettings/utils/settingsUtils';
-import { useStore } from '@/store';
 import GearIcon from '../../components/svgs/GearIcon'
 import LineBreak from '../../features/userSettings/components/LineBreak';
 
 export default function SettingsPage() {
-  const { storeState, vendorState } = useStore();
-  console.log("store state", storeState);
-  console.log("vendor state", vendorState);
  
   return (
     <div className="container px-16 py-8 max-h-screen overflow-y-auto bg-[#FAFAFA]">

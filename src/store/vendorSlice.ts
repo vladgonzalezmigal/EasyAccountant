@@ -7,6 +7,7 @@ export interface VendorSlice {
     isCudVendorLoading: boolean;
     // fetch vendor data 
     fetchVendorData: () => Promise<void>;
+    createVendor: (vendor: string) => Promise<void>;
     updateVendorRow: (vendor: Vendor) => Promise<void>;
 }
 
@@ -34,6 +35,36 @@ export const createVendorSlice = (
             });
         }
     },
+
+    createVendor: async (vendor_name: string) => {
+        try {
+            set({ isCudVendorLoading: true });
+            const vendorData = await vendorService.createVendor(vendor_name);
+            if (vendorData.vendors !== null) {
+                set((state) => {
+                    const currentVendors = state.vendorState.vendors || [];
+                    return {
+                        isCudVendorLoading: false,
+                        vendorState: { 
+                            vendors: [...currentVendors, ...(vendorData.vendors || [])], 
+                            error: null 
+                        }
+                    };
+                });
+            } else {
+                set((state) => ({
+                    isCudVendorLoading: false,
+                    vendorState: { vendors: state.vendorState.vendors, error: vendorData.error }
+                }));
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error
+            ? err.message
+            : "Error creating vendor data.";
+            set({ isCudVendorLoading: false, vendorState: { vendors: null, error: errorMessage } });
+        }
+    },
+    
     updateVendorRow: async (vendor: Vendor) => {
         try {   
             set({ isCudVendorLoading: true });

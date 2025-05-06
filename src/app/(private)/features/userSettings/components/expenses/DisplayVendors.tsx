@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Vendor } from '../../types/vendorTypes';
-import { filterByStartsWith } from '../../../utils/searchUtils';
+import { filterByIncludes } from '../../../utils/searchUtils';
 import SearchBar from '../SearchBar';
 import MaximizeIcon from '@/app/(private)/components/svgs/MaximizeIcon';
 import MinimizeIcon from '@/app/(private)/components/svgs/MinimizeIcon';
@@ -32,7 +32,7 @@ export default function DisplayVendors() {
 
     const handleSearch = (query: string) => {
        
-        const filteredVendorNames = filterByStartsWith(vendorNames, query);
+        const filteredVendorNames = filterByIncludes(vendorNames, query);
         const matchedVendors = filteredVendorNames.map(name => 
             vendors.find(vendor => vendor.vendor_name === name)
         ).filter((vendor): vendor is Vendor => vendor !== undefined);
