@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { sections } from '@/app/(private)/features/userSettings/utils/settingsUtils';
 import { useStore } from '@/store';
+import GearIcon from '../../components/svgs/GearIcon'
+import LineBreak from '../../features/userSettings/components/LineBreak';
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
@@ -27,8 +29,13 @@ export default function SettingsPage() {
   
 
   return (
-    <div className="container mx-auto px-4 py-8 max-h-screen overflow-y-auto">
-      <h1 className="text-3xl font-bold text-[#2F2F2F] mb-8">Settings</h1>
+    <div className="container px-16 py-8 max-h-screen overflow-y-auto bg-[#FAFAFA]">
+        {/* Page Title  */}
+        <div className="flex items-center h-[52px] w-full justify-begin mb-4">
+            <GearIcon className="w-8 h-8 text-[#2F2F2F] mr-2"/>
+            <h1 className="text-[32px] font-bold text-[#2F2F2F] pl-2">Settings</h1>
+        </div>
+        <LineBreak className="mb-6"/>
       <div className="mb-8">
         {/* Divider */}
         <div className="flex flex-wrap gap-4">
@@ -43,29 +50,29 @@ export default function SettingsPage() {
           ))}
         </div>
       </div>
-
-      <div className="space-y-12">
+     {/* Main Settings Content */}
+      <div className="space-y-8">
         {sections.map((section) => (
+            <div key={section.id}> 
           <section 
             key={section.id} 
             id={section.id}
-            className="border border-[#DFDFDF] rounded-xl p-6 shadow-sm scroll-mt-24"
+            className=" max-w-[900px] "
           >
-            <div className="flex items-center gap-4 mb-4">
+            {/* Section Header */}
+            <div className="flex items-center gap-4 mb-4 border-y-2 border-y-[#B6E8E4]   py-4 ">
               <div className="w-12 h-12 bg-[#DFF4F3] rounded-full flex items-center justify-center">
                 <section.icon className="text-[#2A7D7B] w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-[#2F2F2F]">{section.title}</h2>
+              <h2 className="text-2xl font-semibold text-[#4A4A4A]">{section.title}</h2>
             </div>
-            <p className="text-[#696969] mb-6">{section.description}</p>
-            <div className="bg-[#FBFBFB] p-6 rounded-lg border border-[#DFDFDF]">
-              <p className="text-[#80848A]">Settings content for {section.title} will go here.</p>
-              {/* Placeholder for actual settings content */}
-              <div className="h-40 flex items-center justify-center border border-dashed border-[#DFDFDF] rounded-lg mt-4">
-                <p className="text-[#80848A]">Settings form placeholder</p>
-              </div>
+            {/* Settings content  */}
+            <div className=" rounded-lg py-4">
+                {section.content && section.content()}
             </div>
           </section>
+          <LineBreak className="mt-8"/>
+          </div>
         ))}
       </div>
     </div>
