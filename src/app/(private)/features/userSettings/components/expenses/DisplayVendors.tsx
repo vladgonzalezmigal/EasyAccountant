@@ -1,26 +1,39 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Vendor } from '../../types/vendorTypes';
 import { filterByStartsWith } from '../../../utils/searchUtils';
 import SearchBar from '../SearchBar';
 import MaximizeIcon from '@/app/(private)/components/svgs/MaximizeIcon';
 import MinimizeIcon from '@/app/(private)/components/svgs/MinimizeIcon';
+import DisplayVendorRows from './DisplayVendorRows';
+import { vendorFormValidation } from '@/app/(private)/features/userSettings/utils/formValidation/formValidationUtil';
+import { useStore } from '@/store';
 
-interface DisplayVendorsProps {
-    vendors: Vendor[];
-}
-
-export default function DisplayVendors({ vendors }: DisplayVendorsProps) {
+export default function DisplayVendors() {
+    const { updateVendorRow, vendorState } = useStore();
+    let vendors: Vendor[] = [];
+    if (vendorState.vendors) {
+        vendors = vendorState.vendors;
+    }
     const [filteredVendors, setFilteredVendors] = useState(
         [...vendors].sort((a, b) => a.vendor_name.localeCompare(b.vendor_name))
     );
     const [isMaximized, setIsMaximized] = useState(false);
+    const [editingRows, setEditingRows] = useState<Set<number>>(new Set());
+    const [editedVendors, setEditedVendors] = useState<Vendor[]>([]);
+    const vendorNames = vendors.map(vendor => vendor.vendor_name);
+
+    useEffect(() => {
+        if (vendorState.vendors) {
+            setFilteredVendors([...vendorState.vendors].sort((a, b) => a.vendor_name.localeCompare(b.vendor_name)));
+        }
+    }, [vendorState.vendors]);
 
     const handleSearch = (query: string) => {
-        const vendorNames = vendors.map(vendor => vendor.vendor_name);
+       
         const filteredVendorNames = filterByStartsWith(vendorNames, query);
-        const matchedVendors = filteredVendorNames.map(name =>
+        const matchedVendors = filteredVendorNames.map(name => 
             vendors.find(vendor => vendor.vendor_name === name)
         ).filter((vendor): vendor is Vendor => vendor !== undefined);
         setFilteredVendors(matchedVendors);
@@ -29,6 +42,57 @@ export default function DisplayVendors({ vendors }: DisplayVendorsProps) {
     const toggleMaximize = () => {
         setIsMaximized(!isMaximized);
     };
+
+    const handleEditClick = (vendorId: number) => {
+        if (editingRows.has(vendorId)) {
+            // Trim leading and trailing spaces from vendor_name before saving
+            const vendorToUpdate = editedVendors.find(v => v.id === vendorId);
+            if (vendorToUpdate && vendorToUpdate.vendor_name) {
+                vendorToUpdate.vendor_name = vendorToUpdate.vendor_name.trim();
+                setEditedVendors(editedVendors.map(vendor => 
+                    vendor.id === vendorId ? { ...vendor, vendor_name: vendorToUpdate.vendor_name } : vendor
+                ));
+                updateVendorRow(vendorToUpdate);
+            }
+            
+            const newEditingRows = new Set(editingRows);
+            newEditingRows.delete(vendorId);
+            setEditingRows(newEditingRows);
+        } else {
+            // Start editing
+            const newEditingRows = new Set(editingRows);
+            newEditingRows.add(vendorId);
+            setEditingRows(newEditingRows);
+            const vendorToEdit = filteredVendors.find(v => v.id === vendorId);
+            if (vendorToEdit) {
+                setEditedVendors([...editedVendors, { ...vendorToEdit }]);
+            }
+        }
+    };
+
+    const handleVendorNameChange = (vendorId: number, newName: string) => {
+        setEditedVendors(editedVendors.map(vendor => 
+            vendor.id === vendorId ? { ...vendor, vendor_name: newName } : vendor
+        ));
+    };
+
+    const handleStatusToggle = (vendorId: number) => {
+        setEditedVendors(editedVendors.map(vendor => 
+            vendor.id === vendorId ? { ...vendor, active: !vendor.active } : vendor
+        ));
+    };
+
+    const getVendorData = (vendorId: number) => {
+        return editedVendors.find(v => v.id === vendorId) || 
+               filteredVendors.find(v => v.id === vendorId);
+    };
+
+    const isValidName = (vendorId: number) => {
+        const vendorData = getVendorData(vendorId);
+        const originalVendorName = vendors.find(v => v.id === vendorId)?.vendor_name || '';
+        return !vendorFormValidation.validateVendorForm(vendorData, vendorNames, originalVendorName).isValid;
+    };
+
 
     return (
         <div className="max-w-[600px] ">
@@ -76,36 +140,15 @@ export default function DisplayVendors({ vendors }: DisplayVendorsProps) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-[#E4F0F6] divide-y-[2px] border-b border-[#E4F0F6]">
-                                    {filteredVendors.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={3} className="text-center text-gray-500 py-4">
-                                                No vendors found
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        filteredVendors.map((vendor) => (
-                                            <tr key={vendor.id} className="hover:bg-gray-50">
-                                                <td className="w-[300px] min-w-[300px] max-w-[300px] px-6 py-4 text-[16px] font-medium text-[#585858]">
-                                                    <div className="overflow-x-auto whitespace-nowrap">
-                                                        {vendor.vendor_name}
-                                                    </div>
-                                                </td>
-                                                <td className=" px-10 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <div className={`px-2.5 py-1 flex items-center rounded-full ${vendor.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                        <div className={`w-3 h-3 rounded-full mr-2 ${vendor.active ? 'bg-green-800' : 'bg-gray-800'}`}></div>
-                                                        <span className={` text-[14px] font-medium `}>
-                                                            {vendor.active ? 'Active' : 'Inactive'}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <button className="text-[#0C3C74] hover:text-[#2A7D7B] mr-4">
-                                                        Edit
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
+                                    <DisplayVendorRows
+                                        filteredVendors={filteredVendors}
+                                        editingRows={editingRows}
+                                        getVendorData={getVendorData}
+                                        handleVendorNameChange={handleVendorNameChange}
+                                        handleStatusToggle={handleStatusToggle}
+                                        handleEditClick={handleEditClick}
+                                        isValidName={isValidName}
+                                    />
                                 </tbody>
                             </table>
                         </div>

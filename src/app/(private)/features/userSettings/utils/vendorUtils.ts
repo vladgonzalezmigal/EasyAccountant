@@ -24,7 +24,7 @@ export class vendorService {
     static async updateVendors(vendor: Vendor): Promise<VendorResponse> {
         const { data: apiData, error } = await supabase
         .from(TABLE_NAME)
-        .update(vendor) // replace with upsert 
+        .update(vendor) // update 1 row 
         .eq('id', vendor.id);
 
         return handleApiResponse<Vendor[], VendorResponse>(apiData, error, 'vendors');
