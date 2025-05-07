@@ -11,7 +11,7 @@ interface LayoutProps {
 }
 
 const ProtectedLayout = ({ children }: LayoutProps) => {
-  const { fetchStore, fetchVendorData, fetchEmail,
+  const { fetchStore, fetchVendorData, fetchEmail, fetchCurrentEmployees,
     isLoadingStore, isLoadingVendors, storeState, vendorState, emailState } = useStore();
 
   // (1) load user settings 
@@ -24,8 +24,8 @@ const ProtectedLayout = ({ children }: LayoutProps) => {
         await Promise.all([
            fetchStore(),
            fetchVendorData(),
-           fetchEmail()
-           // fetchEmployees()
+           fetchEmail(),
+           fetchCurrentEmployees()
         ]);
       } catch (e) {
         console.error("Error loading settings:", e);
@@ -38,7 +38,7 @@ const ProtectedLayout = ({ children }: LayoutProps) => {
       console.log("fetching settings called");
        fetchSettings();
     }
-  }, [fetchStore, fetchVendorData, fetchEmail, storeState, vendorState, emailState]);
+  }, [fetchStore, fetchVendorData, fetchEmail, fetchCurrentEmployees, storeState, vendorState, emailState]);
   console.log("emailState", emailState);
   return (loadingSettings) ? (
     <Loading />
