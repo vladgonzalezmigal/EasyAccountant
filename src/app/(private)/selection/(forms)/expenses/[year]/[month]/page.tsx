@@ -2,17 +2,16 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { months } from "@/app/(private)/utils/dateUtils";
 import { Expense } from "@/app/(private)/types/formTypes";
 import { Loading } from "@/app/components/Loading";
 import { getMonthDateRange, formatDate } from "@/app/(private)/utils/dateUtils";
-// import { performCrudOperation } from "@/app/(private)/features/handleForms/utils/operationUtils";
 import { validateExpenseInput } from "@/app/(private)/features/handleForms/utils/formValidation/editRowValidation";
 import useExpenseFormCrud from "@/app/(private)/features/handleForms/hooks/useExpenseFormCrud";
 import ExpenseTable from "@/app/(private)/features/handleForms/components/ExpenseTable";
 import ExpenseForm from "@/app/(private)/features/handleForms/components/addDataRow/ExpenseForm";
 import { getRequest } from "@/app/(private)/features/handleForms/utils/actions/crudOps";
 import { CudError } from "@/app/(private)/features/handleForms/components/formErrors/CudError";
+import TableTitle from "@/app/(private)/features/handleForms/components/TableTitle";
 
 export default function ExpensesPage() {
     const { year, month } = useParams();
@@ -158,12 +157,12 @@ export default function ExpensesPage() {
     return (
         <div className="w-full h-full flex flex-col items-center justify-center">
             {/* Title & Error Message */}
-            <div className="w-full text-center ">
-                <h1 className="text-[#393939] font-semibold text-3xl pb-2">
-                    Expenses
-                </h1>
-                <p className="font-semibold text-[#585858]">  {months[parseInt(month as string) - 1]},  {year} </p>
+            <div className="w-full text-center w-full flex flex-col items-center">
+                <TableTitle title="Expenses" month={month as string} year={year as string} type="expenses" />            
+                <div className="flex flex-col items-center justify-center"> 
+                <p className="font-semibold text-[#585858]">  </p>
                 <CudError cudError={cudError} />
+                </div>
             </div>
 
             {fetchLoading ? (

@@ -8,7 +8,7 @@ interface DocSearchTitleProps {
 
 export default function DocSearchTitle({ title }: DocSearchTitleProps) {
   return (
-    <div className="mb-10 text-3xl font-bold text-[#2F2F2F] absolute top-28">
+    <div className="text-2xl font-bold text-[#2F2F2F] mb-8  ">
       {title}
     </div>
   );

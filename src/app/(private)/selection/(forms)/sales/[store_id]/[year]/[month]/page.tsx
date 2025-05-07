@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import { useStore } from "@/store";
-import TablePageTitle from "@/app/(private)/features/handleForms/components/TablePageTitle";
 import { getMonthDateRange, getDaysInMonth, formatDate } from "@/app/(private)/utils/dateUtils";
 import { useEffect, useState } from "react";
 import { Sales, SalesDisplay } from "@/app/(private)/types/formTypes";
@@ -14,6 +13,7 @@ import { validateDateSequence } from "@/app/(private)/features/handleForms/utils
 import { validateSalesInput } from "@/app/(private)/features/handleForms/utils/formValidation/editRowValidation";
 import SalesTable from "@/app/(private)/features/handleForms/components/SalesTable";
 import { CudError } from "@/app/(private)/features/handleForms/components/formErrors/CudError";
+import TableTitle from "@/app/(private)/features/handleForms/components/TableTitle";
 
 export default function SalesFormPage() {
     const { store_id, year, month } = useParams();
@@ -176,8 +176,12 @@ export default function SalesFormPage() {
     const headerTitles = ["Date", "Sales", "Taxes", "Daily ", "Total"];
 
     return (
-        <div>
-            <TablePageTitle docTitle={`Sales`} docSubtitle={store_name} />
+        <div className="w-full h-full flex flex-col items-center justify-center">
+            <div className="w-full text-center flex flex-col items-center">
+                <TableTitle title={store_name} month={month as string} year={year as string} type="sales" />            
+                <div className="flex flex-col items-center justify-center"> 
+            </div>
+            </div>
             <CudError cudError={cudError} />
             {fetchError ? <div>{fetchError}</div> :
                 <SalesTable

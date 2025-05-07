@@ -22,7 +22,7 @@ export const getActiveForm = (pathname: string): string => {
   }
   
   // Return undefined if no page is found in the pathname
-  return 'error';
+  return 'selection';
 };
 
 /**
@@ -75,16 +75,25 @@ export const getPagesLink = (currentPath: string, targetPage: string): string =>
   } else if (currentPath.startsWith("/selection/sales") && currentPath.split('/').length == 4) {
     return `/selection/${targetPage}`;
   }
+
+  
+  
   // If we're at /selection/[page]/year/month || /selection/[page]/[store_id]/year/month
-  if ((currentPath.includes("sales") && currentPath.split('/').length === 6)) {
+  if (((currentPath.includes("sales") || currentPath.includes("payroll")) && currentPath.split('/').length === 6)) {
     const pathParts = currentPath.split('/');
     const year = pathParts[4];
     const month = pathParts[5];
+    if (targetPage === "payroll"){
+      return `/selection/${targetPage}/${year}/${month}/1`;
+    }
     return `/selection/${targetPage}/${year}/${month}`;
   } else if (currentPath.split('/').length === 5) {
     const pathParts = currentPath.split('/');
     const year = pathParts[3];
     const month = pathParts[4];
+    if (targetPage === "payroll"){
+      return `/selection/${targetPage}/${year}/${month}/1`;
+    }
     return `/selection/${targetPage}/${year}/${month}`;
   } 
   
@@ -140,6 +149,11 @@ export const getBackConfig = (path: string): BackConfig => {
         // For year/month pattern, return everything before year
         const yearIndex = path.lastIndexOf('/', path.lastIndexOf('/') - 1);
         backURL = path.substring(0, yearIndex);
+    } else if (pathParts.length === 5 && path.includes('payroll')) {
+      backURL = '/selection/payroll'
+
+
+
     } else if (pathParts.length === 3 && path.includes('sales')) {
         // For sales with 3 layers (selection/sales/storeId), go back to selection
         backURL = '/selection';

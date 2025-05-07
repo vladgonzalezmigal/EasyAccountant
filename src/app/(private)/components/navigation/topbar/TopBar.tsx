@@ -68,12 +68,12 @@ export default function TopBar({ activePage }: TopBarProps) {
     };
 
     return (
-        <div className="flex items-center justify-between px-16 bg-[#B6E8E4] shadow-sm py-8 w-full border-b border-b-[#DADADA]">
+        <div className="flex items-center justify-between px-16 bg-[#B6E8E4] shadow-sm py-4 w-full border-b border-b-[#DADADA]">
             <div className="flex items-center">
                 <div className="w-12 h-12 bg-[#DFF4F3] rounded-full flex items-center justify-center">
                     {getIcon()}
                 </div>
-                <h1 className="text-[32px] font-bold text-[#2F2F2F] pl-4">{formatPageTitle(activePage)}</h1>
+                <h1 className="text-[24px] font-bold text-[#2F2F2F] pl-4">{formatPageTitle(activePage)}</h1>
             </div>
             <div className="text-[16px] font-medium text-[#585858] ">
                 {isLoading ? (

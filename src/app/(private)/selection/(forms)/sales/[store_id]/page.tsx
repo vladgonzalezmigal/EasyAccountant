@@ -16,10 +16,10 @@ export default function SalesSelectionPage() {
   const title : string = "Calendar For " + store_name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')
 
   return (
-      <div className="w-full h-full  flex flex-col items-center justify-center relative">
-        <DocSearchTitle title={title} />
+      <div className="w-full h-full  flex flex-col items-center justify-center ">
         <div className=" w-full  h-full flex flex-col items-center justify-center">
-        <DocumentSelection />
+          <DocSearchTitle title={title}  />
+        <DocumentSelection split={false} />
         </div>
       </div>
   )

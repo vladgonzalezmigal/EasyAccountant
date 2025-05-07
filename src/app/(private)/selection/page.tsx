@@ -41,12 +41,12 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full h-full flex flex-col items-center">
-      <div className=" w-[600px] h-full flex flex-col items-center justify-center relative">
-        <h1 className="absolute top-32 text-3xl text-center font-bold text-[#2F2F2F]">
+      <div className=" w-[600px] h-full flex flex-col items-center justify-center ">
+        <h1 className=" mb-8 text-3xl text-center font-bold text-[#2F2F2F]">
           Welcome, Choose a Document:
         </h1>
         {/* Main Contnet */}
-        <div className="flex flex-col space-y-4 w-full ">
+        <div className="flex flex-col space-y-4 w-full relative">
           {Object.entries(formOptions).map(([option, Icon]) => (
             <div key={option} className="w-full flex justify-start  bg-[#FBFBFB] rounded-2xl shadow-md border border-[#DFDFDF]">
               <div
