@@ -10,7 +10,7 @@ import DisplayEmployeeRows from './DisplayEmployeeRows';
 import { useStore } from '@/store';
 
 export default function DisplayEmployees() {
-    const { updateCurrentEmployees, currentEmployeeState } = useStore();
+    const { updateCurrentEmployees, currentEmployeeState, deleteCurrentEmployee } = useStore();
     let employees: CurrentEmployee[] = [];
     if (currentEmployeeState.currentEmployees) {
         employees = currentEmployeeState.currentEmployees;
@@ -92,6 +92,16 @@ export default function DisplayEmployees() {
         ));
     };
 
+    const handleDeleteClick = async (employeeId: number) => {
+        try {
+            await deleteCurrentEmployee(employeeId);
+            // Remove the deleted employee from the local state
+            setFilteredEmployees(prev => prev.filter(emp => emp.id !== employeeId));
+        } catch (error) {
+            console.error('Error deleting employee:', error);
+        }
+    };
+
     const getEmployeeData = (employeeId: number) => {
         return editedEmployees.find(e => e.id === employeeId) || 
                filteredEmployees.find(e => e.id === employeeId);
@@ -105,7 +115,7 @@ export default function DisplayEmployees() {
     };
 
     return (
-        <div className="max-w-[800px] ">
+        <div className="max-w-[830px] ">
             <h3 className="text-xl text-left font-semibold text-[#404040] mb-4">Current Employees</h3>
             {/* Begin Table Container  */}
             <div className="bg-white border border-[#E4F0F6] rounded-lg shadow-sm pb-4">
@@ -148,7 +158,7 @@ export default function DisplayEmployees() {
                                         <th scope="col" className="w-[100px] min-w-[100px] max-w-[100px] px-11 py-3 text-left text-xs text-[#80848A] text-[16px] tracking-wider">
                                             Status
                                         </th>
-                                        <th scope="col" className="px-6 py-3 text-right text-xs text-[#80848A] text-[16px] tracking-wider">
+                                        <th scope="col" className="px-9 py-3 text-right text-xs text-[#80848A] text-[16px] tracking-wider">
                                             Actions
                                         </th>
                                     </tr>
@@ -163,6 +173,7 @@ export default function DisplayEmployees() {
                                         handleEditClick={handleEditClick}
                                         handleWageTypeChange={handleWageTypeChange}
                                         handleWageRateChange={handleWageRateChange}
+                                        handleDeleteClick={handleDeleteClick}
                                         isValidName={isValidName}
                                     />
                                 </tbody>
