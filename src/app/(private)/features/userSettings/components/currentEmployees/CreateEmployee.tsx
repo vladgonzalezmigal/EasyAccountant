@@ -71,7 +71,7 @@ export default function CreateEmployee() {
     };
 
     return (
-        <div className="max-w-[850px]">
+        <div className="max-w-[830px]">
             <h3 className="text-xl font-semibold text-[#404040] mb-4">Create Employee</h3>
             <div className="h-[16px] text-center"> 
                 {currentEmployeeState.error && (

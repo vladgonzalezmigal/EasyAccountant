@@ -13,6 +13,13 @@ export const getActiveForm = (pathname: string): string => {
       return page;
     }
   }
+
+  const otherPages: string[] = ["mail", "settings", "analytics"];
+  for (const page of otherPages) {
+    if (pathname.includes(page)) {
+      return page;
+    }
+  }
   
   // Return undefined if no page is found in the pathname
   return 'error';

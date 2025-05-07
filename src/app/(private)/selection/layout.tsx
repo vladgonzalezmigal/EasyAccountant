@@ -27,7 +27,7 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
     <div className="flex">
       <Navbar backURL={backURL} />
       {/* Main content */}
-      <div className="w-full h-screen relative flex flex-col items-center justify-center">
+      <div className="w-full min-h-screen h-full relative flex flex-col items-center justify-center">
         <canvas 
           ref={canvasRef} 
           className="absolute top-0 left-0 w-full h-full pointer-events-none"

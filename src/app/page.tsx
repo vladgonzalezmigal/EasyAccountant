@@ -17,7 +17,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative">
+    <div className="min-h-screen h-full w-full flex items-center justify-center relative">
       <canvas 
         ref={canvasRef} 
         className="absolute top-0 left-0 w-full h-full pointer-events-none"
