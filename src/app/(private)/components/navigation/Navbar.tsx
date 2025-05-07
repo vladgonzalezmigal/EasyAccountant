@@ -50,6 +50,7 @@ export default function Navbar({ backURL }: NavbarProps) {
     };
 
     return (
+        <div className="flex"> 
         <div className="h-full min-h-screen bg-white w-[172px] lg:w-[344px] px-4 lg:px-6 py-8 
          border-r border-r-2 border-[#E5E7EB] flex flex-col justify-between shadow-sm">
             {/* Main Navigation */}
@@ -132,6 +133,8 @@ export default function Navbar({ backURL }: NavbarProps) {
             <div className="pt-6 border-t border-[#E5E7EB]">
                 <SignOutBtn />
             </div>
+        </div>
+       
         </div>
     );
 } 

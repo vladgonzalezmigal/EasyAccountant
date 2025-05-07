@@ -31,7 +31,7 @@ export default function SettingsPage() {
         <LineBreak className="mt-7 mb-12"/>
       </div>
      {/* Main Settings Content */}
-      <div className="space-y-8">
+      <div className="space-y-16">
         {sections.map((section) => (
             <div key={section.id}> 
           <section 
@@ -40,14 +40,14 @@ export default function SettingsPage() {
             className=" max-w-[900px] "
           >
             {/* Section Header */}
-            <div className="flex items-center gap-4 mb-4 bg-[#B6E8E4] border border-[#B6E8E4] rounded-md py-4 w-[900px] pl-2">
+            <div className="flex items-center gap-4 bg-[#B6E8E4] border-2 border-[#B6E8E4] rounded-t-md py-4 w-[900px] pl-2">
               <div className="w-12 h-12 bg-[#DFF4F3] rounded-full flex items-center justify-center">
                 <section.icon className="text-[#2A7D7B] w-6 h-6" />
               </div>
               <h2 className="text-2xl font-semibold text-[#4A4A4A]">{section.title}</h2>
             </div>
             {/* Settings content  */}
-            <div className=" rounded-lg py-4">
+            <div className=" rounded-b-lg pt-8 pb-12 pl-4 bg-[#F2FBFA] shadow-sm">
                 {section.content && section.content()}
             </div>
           </section>

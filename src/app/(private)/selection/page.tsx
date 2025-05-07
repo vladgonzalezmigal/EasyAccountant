@@ -18,7 +18,7 @@ export default function DashboardPage() {
   // Get current month and year
   const today = new Date();
   const currentYear = today.getFullYear().toString();
-  const currentMonth : number = (today.getMonth())
+  const currentMonth: number = (today.getMonth())
   const monthName = months[currentMonth];
 
   // Create an object mapping form types to their icons
@@ -31,18 +31,21 @@ export default function DashboardPage() {
   const handleNavigation = (option: string) => {
     if (stores && option === "sales") {
       console.log("stores", stores[0].id);
-      router.push(`/selection/sales/${stores[0].id}/${currentYear}/${(currentMonth+1)}`);
+      router.push(`/selection/sales/${stores[0].id}/${currentYear}/${(currentMonth + 1)}`);
     } else if (!stores && option === "sales") {
       router.push(`/selection/`); // user needs to refresh the page to see the stores
-    } else  {
-      router.push(`/selection/${option}/${currentYear}/${(currentMonth+1)}`);
+    } else {
+      router.push(`/selection/${option}/${currentYear}/${(currentMonth + 1)}`);
     }
   };
 
   return (
-    <div>
-      <div className=" w-[600px] h-full">
-        <h1 className="mb-10 text-3xl text-center font-bold text-[#2F2F2F]">Welcome, Choose a Document:</h1>
+    <div className="w-full h-full flex flex-col items-center">
+      <div className=" w-[600px] h-full flex flex-col items-center justify-center relative">
+        <h1 className="absolute top-32 text-3xl text-center font-bold text-[#2F2F2F]">
+          Welcome, Choose a Document:
+        </h1>
+        {/* Main Contnet */}
         <div className="flex flex-col space-y-4 w-full ">
           {Object.entries(formOptions).map(([option, Icon]) => (
             <div key={option} className="w-full flex justify-start  bg-[#FBFBFB] rounded-2xl shadow-md border border-[#DFDFDF]">
@@ -71,17 +74,17 @@ export default function DashboardPage() {
                 </div>
               </div>
               {/* Button section */}
-              <div className="w-[100px] flex flex-col items-center justify-center"> 
+              <div className="w-[100px] flex flex-col items-center justify-center">
                 {/* Search section */}
-                <div className="flex flex-col items-center justify-center"> 
+                <div className="flex flex-col items-center justify-center">
                   <div className="w-[52px] h-[52px] bg-[#48B4A0]/10 rounded-full flex items-center justify-center border-2 border-[#48B4A0] cursor-pointer"
-                  onClick={() => router.push(`selection/${option}/${(stores && (option === "sales") ? `${stores[0].id}` : '')}`)}>
+                    onClick={() => router.push(`selection/${option}/${(stores && (option === "sales") ? `${stores[0].id}` : '')}`)}>
                     <CalendarIcon className="text-[#48B4A0] w-7 h-7" />
                   </div>
                   <p className="text-[#2F2F2F] font-semibold text-[12px]"> Search </p>
                 </div>
                 {/* Settings section */}
-                <div className="flex flex-col items-center justify-center"> 
+                <div className="flex flex-col items-center justify-center">
                   <Link href={`/settings#${option}`}>
                     <div className="w-[52px] h-[52px] bg-[#005DDF]/10 rounded-full flex items-center justify-center border-2 border-[#0C3C74] cursor-pointer">
                       <GearIcon className="text-[#0C3C74] w-7 h-7" />
