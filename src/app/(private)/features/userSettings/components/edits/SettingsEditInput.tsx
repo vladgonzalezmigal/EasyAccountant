@@ -20,7 +20,7 @@ export default function SettingsEditInput({
     };
     
     return (
-        <td className="w-[300px] min-w-[300px] max-w-[300px] px-6 py-4 text-[16px] font-medium text-[#585858]">
+        <td className="w-[250px] min-w-[250px] max-w-[250px] px-6 py-4 text-[16px] font-medium text-[#585858]">
             {isEditing ? (
                 <input
                     type="text"

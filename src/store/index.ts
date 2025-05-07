@@ -6,8 +6,9 @@ import { createStoreSlice, StoreSlice } from "./storeSlice";
 import { StateCreator } from "zustand";
 import { createVendorSlice, VendorSlice } from "./vendorSlice";
 import { createEmailSlice, EmailSlice } from "./emailSlice";
+import { createCurrentEmployeeSlice, CurrentEmployeeSlice } from "./currentEmployeeSlice";
 
-export type StoreState = StoreSlice & VendorSlice & EmailSlice;
+export type StoreState = StoreSlice & VendorSlice & EmailSlice & CurrentEmployeeSlice;
 
 // Wrap each slice-creator so that TypeScript knows they extend StoreState:
 const createStoreSliceWithStore: StateCreator<StoreState, [], [], StoreSlice> = (set,) =>
@@ -18,6 +19,9 @@ const createVendorSliceWithStore: StateCreator<StoreState, [], [], VendorSlice> 
 
 const createEmailSliceWithStore: StateCreator<StoreState, [], [], EmailSlice> = (set,) =>
     createEmailSlice(set, );
+
+const createCurrentEmployeeSliceWithStore: StateCreator<StoreState, [], [], CurrentEmployeeSlice> = (set,) =>
+    createCurrentEmployeeSlice(set, );
 
 /**
  * The main Zustand store that combines all slices.
@@ -30,6 +34,7 @@ export const useStore = create<StoreState>()(
             ...createStoreSliceWithStore(set, get, store),
             ...createVendorSliceWithStore(set, get, store),
             ...createEmailSliceWithStore(set, get, store),
+            ...createCurrentEmployeeSliceWithStore(set, get, store),
         }),
         {
             name: "app-storage",
@@ -38,6 +43,7 @@ export const useStore = create<StoreState>()(
                 stores: state.storeState.stores,
                 vendors: state.vendorState.vendors,
                 emails: state.emailState.emails,
+                currentEmployees: state.currentEmployeeState.currentEmployees,
             }),
         }
     )

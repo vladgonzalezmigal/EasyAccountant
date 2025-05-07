@@ -6,6 +6,8 @@ import MailIcon from '@/app/(private)/components/svgs/MailIcon';
 import VendorSection from '../components/expenses/VendorSection';
 import StoreSection from '../components/stores/StoreSelection';
 import EmailSection from '../components/emails/EmailSelection';
+import AccountSection from '../components/account/AccountSection';
+import EmployeeSection from '../components/currentEmployees/EmployeeSelection';
 
 export const sections = [
     {
@@ -18,7 +20,7 @@ export const sections = [
       id: 'payroll',
       title: 'Payroll',
       icon: PayrollIcon,
-      // content: VendorSection
+      content: EmployeeSection
     },
     {
       id: 'sales',
@@ -36,6 +38,7 @@ export const sections = [
       id: 'account',
       title: 'Account',
       icon: GearIcon,
-      description: 'Manage your account details, security settings, and user permissions.'
+      description: 'Manage your account details, security settings, and user permissions.',
+      content: AccountSection
     }
   ];
