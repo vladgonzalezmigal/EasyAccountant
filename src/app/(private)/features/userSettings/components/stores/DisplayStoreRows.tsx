@@ -1,39 +1,39 @@
 'use client';
 
 import React from 'react';
-import { Vendor } from '../../types/vendorTypes';
+import { Store } from '../../types/storeTypes';
 import SettingsEditInput from '../edits/SettingsEditInput';
 import SettingsEditActive from '../edits/SettingsEditActive';
 import SaveIcon from '@/app/(private)/components/svgs/SaveIcon';
 import EditIcon from '@/app/(private)/components/svgs/EditIcon';
 import { useStore } from '@/store';
 
-interface DisplayVendorRowsProps {
-    filteredVendors: Vendor[];
+interface DisplayStoreRowsProps {
+    filteredStores: Store[];
     editingRows: Set<number>;
-    getVendorData: (vendorId: number) => Vendor | undefined;
-    handleVendorNameChange: (vendorId: number, newName: string) => void;
-    handleStatusToggle: (vendorId: number) => void;
-    handleEditClick: (vendorId: number) => void;
-    isValidName: (vendorId: number) => boolean;
+    getStoreData: (storeId: number) => Store | undefined;
+    handleStoreNameChange: (storeId: number, newName: string) => void;
+    handleStatusToggle: (storeId: number) => void;
+    handleEditClick: (storeId: number) => void;
+    isValidName: (storeId: number) => boolean;
 }
 
-export default function DisplayVendorRows({
-    filteredVendors,
+export default function DisplayStoreRows({
+    filteredStores,
     editingRows,
-    getVendorData,
-    handleVendorNameChange,
+    getStoreData,
+    handleStoreNameChange,
     handleStatusToggle,
     handleEditClick,
     isValidName
-}: DisplayVendorRowsProps) {
-    const { isCudVendorLoading } = useStore();
+}: DisplayStoreRowsProps) {
+    const { isCudStoreLoading } = useStore();
 
-    if (filteredVendors.length === 0) {
+    if (filteredStores.length === 0) {
         return (
             <tr>
                 <td colSpan={3} className="text-center text-gray-500 py-4">
-                    No vendors found
+                    No stores found
                 </td>
             </tr>
         );
@@ -41,28 +41,28 @@ export default function DisplayVendorRows({
 
     return (
         <>
-            {filteredVendors.map((vendor) => {
-                const isEditing = editingRows.has(vendor.id);
-                const vendorData = getVendorData(vendor.id);
+            {filteredStores.map((store) => {
+                const isEditing = editingRows.has(store.id);
+                const storeData = getStoreData(store.id);
                 return (
-                    <tr key={vendor.id} className="hover:bg-gray-50">
+                    <tr key={store.id} className="hover:bg-gray-50">
                         <SettingsEditInput
-                            value={vendorData?.vendor_name || ''}
-                            onChange={(newName) => handleVendorNameChange(vendor.id, newName)}
+                            value={storeData?.store_name || ''}
+                            onChange={(newName) => handleStoreNameChange(store.id, newName)}
                             isEditing={isEditing}
-                            disabled={isEditing && isValidName(vendor.id)}
+                            disabled={isEditing && isValidName(store.id)}
                         />
                         <SettingsEditActive
-                            isActive={vendorData?.active || false}
+                            isActive={storeData?.active || false}
                             isEditing={isEditing}
-                            onToggle={() => handleStatusToggle(vendor.id)}
+                            onToggle={() => handleStatusToggle(store.id)}
                         />
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button 
-                                onClick={() => handleEditClick(vendor.id)}
-                                disabled={isEditing && isValidName(vendor.id) || isCudVendorLoading}
+                                onClick={() => handleEditClick(store.id)}
+                                disabled={isEditing && isValidName(store.id) || isCudStoreLoading}
                                 className={`mr-4 p-2 rounded-full ${
-                                    isEditing && isValidName(vendor.id) || isCudVendorLoading
+                                    isEditing && isValidName(store.id) || isCudStoreLoading
                                         ? 'text-gray-400 cursor-not-allowed'
                                         : 'text-[#0C3C74] hover:text-[#2A7D7B] hover:bg-gray-100'
                                 }`}
@@ -79,4 +79,4 @@ export default function DisplayVendorRows({
             })}
         </>
     );
-} 
+}

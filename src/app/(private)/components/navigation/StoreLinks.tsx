@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export default function StoreLinks() {
   const { storeState } = useStore();
-  const storeSubpages: Store[] | null = storeState.stores;
+  const storeSubpages: Store[] | null = storeState.stores?.filter(store => store.active) || null;
   const pathname = usePathname();
   const pathParts = pathname.split('/');
 

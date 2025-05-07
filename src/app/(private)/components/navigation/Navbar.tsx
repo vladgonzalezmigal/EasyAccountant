@@ -29,7 +29,8 @@ export default function Navbar({ backURL }: NavbarProps) {
     const pathname = usePathname();
     const activePage: string | undefined = getActiveForm(pathname);
     const { storeState } = useStore();
-    const storeSubpages : Store[] | null  = storeState.stores;
+    const storeSubpages : Store[] | null  = storeState.stores?.filter(store => store.active) || null;
+    // if null need to ask user to refresh page
     const formPages: string[] = ["sales", "expenses", "payroll"];
     formPages[0] = formPages[0] + (storeSubpages? `/${storeSubpages[0].id}` : '');
     const otherPages: string[] = ["mail","settings", "analytics"];
