@@ -7,6 +7,9 @@ import { EditInputForm } from './editDataRow/EditInputForm';
 import { EditSelectForm } from './editDataRow/EditSelectForm';
 import { formatDisplayValue } from '../utils/formDataDisplay/formDataDisplay';
 import { DeleteConfig, EditConfig } from '../types/configTypes';
+import CompanyDropDown from './addDataRow/CompanyDropDown';
+import { useStore } from '@/store';
+import TrashIcon from '@/app/(private)/components/svgs/TrashIcon';
 
 type FormDataRowsProps = {
     data: FormData[];
@@ -18,6 +21,8 @@ type FormDataRowsProps = {
 };
 
 export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editConfig, tableName }: FormDataRowsProps) {
+    const { vendorState } = useStore();
+    const vendors = vendorState.vendors?.map(vendor => vendor.vendor_name) || [];
     const handleEditChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: number, colNumber: number) => {
         const { name, value } = e.target;
         const validationResult = editConfig.validationFunction(name as keyof FormData, value as string);
@@ -28,7 +33,12 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
         editConfig.onRowEdit(id, name as keyof FormData, value, colNumber);
     };
 
+    const handleCompanySelect = (company: string, id: number, colNumber: number, displayKey: keyof FormData) => {
+        editConfig.onRowEdit(id, displayKey, company, colNumber);
+    };
+
     const fieldConfig = getFieldConfig(tableName);
+    
 
     return (
         <div className="w-full flex flex-col items-center">
@@ -72,6 +82,12 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                                                         hasError={editConfig.validationErrors[id]?.has(index)}
                                                         active={isFieldEdited(editConfig.editedRows.find(row => row.id === id), displayData, displayKey as keyof FormData)}
                                                     />
+                                                ) : fieldConfig[displayKey]?.type === 'search' ? (
+                                                    <CompanyDropDown
+                                                        companies={vendors}
+                                                        onCompanySelect={(company) => handleCompanySelect(company, id, index, displayKey)}
+                                                        error={editConfig.validationErrors[id]?.has(index) ? "Invalid selection" : null}
+                                                    />
                                                 ) : (
                                                     <EditInputForm
                                                         name={displayKey as string}
@@ -93,9 +109,17 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                             {deleteConfig?.mode && deleteConfig && (
                                 <div 
                                     onClick={() => deleteConfig.onRowSelect(id)}
-                                    className={`absolute top-1/2 right-[5px] transform -translate-y-1/2 ${deleteConfig.rows.includes(id) ? 'row-delete-active' : 'row-delete-inactive'}`}
+                                    className={`absolute top-1/2 right-[5px] transform -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-full ${
+                                        deleteConfig.rows.includes(id) 
+                                            ? 'bg-red-100 border border-red-300' 
+                                            : 'bg-[#F6F6F6] border border-[#DFDFDF]'
+                                    }`}
                                 >
-                                    <p>x</p>
+                                    <TrashIcon className={`w-4 h-4 ${
+                                        deleteConfig.rows.includes(id) 
+                                            ? 'text-red-500' 
+                                            : 'text-[#585858]'
+                                    }`} />
                                 </div>
                             )}
                         </div>

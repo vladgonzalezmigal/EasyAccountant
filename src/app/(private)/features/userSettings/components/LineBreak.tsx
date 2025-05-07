@@ -5,7 +5,7 @@ interface LineBreakProps {
 export default function LineBreak({ className }: LineBreakProps) {
   return (
     <div 
-      className={`w-full h-[1.5px] bg-[#DADADA] rounded-full ${className || ''}`}
+      className={`w-[900px] h-[1.5px] bg-[#DADADA] rounded-full ${className || ''}`}
     />
   );
 }

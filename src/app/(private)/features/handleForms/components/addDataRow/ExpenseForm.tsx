@@ -3,9 +3,11 @@
 import { ChangeEvent, useRef, useState } from 'react';
 import { Expense } from '@/app/(private)/types/formTypes';
 import { useParams } from 'next/navigation';
-import { validateDateInput, validateAmountInput, validateCompanyInput, DEFAULT_COMPANY } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
+import { validateDateInput, validateAmountInput, DEFAULT_COMPANY } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
 import { formatDate } from '@/app/(private)/utils/dateUtils';
 import PlusIcon from '@/app/(private)/components/svgs/PlusIcon';
+import { useStore } from '@/store';
+import CompanyDropDown from './CompanyDropDown';
 
 interface ExpenseFormProps {
     onInputChange: (name: keyof Expense, value: string | number) => void;
@@ -13,20 +15,20 @@ interface ExpenseFormProps {
 }
 
 const PAYMENT_TYPES = ['CHECK', 'CASH', 'CARD'] as const;
-const COMPANIES = ['JETRO', 'SUPREMA'] as const; // TODO: get companies from database
 const today = new Date();
-const DAY = today.getDate(); // Gets day without leading zero
+const DAY = today.getDate();
 
 export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProps) {
     const formRef = useRef<HTMLFormElement>(null);
     const { year, month } = useParams();
-
+    const { vendorState } = useStore();
+    const COMPANIES = vendorState.vendors?.map((vendor) => vendor.vendor_name) || [];
+    
     // form validation errors
     const [dateError, setDateError] = useState<string | null>(null);
     const [companyError, setCompanyError] = useState<string | null>(null);
     const [amountError, setAmountError] = useState<string | null>(null);
     const [companySelected, setCompanySelected] = useState<string>(DEFAULT_COMPANY);
-
 
     const formError: boolean = (dateError || companyError || amountError) ? true : false;
 
@@ -35,22 +37,15 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
         onInputChange(name as keyof Expense, value);
     };
 
-    const handleCompanyChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        const validation = validateCompanyInput(value);
-        e.target.value = validation.value;
-        setCompanySelected(validation.value);
-        if (validation.isValid) {
-            setCompanyError(null);
-            onInputChange(name as keyof Expense, value);
-        } else {
-            setCompanyError(validation.error || "please select different company");
-        }
-
+    const handleCompanySelect = (company: string) => {
+        setCompanySelected(company);
+        onInputChange('company', company);
+        setCompanyError(null);
     };
 
     const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
+        console.log("target date value is ", value);
 
         const validation = validateDateInput(
             value,
@@ -81,7 +76,6 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
             if (amountError) {
                 setAmountError(null);
             }
-            // If the value is valid but doesn't have a decimal, add .00
             let postValue = validation.value;
             if (validation.isValid && !postValue.includes('.')) {
                 postValue = `${postValue}.00`;
@@ -99,13 +93,22 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
             return;
         }
         onSubmit(e);
-        formRef.current?.reset();
-        // Reset company selection to default after form submission
+        // Reset the form after a small delay to ensure state updates are complete
+        setTimeout(() => {
+            if (formRef.current) {
+                formRef.current.reset();
+                // Force the date input to be empty
+                const dateInput = formRef.current.querySelector('input[name="date"]') as HTMLInputElement;
+                if (dateInput) {
+                    dateInput.value = '';
+                }
+            }
+        }, 0);
         setCompanySelected(DEFAULT_COMPANY);
     };
 
     return (
-        <div className="border  border-[#DFF4F3] bg-white table-input-shadow w-[772px] rounded-full">
+        <div className="border border-[#DFF4F3] bg-white table-input-shadow w-[772px] rounded-full">
             <form ref={formRef} onSubmit={handleSubmit} className='flex flex-row items-center rounded-full h-[60px] pl-10 text-gray-800'>
                 <div className="">
                     <input
@@ -116,6 +119,7 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                         onChange={handleDateChange}
                         className={`flex items-center justify-center ${dateError ? "input-field-error " : "input-field"}`}
                         placeholder={DAY.toString()}
+                        defaultValue=""
                     />
                 </div>
 
@@ -146,19 +150,12 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                 </div>
 
                 <div className='pl-12'>
-                    <select
-                        id="company"
-                        name="company"
-                        onChange={handleCompanyChange}
-                        className={`flex items-center justify-center ${companyError ? "input-field-error " : "input-field"}`}
-                    >
-                        <option value="">{DEFAULT_COMPANY}</option>
-                        {COMPANIES.map((company) => (
-                            <option key={company} value={company}>
-                                {company}
-                            </option>
-                        ))}
-                    </select>
+                    <CompanyDropDown 
+                        companies={COMPANIES}
+                        onCompanySelect={handleCompanySelect}
+                        error={companyError}
+                        value={companySelected}
+                    />
                 </div>
 
                 <div className='pl-12'>
@@ -178,13 +175,11 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                     className='cursor-pointer disabled:cursor-not-allowed'
                 >
                     <div className={`flex text-lg justify-center items-center rounded-full ml-[3.5px] ${formError ? 'bg-red-500 cursor-not-allowed' : 'bg-[#DFF4F3] cursor-pointer border border-[#8ABBFD]'} text-white w-7 h-7`}>
-
                         <div>{formError ? 'x' : 
                             <div className='h-4 w-4 flex items-center justify-center'>
-                            <PlusIcon className='text-[#0C3C74]'/>
+                                <PlusIcon className='text-[#0C3C74]'/>
                             </div>
-                            }
-                            </div>
+                        }</div>
                     </div>
                 </button>
             </form>

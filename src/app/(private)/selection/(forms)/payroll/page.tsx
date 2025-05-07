@@ -1,12 +1,14 @@
 'use client';
+import DocSearchTitle from "@/app/(private)/features/handleForms/components/DocSearch/DocSearchTitle";
 import DocumentSelection from "@/app/(private)/features/handleForms/components/DocSearch/DocumentSelection";
 export default function PayrollSelectionPage() {
-
+  const title : string = "Calendar For Payroll"
+  
   return (
-      <div className="max-w-5xl px-4 py-8 w-full ">
-        <h1 className="mb-8 text-3xl font-bold">Payroll</h1>
-        <div className="flex px-8 w-full">
-        <DocumentSelection />
+    <div className="w-full h-full  flex flex-col items-center justify-center ">
+        <div className=" w-full  h-full flex flex-col items-center justify-center">
+          <DocSearchTitle title={title}  />
+        <DocumentSelection split={true} />
         </div>
       </div>
   )

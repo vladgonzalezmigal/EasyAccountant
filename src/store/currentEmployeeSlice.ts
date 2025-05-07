@@ -1,4 +1,4 @@
-import { CurrentEmployee, CurrentEmployeeResponse } from "@/app/(private)/features/userSettings/types/employeeTypes";
+import { CurrentEmployee, CurrentEmployeeResponse, WageType } from "@/app/(private)/features/userSettings/types/employeeTypes";
 import { currentEmployeeService } from "@/app/(private)/features/userSettings/utils/currentEmployeeUtils";
 
 export interface CurrentEmployeeSlice {
@@ -7,6 +7,7 @@ export interface CurrentEmployeeSlice {
     isCudLoadingCurrentEmployees: boolean;
     // fetch current employee data 
     fetchCurrentEmployees: () => Promise<void>;
+    createCurrentEmployee: (name: string, wageType: WageType, wageRate: number) => Promise<void>;
     updateCurrentEmployees: (currentEmployee: CurrentEmployee) => Promise<void>;
     deleteCurrentEmployee: (employeeId: number) => Promise<void>;
 }
@@ -33,6 +34,52 @@ export const createCurrentEmployeeSlice = (
                 isLoadingCurrentEmployee: false,
                 currentEmployeeState: { currentEmployees: null, error: errorMessage },
             });
+        }
+    },
+
+    createCurrentEmployee: async (name: string, wageType: WageType, wageRate: number) => {
+        try {
+            set({ isCudLoadingCurrentEmployees: true });
+            const response = await currentEmployeeService.createCurrentEmployee(name, wageType, wageRate);
+            
+            if (response.error === null && response.currentEmployees !== null) {
+                // Add the new employee to the existing state
+                set((state) => {
+                    const currentEmployees = state.currentEmployeeState.currentEmployees || [];
+                    const newEmployee = response.currentEmployees?.[0];
+                    if (!newEmployee) return state;
+                    
+                    return {
+                        currentEmployeeState: {
+                            currentEmployees: [...currentEmployees, newEmployee],
+                            error: null
+                        },
+                        isCudLoadingCurrentEmployees: false
+                    };
+                });
+            } else {
+                // If there was an error, just update the error message
+                set((state) => ({
+                    isCudLoadingCurrentEmployees: false,
+                    currentEmployeeState: {
+                        currentEmployees: state.currentEmployeeState.currentEmployees,
+                        error: response.error
+                    }
+                }));
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error
+                ? err.message
+                : "Error creating employee data.";
+            
+            // Keep existing employees but update the error message
+            set((state) => ({
+                isCudLoadingCurrentEmployees: false,
+                currentEmployeeState: {
+                    currentEmployees: state.currentEmployeeState.currentEmployees,
+                    error: errorMessage
+                }
+            }));
         }
     },
 

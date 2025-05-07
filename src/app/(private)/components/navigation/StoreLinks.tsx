@@ -26,9 +26,9 @@ export default function StoreLinks() {
             <Link 
               key={index} 
               href={storePath}
-              className="hover:bg-gray-50 transition-colors duration-200 rounded-lg pl-2 py-2"
+              className="hover:bg-[#B6E8E4] transition-colors duration-200 rounded-lg pl-2 py-2"
             >
-              <p className={`text-[14px] ${store.id.toString() === activeSubpage ? 'text-[#2A7D7B] font-semibold' : 'text-[#6B7280]'} hover:text-[#4B5563] transition-colors duration-200`}>
+              <p className={`text-[14px] ${store.id.toString() === activeSubpage ? 'text-[#2A7D7B] font-semibold' : 'text-[#6B7280]'} hover:text-[#2A7D7B] transition-colors duration-200`}>
                 {store.store_name}
               </p>
             </Link>
