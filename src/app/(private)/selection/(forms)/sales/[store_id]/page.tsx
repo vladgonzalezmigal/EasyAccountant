@@ -1,4 +1,5 @@
 'use client';
+import DocSearchTitle from "@/app/(private)/features/handleForms/components/DocSearch/DocSearchTitle";
 import DocumentSelection from "@/app/(private)/features/handleForms/components/DocSearch/DocumentSelection";
 import { useStore } from "@/store";
 import { useParams } from "next/navigation";
@@ -12,12 +13,12 @@ export default function SalesSelectionPage() {
   if (!store_name) {
     store_name = "searching...";
   }
-  // const store_name : 
+  const title : string = "Calendar For " + store_name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')
 
   return (
-      <div className="w-full ">
-        <h1 className="mb-10 text-3xl font-bold text-[#2F2F2F]">Sales Calendar For {store_name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')} </h1>
-        <div className=" w-full">
+      <div className="w-full h-full  flex flex-col items-center justify-center relative">
+        <DocSearchTitle title={title} />
+        <div className=" w-full  h-full flex flex-col items-center justify-center">
         <DocumentSelection />
         </div>
       </div>

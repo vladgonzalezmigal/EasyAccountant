@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { drawDottedBackground } from "../utils/styling";
 import { getBackConfig } from "../utils/nav";
 import TopBar from "../components/navigation/topbar/TopBar";
+import { getActiveForm } from "../utils/nav";
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface PrivateLayoutProps {
 
 export default function PrivateLayout({ children }: PrivateLayoutProps) {
   const pathname = usePathname();
+  const activePage: string | undefined = getActiveForm(pathname);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { backURL } = getBackConfig(pathname);
 
@@ -30,7 +32,7 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
       {/* Main content */}
       <div className="w-full min-h-screen flex flex-col items-center">
         <div className="w-full z-10">
-          <TopBar activePage={"selection"} />
+          <TopBar activePage={activePage} />
         </div>
 
         <div className="flex-1 w-full relative flex flex-col min-h-0">
