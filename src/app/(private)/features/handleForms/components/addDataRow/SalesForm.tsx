@@ -75,11 +75,16 @@ export default function SalesForm({ formDone, createSalesDate, cumulativeTotal, 
      const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         onSubmit(e);
-        formRef.current?.reset();
+        // Reset all state first
         setSalesInput(0);
         setTaxesInput(0);
-        // reset state vars as needed
-        // Reset company selection to default after form submission
+        
+        // Then reset the form after a delay
+        setTimeout(() => {
+            if (formRef.current) {
+                formRef.current.reset();
+            }
+        }, 0);
     };
     
     // Check if there are any errors

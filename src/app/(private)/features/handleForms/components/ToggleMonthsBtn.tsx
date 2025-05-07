@@ -10,7 +10,7 @@ interface ToggleMonthsBtnProps {
     currentYear: number;
 }
 
-export default function ToggleMonthsBtn({ type, currentMonth }: ToggleMonthsBtnProps) {
+export default function ToggleMonthsBtn({ type, currentMonth, currentYear }: ToggleMonthsBtnProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
@@ -43,16 +43,20 @@ export default function ToggleMonthsBtn({ type, currentMonth }: ToggleMonthsBtnP
     }, []);
 
     return (
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative flex flex-row items-center" ref={dropdownRef}>
+            
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-[120px] px-4 py-2 bg-white border-2 border-[#5CB8B1] rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2A7D7B] text-[#585858] text-[18px] font-semibold"
             >
                 {months[currentMonth]}
             </button>
+            <div className="pl-2 text-2xl ">
+                {currentYear}
+            </div>
             
             {isOpen && (
-                <div className="absolute z-50 right-0 mt-1 w-[120px] bg-white rounded-md shadow-lg border border-[#DFDFDF]">
+                <div className="absolute z-50 top-full left-0 mt-1 w-[120px] bg-white rounded-md shadow-lg border border-[#DFDFDF]">
                     <div className="py-1 max-h-60 overflow-auto">
                         {months.map((month, index) => (
                             <button

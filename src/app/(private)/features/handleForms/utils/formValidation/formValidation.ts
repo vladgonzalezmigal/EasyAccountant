@@ -10,13 +10,13 @@ export interface ValidationResult {
 export const PAYMENT_TYPES = ['CASH', 'CARD', "CHECK"].map(type => type.toUpperCase())
 export const COMPANIES = ['JETRO', 'SUPREMA'].map(type => type.toUpperCase())
 
-export const getFieldConfig = (tableName: string): Record<string, { type: 'input' | 'select' | 'null'; options?: string[] }> => {
+export const getFieldConfig = (tableName: string): Record<string, { type: 'input' | 'select' | 'search' | 'null'; options?: string[] }> => {
     if (tableName === 'expenses') {
         return {
             date: { type: 'input' },
             amount: { type: 'input' },
             detail: { type: 'input' },
-            company: { type: 'select', options: COMPANIES }, // todo pull from db 
+            company: { type: 'search', options: COMPANIES }, // todo pull from db 
             payment_type: { type: 'select', options: PAYMENT_TYPES },
         };
     } else if (tableName === 'sales') {
@@ -135,7 +135,7 @@ export const validateAmountInput = (value: string): ValidationResult => {
         value: value
     };
 }; 
-export const DEFAULT_COMPANY = 'Company';
+export const DEFAULT_COMPANY = '';
 
 export const validateCompanyInput = (value: string): ValidationResult => {
     if (value === "" || value === DEFAULT_COMPANY) {
