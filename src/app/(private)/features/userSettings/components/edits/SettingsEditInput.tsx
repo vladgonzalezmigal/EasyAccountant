@@ -6,14 +6,18 @@ interface SettingsEditInputProps {
     value: string;
     onChange: (value: string) => void;
     isEditing: boolean;
+    disabled: boolean;
 }
 
 export default function SettingsEditInput({ 
     value,
     onChange,
-    isEditing
+    isEditing,
+    disabled
 }: SettingsEditInputProps) {
-    const isEmpty = value.trim() === '';
+    const processInput = (input: string): string => {
+        return input.toUpperCase();
+    };
     
     return (
         <td className="w-[300px] min-w-[300px] max-w-[300px] px-6 py-4 text-[16px] font-medium text-[#585858]">
@@ -21,10 +25,8 @@ export default function SettingsEditInput({
                 <input
                     type="text"
                     value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className={`w-full border-2 rounded-full px-3 py-1 focus:outline-none ${
-                        isEmpty ? 'border-red-500' : 'border-[#8ABBFD]'
-                    }`}
+                    onChange={(e) => onChange(processInput(e.target.value))}
+                    className={`w-full border-b-2 ${disabled ? 'border-red-500' : 'border-[#8ABBFD]'} focus:outline-none`}
                 />
             ) : (
                 <div className="overflow-x-auto whitespace-nowrap">
@@ -33,4 +35,4 @@ export default function SettingsEditInput({
             )}
         </td>
     );
-} 
+}

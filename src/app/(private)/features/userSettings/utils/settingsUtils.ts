@@ -4,6 +4,8 @@ import ExpensesIcon from '@/app/(private)/components/svgs/ExpensesIcon';
 import PayrollIcon from '@/app/(private)/components/svgs/PayrollIcon';
 import MailIcon from '@/app/(private)/components/svgs/MailIcon';
 import VendorSection from '../components/expenses/VendorSection';
+import StoreSection from '../components/stores/StoreSelection';
+
 export const sections = [
     {
       id: 'expenses',
@@ -17,14 +19,14 @@ export const sections = [
       title: 'Payroll',
       icon: PayrollIcon,
       description: 'Manage payroll schedules, tax settings, and employee payment methods.', 
-      content: VendorSection
+      // content: VendorSection
     },
     {
       id: 'sales',
       title: 'Sales',
       icon: SalesIcon,
       description: 'Customize your sales pipeline, product catalog, and customer management options.',
-      content: VendorSection
+      content: StoreSection
     },
     {
       id: 'email',
