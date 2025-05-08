@@ -3,7 +3,7 @@ export type Expense = {
     date: string; // Supabase returns date as string
     payment_type: string;
     detail: string;
-    company: string;
+    company: number;
     amount: number;
 };
 

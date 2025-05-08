@@ -36,16 +36,12 @@ const ProtectedLayout = ({ children }: LayoutProps) => {
     const missingSettings = (storeState.stores === null) || (vendorState.vendors === null);
 
     if (missingSettings) { // only fetch settings if user is authenticated and settings are missing
-      console.log("fetching settings called");
        fetchSettings();
     }
   }, [fetchStore, fetchVendorData, fetchEmail, fetchCurrentEmployees, storeState, vendorState, emailState]);
   // (2) monitor path changes
   const pathname = usePathname();
-  console.log("hello world loading")
   useEffect(() => {
-    console.log("switching paths")
-    console.log(isGlobalLoading, "isGlobalLoading")
     setGlobalLoading(false);
   }, [pathname, isGlobalLoading, setGlobalLoading]);
 

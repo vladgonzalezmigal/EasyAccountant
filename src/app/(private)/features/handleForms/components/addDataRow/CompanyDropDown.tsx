@@ -1,24 +1,25 @@
 'use client';
 
 import { ChangeEvent, useRef, useState, useEffect } from 'react';
-import { validateCompanyInput,  } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
+import { validateCompanyInput } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
 
 interface CompanyDropDownProps {
     companies: string[];
     onCompanySelect: (company: string) => void;
     error?: string | null;
-    value?: string;
+    value?: number;
+    vendorMap: Record<number, string>;
 }
 
-export default function CompanyDropDown({ companies, onCompanySelect, error, value = "" }: CompanyDropDownProps) {
-    const [searchInput, setSearchInput] = useState(value);
+export default function CompanyDropDown({ companies, onCompanySelect, error, value = -1, vendorMap }: CompanyDropDownProps) {
+    const [searchInput, setSearchInput] = useState(value === -1 ? "" : vendorMap[value] || "");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Update searchInput when value prop changes
     useEffect(() => {
-        setSearchInput(value);
-    }, [value]);
+        setSearchInput(value === -1 ? "" : vendorMap[value] || "");
+    }, [value, vendorMap]);
 
     const handleCompanySearch = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.toUpperCase();

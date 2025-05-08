@@ -30,10 +30,14 @@ export default function DashboardPage() {
 
   const handleNavigation = (option: string) => {
     if (stores && option === "sales") {
-      console.log("stores", stores[0].id);
       router.push(`/selection/sales/${stores[0].id}/${currentYear}/${(currentMonth + 1)}`);
     } else if (!stores && option === "sales") {
       router.push(`/selection/`); // user needs to refresh the page to see the stores
+    } else if (option === "payroll") { // calculate which half of the month to navigate to
+      const currentDay = today.getDate();
+      const half = currentDay <= 15 ? 1 : 2;
+      router.push(`/selection/${option}/${currentYear}/${(currentMonth + 1)}/${half}`);
+      // router.push(`/selection/${option}/${currentYear}/${(currentMonth + 1)}`);
     } else {
       router.push(`/selection/${option}/${currentYear}/${(currentMonth + 1)}`);
     }

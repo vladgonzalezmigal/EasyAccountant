@@ -3,7 +3,7 @@
 import { ChangeEvent, useRef, useState } from 'react';
 import { Expense } from '@/app/(private)/types/formTypes';
 import { useParams } from 'next/navigation';
-import { validateDateInput, validateAmountInput, DEFAULT_COMPANY } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
+import { validateDateInput, validateAmountInput } from '@/app/(private)/features/handleForms/utils/formValidation/formValidation';
 import { formatDate } from '@/app/(private)/utils/dateUtils';
 import PlusIcon from '@/app/(private)/components/svgs/PlusIcon';
 import { useStore } from '@/store';
@@ -23,12 +23,20 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
     const { year, month } = useParams();
     const { vendorState } = useStore();
     const COMPANIES = vendorState.vendors?.map((vendor) => vendor.vendor_name) || [];
-    
+    const vendorMap = vendorState.vendors?.reduce((map, vendor) => {
+        map[vendor.id] = vendor.vendor_name;
+        return map;
+    }, {} as Record<number, string>) || {};
+    const reverseVendorMap = vendorState.vendors?.reduce((map, vendor) => {
+        map[vendor.vendor_name] = vendor.id;
+        return map;
+    }, {} as Record<string, number>) || {};
+
     // form validation errors
     const [dateError, setDateError] = useState<string | null>(null);
     const [companyError, setCompanyError] = useState<string | null>(null);
     const [amountError, setAmountError] = useState<string | null>(null);
-    const [companySelected, setCompanySelected] = useState<string>(DEFAULT_COMPANY);
+    const [companySelected, setCompanySelected] = useState<number>(-1);
 
     const formError: boolean = (dateError || companyError || amountError) ? true : false;
 
@@ -38,18 +46,24 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
     };
 
     const handleCompanySelect = (company: string) => {
-        setCompanySelected(company);
-        onInputChange('company', company);
+        // Find the vendor ID by name
+        const vendorId = reverseVendorMap[company];
+        if (!vendorId) {
+            setCompanyError("Invalid company selected");
+            return;
+        }
+
+        setCompanySelected(vendorId);
+        onInputChange('company', vendorId);
         setCompanyError(null);
     };
 
     const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        console.log("target date value is ", value);
 
         const validation = validateDateInput(
             value,
-            parseInt(month as string)-1,
+            parseInt(month as string) - 1,
             parseInt(year as string)
         );
 
@@ -88,7 +102,7 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (companySelected === DEFAULT_COMPANY) {
+        if (companySelected === -1) {
             setCompanyError("Please select a company");
             return;
         }
@@ -104,7 +118,7 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                 }
             }
         }, 0);
-        setCompanySelected(DEFAULT_COMPANY);
+        setCompanySelected(-1);
     };
 
     return (
@@ -150,11 +164,12 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                 </div>
 
                 <div className='pl-12'>
-                    <CompanyDropDown 
+                    <CompanyDropDown
                         companies={COMPANIES}
                         onCompanySelect={handleCompanySelect}
                         error={companyError}
                         value={companySelected}
+                        vendorMap={vendorMap}
                     />
                 </div>
 
@@ -175,9 +190,9 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
                     className='cursor-pointer disabled:cursor-not-allowed'
                 >
                     <div className={`flex text-lg justify-center items-center rounded-full ml-[3.5px] ${formError ? 'bg-red-500 cursor-not-allowed' : 'bg-[#DFF4F3] cursor-pointer border border-[#8ABBFD]'} text-white w-7 h-7`}>
-                        <div>{formError ? 'x' : 
+                        <div>{formError ? 'x' :
                             <div className='h-4 w-4 flex items-center justify-center'>
-                                <PlusIcon className='text-[#0C3C74]'/>
+                                <PlusIcon className='text-[#0C3C74]' />
                             </div>
                         }</div>
                     </div>

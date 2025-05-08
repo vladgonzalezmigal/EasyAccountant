@@ -79,7 +79,7 @@ export const getPagesLink = (currentPath: string, targetPage: string): string =>
   
   
   // If we're at /selection/[page]/year/month || /selection/[page]/[store_id]/year/month
-  if (((currentPath.includes("sales") || currentPath.includes("payroll")) && currentPath.split('/').length === 6)) {
+  if (((currentPath.includes("sales")) && currentPath.split('/').length === 6)) {
     const pathParts = currentPath.split('/');
     const year = pathParts[4];
     const month = pathParts[5];
@@ -87,7 +87,14 @@ export const getPagesLink = (currentPath: string, targetPage: string): string =>
       return `/selection/${targetPage}/${year}/${month}/1`;
     }
     return `/selection/${targetPage}/${year}/${month}`;
+  } else if (currentPath.includes("payroll") && targetPage !== "payroll" && currentPath.split('/').length === 6) {
+    const pathParts = currentPath.split('/');
+    const year = pathParts[3];
+    const month = pathParts[4];
+
+    return `/selection/${targetPage}/${year}/${month}`;
   } else if (currentPath.split('/').length === 5) {
+
     const pathParts = currentPath.split('/');
     const year = pathParts[3];
     const month = pathParts[4];
@@ -102,7 +109,6 @@ export const getPagesLink = (currentPath: string, targetPage: string): string =>
 };
 
 export const getOtherPagesLink = (currentPath: string, targetPage: string): string => {
-  console.log("currentPath", currentPath);
   if (currentPath.startsWith("/settings")) {
     return currentPath;
   }

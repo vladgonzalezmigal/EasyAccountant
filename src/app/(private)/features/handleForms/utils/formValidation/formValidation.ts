@@ -135,13 +135,13 @@ export const validateAmountInput = (value: string): ValidationResult => {
         value: value
     };
 }; 
-export const DEFAULT_COMPANY = '';
+export const DEFAULT_COMPANY = -1;
 
 export const validateCompanyInput = (value: string): ValidationResult => {
-    if (value === "" || value === DEFAULT_COMPANY) {
+    if (value === "" || value === `${DEFAULT_COMPANY}`) {
         return {
             isValid: false,
-            value: DEFAULT_COMPANY,
+            value: `${DEFAULT_COMPANY}`,
             error: "Please select a company"
         };
     }

@@ -104,7 +104,6 @@ export default function SalesFormPage() {
                 }
             }
         });
-        console.log("editedRows", editedRows);
     }
 
     const canEdit: boolean = (editedRows.length > 0) && (Object.keys(validationErrors).length === 0);

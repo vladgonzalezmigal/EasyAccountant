@@ -71,10 +71,7 @@ export default function Navbar({ backURL }: NavbarProps) {
                                         key={page}
                                         onNavigate={() => {
                                             // Only executes during SPA navigation
-                                            console.log('Navigating...')
                                             setGlobalLoading(true);
-                                            // Optionally prevent navigation
-                                            // e.preventDefault()
                                           }
 
                                         }
