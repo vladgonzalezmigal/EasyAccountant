@@ -5,11 +5,9 @@ import { login } from '../../utils/AuthActions';
 import { useRouter } from 'next/navigation';
 import { FormErrors, AuthFormData, validateForm } from '@/app/(public)/utils/formValidation';
 import LoadingWave from '@/app/components/LoadingWave';
-import { useStore } from '@/store';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setGlobalLoading } = useStore();
   const [formData, setFormData] = useState<AuthFormData>({
     email: '',
     password: '',
@@ -73,20 +71,14 @@ export default function LoginPage() {
     }
   };
 
-  let transitionLoading = false;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     setLoginError(null); // Clear login error for better UX
-    setGlobalLoading(true); // Set global loading immediately
-
-
     const newErrors = validateForm(formData);
 
     if (Object.values(newErrors).some(value => value !== null)) {
       setFormErrors(newErrors); // Show errors if validation fails
-      setGlobalLoading(false);
       return;
     }
 
@@ -94,17 +86,15 @@ export default function LoginPage() {
       setLoading(true);
       const result = await login(formData);
       if (result) {
-        transitionLoading = true;
+        setLoading(false);
         setLoginError(result.error);
       } else {
+        // loading state continues until router.push is called
         router.push('/selection');
       }
     } catch (error) {
       setLoginError(error as string);
-      setGlobalLoading(false);
-    } finally {
       setLoading(false);
-      console.log("setting global loading to true")
     }
   };
 
@@ -118,11 +108,7 @@ export default function LoginPage() {
     });
   }, []);
 
-  return (transitionLoading) ? (
-    <div className="max-w-[500px] h-[400px] w-full space-y-8 p-8 bg-gradient-to-br from-[#F0FDFC] via-white to-[#E0F5F3] rounded-lg shadow-xl flex justify-center border border-[#DFDFDF]">
-      <LoadingWave />
-    </div>
-  ) : (
+  return (
     
     <div className="max-w-[500px] h-[400px] w-full space-y-8 p-8 bg-gradient-to-br from-[#F0FDFC] via-white to-[#E0F5F3] rounded-lg shadow-xl flex justify-center border border-[#DFDFDF]">
     <div className="w-[280px] flex items-center justify-center flex-col ">

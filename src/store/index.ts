@@ -8,8 +8,9 @@ import { createVendorSlice, VendorSlice } from "./vendorSlice";
 import { createEmailSlice, EmailSlice } from "./emailSlice";
 import { createCurrentEmployeeSlice, CurrentEmployeeSlice } from "./currentEmployeeSlice";
 import { createGlobalLoadingSlice, GlobalLoadingSlice } from "./globalLoadingSlice";
+import { createAccountSlice, AccountSlice } from "./accountSlice";
 
-export type StoreState = StoreSlice & VendorSlice & EmailSlice & CurrentEmployeeSlice & GlobalLoadingSlice;
+export type StoreState = StoreSlice & VendorSlice & EmailSlice & CurrentEmployeeSlice & GlobalLoadingSlice & AccountSlice;
 
 // Wrap each slice-creator so that TypeScript knows they extend StoreState:
 const createStoreSliceWithStore: StateCreator<StoreState, [], [], StoreSlice> = (set,) =>
@@ -27,6 +28,9 @@ const createCurrentEmployeeSliceWithStore: StateCreator<StoreState, [], [], Curr
 const createGlobalLoadingSliceWithStore: StateCreator<StoreState, [], [], GlobalLoadingSlice> = (set,) =>
     createGlobalLoadingSlice(set, );
 
+const createAccountSliceWithStore: StateCreator<StoreState, [], [], AccountSlice> = (set,) =>
+    createAccountSlice(set, );
+
 /**
  * The main Zustand store that combines all slices.
  * Uses the persist middleware to save specific parts of state to sessionStorage.
@@ -40,6 +44,7 @@ export const useStore = create<StoreState>()(
             ...createEmailSliceWithStore(set, get, store),
             ...createCurrentEmployeeSliceWithStore(set, get, store),
             ...createGlobalLoadingSliceWithStore(set, get, store),
+            ...createAccountSliceWithStore(set, get, store),
         }),
         {
             name: "app-storage",
@@ -50,6 +55,7 @@ export const useStore = create<StoreState>()(
                 emails: state.emailState.emails,
                 currentEmployees: state.currentEmployeeState.currentEmployees,
                 isGlobalLoading: state.isGlobalLoading,
+                userEmail: state.userEmail,
             }),
         }
     )
