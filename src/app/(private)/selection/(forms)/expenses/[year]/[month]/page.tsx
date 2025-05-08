@@ -26,7 +26,7 @@ export default function ExpensesPage() {
         date: '',
         payment_type: 'CHECK',
         detail: '',
-        company: '',
+        company: -1,
         amount: 0
     });
     // update mode state 
@@ -140,7 +140,7 @@ export default function ExpensesPage() {
 
     useEffect(() => {
         const fetchExpenses = async () => {
-            const dataType = { id: -1, date: '', payment_type: 'CHECK', detail: '', company: '', amount: 0 } as Expense;
+            const dataType = { id: -1, date: '', payment_type: 'CHECK', detail: '', company: -1, amount: 0 } as Expense;
             const readRes = await getRequest({ tableName: 'expenses', dataType: dataType, startDate, endDate });
             // const readRes = await performCrudOperation('read', { tableName: 'expenses', dataType: dataType, startDate, endDate });
             if (typeof readRes !== 'string' && !readRes.data) {

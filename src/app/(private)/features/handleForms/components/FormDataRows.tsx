@@ -1,5 +1,5 @@
 'use client';
-import React, { ChangeEvent, ReactNode } from 'react';
+import React, { ChangeEvent, ReactNode, useState } from 'react';
 import { FormData } from '@/app/(private)/types/formTypes';
 import { sumColumn } from '../../utils/analytics';
 import { getFieldConfig, isFieldEdited } from '../utils/formValidation/formValidation';
@@ -22,7 +22,15 @@ type FormDataRowsProps = {
 
 export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editConfig, tableName }: FormDataRowsProps) {
     const { vendorState } = useStore();
-    const vendors = vendorState.vendors?.map(vendor => vendor.vendor_name) || [];
+    const vendors_names = vendorState.vendors?.map(vendor => vendor.vendor_name) || [];
+    const vendorMap = vendorState.vendors?.reduce((map, vendor) => {
+        map[vendor.id] = vendor.vendor_name;
+        return map;
+    }, {} as Record<number, string>) || {};
+    
+    // Change to a map of row IDs to selected company IDs
+    const [selectedCompanies, setSelectedCompanies] = useState<Record<number, number>>({});
+
     const handleEditChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: number, colNumber: number) => {
         const { name, value } = e.target;
         const validationResult = editConfig.validationFunction(name as keyof FormData, value as string);
@@ -33,8 +41,26 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
         editConfig.onRowEdit(id, name as keyof FormData, value, colNumber);
     };
 
+    const reverseVendorMap = vendorState.vendors?.reduce((map, vendor) => {
+        map[vendor.vendor_name] = vendor.id;
+        return map;
+    }, {} as Record<string, number>) || {};
+
     const handleCompanySelect = (company: string, id: number, colNumber: number, displayKey: keyof FormData) => {
-        editConfig.onRowEdit(id, displayKey, company, colNumber);
+        const vendorId = reverseVendorMap[company];
+
+        if (!vendorId) {
+            editConfig.validationErrors[id]?.add(colNumber);
+            return;
+        }
+        
+        // Update only the specific row's selected company
+        setSelectedCompanies(prev => ({
+            ...prev,
+            [id]: vendorId
+        }));
+        
+        editConfig.onRowEdit(id, displayKey, vendorId, colNumber);
     };
 
     const fieldConfig = getFieldConfig(tableName);
@@ -84,9 +110,11 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                                                     />
                                                 ) : fieldConfig[displayKey]?.type === 'search' ? (
                                                     <CompanyDropDown
-                                                        companies={vendors}
+                                                        companies={vendors_names}
                                                         onCompanySelect={(company) => handleCompanySelect(company, id, index, displayKey)}
                                                         error={editConfig.validationErrors[id]?.has(index) ? "Invalid selection" : null}
+                                                        vendorMap={vendorMap}
+                                                        value={selectedCompanies[id] || -1}
                                                     />
                                                 ) : (
                                                     <EditInputForm
@@ -99,7 +127,7 @@ export function FormDataRows({ data, colToSum, addRowForm, deleteConfig, editCon
                                                 )
                                             ) : (
                                                 <p className='table-row-text'>
-                                                    {formatDisplayValue(displayData[displayKey])}
+                                                    {((displayKey as string) === "company") ? vendorMap[displayData[displayKey] as number] : formatDisplayValue(displayData[displayKey])} 
                                                 </p>
                                             )}
                                         </div>
