@@ -14,6 +14,7 @@ import { validateSalesInput } from "@/app/(private)/features/handleForms/utils/f
 import SalesTable from "@/app/(private)/features/handleForms/components/SalesTable";
 import { CudError } from "@/app/(private)/features/handleForms/components/formErrors/CudError";
 import TableTitle from "@/app/(private)/features/handleForms/components/TableTitle";
+import { Loading } from "@/app/components/Loading";
 
 export default function SalesFormPage() {
     const { store_id, year, month } = useParams();
@@ -170,7 +171,9 @@ export default function SalesFormPage() {
     }, [sales]);
 
     if (fetchLoading) {
-        return <div>Loading...</div>;
+        return ( <div className="w-full h-full flex items-center justify-center">
+            <Loading />
+        </div>)
     }
 
     const headerTitles = ["Date", "Sales", "Taxes", "Daily ", "Total"];

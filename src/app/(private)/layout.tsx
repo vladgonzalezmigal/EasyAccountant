@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 
 import { Loading } from "../components/Loading";
 import { useStore } from "@/store";
+import { usePathname } from "next/navigation";
 
 
 interface LayoutProps {
@@ -11,8 +12,8 @@ interface LayoutProps {
 }
 
 const ProtectedLayout = ({ children }: LayoutProps) => {
-  const { fetchStore, fetchVendorData, fetchEmail, fetchCurrentEmployees,
-    isLoadingStore, isLoadingVendors, storeState, vendorState, emailState } = useStore();
+  const { fetchStore, fetchVendorData, fetchEmail, fetchCurrentEmployees, setGlobalLoading,
+    isLoadingStore, isLoadingVendors, storeState, vendorState, emailState, isGlobalLoading } = useStore();
 
   // (1) load user settings 
   const loadingSettings : boolean = isLoadingStore || isLoadingVendors;
@@ -39,9 +40,19 @@ const ProtectedLayout = ({ children }: LayoutProps) => {
        fetchSettings();
     }
   }, [fetchStore, fetchVendorData, fetchEmail, fetchCurrentEmployees, storeState, vendorState, emailState]);
-  console.log("emailState", emailState);
-  return (loadingSettings) ? (
-    <Loading />
+  // (2) monitor path changes
+  const pathname = usePathname();
+  console.log("hello world loading")
+  useEffect(() => {
+    console.log("switching paths")
+    console.log(isGlobalLoading, "isGlobalLoading")
+    setGlobalLoading(false);
+  }, [pathname, isGlobalLoading, setGlobalLoading]);
+
+  return (loadingSettings || isGlobalLoading) ? (
+    <div className="min-w-screen min-h-screen h-full w-full flex items-center justify-center"> 
+      <Loading />
+    </div>
   ) : (
     <div className="">
       {children}

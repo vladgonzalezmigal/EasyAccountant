@@ -28,8 +28,7 @@ type SettingsType = 'expenses' | 'payroll';
 export default function Navbar({ backURL }: NavbarProps) {
     const pathname = usePathname();
     const activePage: string | undefined = getActiveForm(pathname);
-    console.log(activePage, "activePage is");
-    const { storeState } = useStore();
+    const { storeState, setGlobalLoading } = useStore();
     const storeSubpages : Store[] | null  = storeState.stores?.filter(store => store.active) || null;
     // if null need to ask user to refresh page
     const formPages: string[] = ["sales", "expenses", "payroll"];
@@ -70,6 +69,15 @@ export default function Navbar({ backURL }: NavbarProps) {
                                 <div className="w-full">
                                     <Link
                                         key={page}
+                                        onNavigate={() => {
+                                            // Only executes during SPA navigation
+                                            console.log('Navigating...')
+                                            setGlobalLoading(true);
+                                            // Optionally prevent navigation
+                                            // e.preventDefault()
+                                          }
+
+                                        }
                                         href={getPagesLink(pathname, (page))}
                                         className={`w-full flex justify-between h-[52px] hover:bg-[#B6E8E4] text-gray-500 hover:text-[#2A7D7B] rounded-lg pl-3 flex items-center transition-colors duration-200 ${page.includes(activePage) ? 'bg-[#DFF4F3] shadow-sm' : ''}`}
                                     >
