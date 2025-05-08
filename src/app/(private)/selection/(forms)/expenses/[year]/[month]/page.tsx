@@ -157,57 +157,61 @@ export default function ExpensesPage() {
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center">
-            {/* Title & Error Message */}
-            <div className="w-full text-center w-full flex flex-col items-center">
-                <TableTitle title="Expenses" month={month as string} year={year as string} type="expenses" />            
-                <div className="flex flex-col items-center justify-center"> 
-                <p className="font-semibold text-[#585858]">  </p>
-                <CudError cudError={cudError} />
-                </div>
-            </div>
-
             {fetchLoading ? (
-                <Loading />
+                <div className="w-full h-full flex items-center justify-center">
+                    <Loading />
+                </div>
             ) : (
-                // Table Component
-                <ExpenseTable
-                    fetchError={fetchError}
-                    formDataProps={{
-                        rowData: expenses,
-                        deleteConfig: {
-                            mode: deleteMode,
-                            rows: rowsToDelete,
-                            onRowSelect: newRowToDelete
-                        },
-                        editConfig: {
-                            mode: editMode,
-                            editedRows: editedRows,
-                            onRowEdit: newRowToEditInputChange,
-                            validationFunction: editExpenseRowValidation,
-                            validationErrors: validationErrors
-                        },
-                        addRowForm: (
-                            <ExpenseForm 
-                                onInputChange={newExpenseInputChange}
-                                onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, newExpense)} 
-                            />
-                        )
-                    }}
-                    actionBtnsProps={{
-                        deleteBtnProps: {
-                            handleDelete,
-                            deleteMode,
-                            canDelete
-                        },
-                        editBtnProps: {
-                            handleEdit,
-                            editMode,
-                            validationErrors
-                        }
-                    }}
-                    cudLoading={cudLoading}
-                    headerTitles={["Date", "Type", "Detail", "Company", "Amount"]}
-                />
+                <>
+                    {/* Title & Error Message */}
+                    <div className="w-full text-center w-full flex flex-col items-center">
+                        <TableTitle title="Expenses" month={month as string} year={year as string} type="expenses" />
+                        <div className="flex flex-col items-center justify-center">
+                            <p className="font-semibold text-[#585858]">  </p>
+                            <CudError cudError={cudError} />
+                        </div>
+                    </div>
+
+                    {/* Table Component */}
+                    <ExpenseTable
+                        fetchError={fetchError}
+                        formDataProps={{
+                            rowData: expenses,
+                            deleteConfig: {
+                                mode: deleteMode,
+                                rows: rowsToDelete,
+                                onRowSelect: newRowToDelete
+                            },
+                            editConfig: {
+                                mode: editMode,
+                                editedRows: editedRows,
+                                onRowEdit: newRowToEditInputChange,
+                                validationFunction: editExpenseRowValidation,
+                                validationErrors: validationErrors
+                            },
+                            addRowForm: (
+                                <ExpenseForm
+                                    onInputChange={newExpenseInputChange}
+                                    onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmitCreate(e, newExpense)}
+                                />
+                            )
+                        }}
+                        actionBtnsProps={{
+                            deleteBtnProps: {
+                                handleDelete,
+                                deleteMode,
+                                canDelete
+                            },
+                            editBtnProps: {
+                                handleEdit,
+                                editMode,
+                                validationErrors
+                            }
+                        }}
+                        cudLoading={cudLoading}
+                        headerTitles={["Date", "Type", "Detail", "Company", "Amount"]}
+                    />
+                </>
             )}
         </div>
     )

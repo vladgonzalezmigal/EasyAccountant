@@ -3,19 +3,25 @@
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { signOut } from '@/utils/AuthActions';
+import { useStore } from '@/store';
 
 const SignOutBtn = () => {
   const [signOutError, setSignOutError] = useState<string | null>(null);
+  
+  const { setGlobalLoading } = useStore();
 
   const router = useRouter();
 
   const handleSignOut = async (e: React.MouseEvent<HTMLButtonElement> ) => {
      e.preventDefault();
+     setGlobalLoading(true);
     try {
       await signOut();
       router.push('/');
     } catch (error) {
       setSignOutError(error as string);
+    } finally {
+      setGlobalLoading(false);
     }
     
   };
