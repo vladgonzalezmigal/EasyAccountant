@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { useEffect } from 'react';
 import HouseUserIcon from '../../svgs/HouseUserIcon';
 import SalesIcon from '../../svgs/SalesIcon';
 import ExpensesIcon from '../../svgs/ExpensesIcon';
@@ -9,38 +8,20 @@ import PayrollIcon from '../../svgs/PayrollIcon';
 import MailIcon from '../../svgs/MailIcon';
 import GearIcon from '../../svgs/GearIcon';
 import CalculatorIcon from '../../svgs/CalculatorIcon';
+import { useStore } from '@/store';
 
 interface TopBarProps {
     activePage: string;
 }
 
 export default function TopBar({ activePage }: TopBarProps) {
-    const [userEmail, setUserEmail] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { userEmail, isLoadingEmail, error, fetchUserEmail } = useStore();
 
     useEffect(() => {
-        async function getUserEmail() {
-            try {
-                setIsLoading(true);
-                const supabase = createClient();
-                const { data: { user }, error } = await supabase.auth.getUser();
-                
-                if (error) {
-                    throw error;
-                }
-                
-                setUserEmail(user?.email || null);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to fetch user email');
-                console.error('Error fetching user email:', err);
-            } finally {
-                setIsLoading(false);
-            }
+        if (!userEmail) {
+            fetchUserEmail();
         }
-
-        getUserEmail();
-    }, []);
+    }, [fetchUserEmail, userEmail]);
 
     const getIcon = () => {
         switch (activePage) {
@@ -76,7 +57,7 @@ export default function TopBar({ activePage }: TopBarProps) {
                 <h1 className="text-[24px] font-bold text-[#2F2F2F] pl-4">{formatPageTitle(activePage)}</h1>
             </div>
             <div className="text-[16px] font-medium text-[#585858] ">
-                {isLoading ? (
+                {isLoadingEmail ? (
                     <p className="text-gray-500">Loading...</p>
                 ) : error ? (
                     <p className="text-red-500">{error}</p>

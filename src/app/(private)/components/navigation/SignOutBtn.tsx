@@ -19,10 +19,9 @@ const SignOutBtn = () => {
       await signOut();
       router.push('/');
     } catch (error) {
-      setSignOutError(error as string);
-    } finally {
       setGlobalLoading(false);
-    }
+      setSignOutError(error as string);
+    } 
     
   };
 
