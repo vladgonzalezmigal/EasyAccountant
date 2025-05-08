@@ -66,7 +66,7 @@ export function useFormCrud({
         date: '',
         payment_type: 'CHECK',
         detail: '',
-        company: '',
+        company: -1,
         amount: 0
       });
     }
