@@ -4,19 +4,22 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { months } from '../../../../utils/dateUtils';
 import DocumentSearchHeader from './DocumentSearchHeader';
-
+import { daysInMonth } from '../../../../utils/dateUtils';
+// import { useStore } from '@/store';
 interface DocumentSelectionProps {
     split?: boolean;
 }
 
 export default function DocumentSelection({ split = false }: DocumentSelectionProps) {
+    // const { setGlobalLoading } = useStore();
     const today = new Date();
     const router = useRouter();
     const [selectedYear, setSelectedYear] = useState<number>(today.getFullYear());
     const currentMonth: number = today.getMonth();
     // Split View For Payroll
     const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
-    const endDates : number[] = [15,31]
+    const [endDates, setEndDates] = useState<number[]>([15,daysInMonth[currentMonth]]);
+    // const endDates : number[] = []
 
     
     // Navigate to the document URL with the selected year and month
@@ -37,10 +40,13 @@ export default function DocumentSelection({ split = false }: DocumentSelectionPr
         }
         if (endDate === 0) {
             setSelectedMonth(monthIndex);
+            setEndDates([15,daysInMonth[monthIndex]]);
         } else {
-            // call navigateToDocument
+            // navigate to specified document
+            
             const docId = endDates.findIndex(date => date === endDate);
             navigateToDocument(selectedYear, monthIndex, (docId+1));
+            // setGlobalLoading(true);
         }
         // You can use endDate if needed for specific payroll periods
         // navigateToDocument(selectedYear, monthIndex);

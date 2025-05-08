@@ -5,7 +5,7 @@ export const months = [
 ];
 
 // Array of days in each month (non-leap year)
-const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+export const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 /**
  * Returns the number of days in a given month

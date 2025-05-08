@@ -80,6 +80,7 @@ export const getPagesLink = (currentPath: string, targetPage: string): string =>
   
   // If we're at /selection/[page]/year/month || /selection/[page]/[store_id]/year/month
   if (((currentPath.includes("sales") || currentPath.includes("payroll")) && currentPath.split('/').length === 6)) {
+    console.log("this case with long")
     const pathParts = currentPath.split('/');
     const year = pathParts[4];
     const month = pathParts[5];
