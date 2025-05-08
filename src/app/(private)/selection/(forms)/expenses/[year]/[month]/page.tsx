@@ -42,7 +42,6 @@ export default function ExpensesPage() {
 
     const newExpenseInputChange = (field: keyof Expense, value: string | number) => {
         // value is validated & formatted by the ExpenseForm component
-        console.log('newExpenseInputChange', field, value);
         setNewExpense(prev => ({ ...prev, [field]: value }));
         return value;
     };

@@ -45,7 +45,6 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
 
     const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        console.log("target date value is ", value);
 
         const validation = validateDateInput(
             value,

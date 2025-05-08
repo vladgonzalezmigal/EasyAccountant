@@ -7,6 +7,12 @@ export const months = [
 // Array of days in each month (non-leap year)
 export const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
+export const trimmedMonthName = (monthIndex: number): string => {
+    const monthName = months[monthIndex];
+    const firstThreeChars = monthName.slice(0, 3);
+    return firstThreeChars.charAt(0).toUpperCase() + firstThreeChars.slice(1).toLowerCase();
+}
+
 /**
  * Returns the number of days in a given month
  * @param monthIndex The month index (0-11, where 0 = January, 11 = December)

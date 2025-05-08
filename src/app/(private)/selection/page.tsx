@@ -30,7 +30,6 @@ export default function DashboardPage() {
 
   const handleNavigation = (option: string) => {
     if (stores && option === "sales") {
-      console.log("stores", stores[0].id);
       router.push(`/selection/sales/${stores[0].id}/${currentYear}/${(currentMonth + 1)}`);
     } else if (!stores && option === "sales") {
       router.push(`/selection/`); // user needs to refresh the page to see the stores
