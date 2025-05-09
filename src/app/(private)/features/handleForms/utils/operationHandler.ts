@@ -106,6 +106,11 @@ function buildReadQuery(table: string, params: PerformReadParams, supabase: Supa
                 .gte('date', params.startDate)
                 .lt('date', params.endDate)
                 .order('date', { ascending: false }); // newest first 
+        case 'payroll':
+            console.log(params.endDate, "params.endDate");
+            return baseQuery
+                .eq('end_date', params.endDate)
+                .order('end_date', { ascending: false });
         default:
             return baseQuery;
     }

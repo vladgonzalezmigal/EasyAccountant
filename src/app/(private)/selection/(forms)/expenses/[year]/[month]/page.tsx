@@ -142,7 +142,6 @@ export default function ExpensesPage() {
         const fetchExpenses = async () => {
             const dataType = { id: -1, date: '', payment_type: 'CHECK', detail: '', company: -1, amount: 0 } as Expense;
             const readRes = await getRequest({ tableName: 'expenses', dataType: dataType, startDate, endDate });
-            // const readRes = await performCrudOperation('read', { tableName: 'expenses', dataType: dataType, startDate, endDate });
             if (typeof readRes !== 'string' && !readRes.data) {
                 setFetchError(readRes.error);
                 return;
