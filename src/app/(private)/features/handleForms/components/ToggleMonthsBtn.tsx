@@ -51,7 +51,7 @@ export default function ToggleMonthsBtn({ type, currentMonth, currentYear }: Tog
             >
                 {months[currentMonth]}
             </button>
-            <div className="pl-2 text-2xl ">
+            <div className="pl-4 text-3xl font-semibold text-[#585858] ">
                 {currentYear}
             </div>
             

@@ -1,3 +1,5 @@
+import { WageType } from "../features/userSettings/types/employeeTypes";
+
 export type Expense = {
     id: number;
     date: string; // Supabase returns date as string
@@ -22,10 +24,13 @@ export interface SalesDisplay extends Sales {
 
 export type Payroll = {
     id: number;
+    end_date: string;
     employee_name: string; // handle repeat names 
-    wage_type: string;
+    wage_type: WageType;
     wage_rate: number;
     hours: number;
+    minutes: number;
+    total_pay: number;
 };
 
 export type FormData = Expense | Sales | SalesDisplay | Payroll;
