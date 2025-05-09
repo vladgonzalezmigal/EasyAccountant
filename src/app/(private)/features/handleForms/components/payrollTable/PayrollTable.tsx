@@ -3,6 +3,7 @@
 import { Payroll } from '@/app/(private)/types/formTypes';
 import PayrollTableRows from './PayrollTableRows';
 import PayrollBtns from './PayrollBtns';
+import { useState } from 'react';
 
 interface PayrollTableProps {
     data: Payroll[];
@@ -11,7 +12,13 @@ interface PayrollTableProps {
     onEdit?: () => void;
 }
 
-export default function PayrollTable({ data, save, onSave, onEdit }: PayrollTableProps) {
+export default function PayrollTable({ data, save,  }: PayrollTableProps) {
+    const [createRow, setCreateRow] = useState(false);
+
+    const handleCreateToggle = () => {
+        setCreateRow(prev => !prev);
+    };
+
     return (
         <div className="w-full flex flex-col items-center">
             <div className="w-[800px] ">
@@ -40,18 +47,22 @@ export default function PayrollTable({ data, save, onSave, onEdit }: PayrollTabl
                 </div>
                 
                 {/* Body */}
-                <PayrollTableRows data={data} />
+                <PayrollTableRows 
+                    data={data} 
+                    showCreateRow={createRow}
+                />
             </div>
             
             {/* Action Button */}
             <div className="w-[800px]"> 
-            <PayrollBtns
-                deleteMode={false}
-                editMode={false}
-                save={save}
-                clearEdits={false}
-                cudLoading={false}
-            />
+                <PayrollBtns
+                    deleteMode={false}
+                    editMode={false}
+                    save={save}
+                    clearEdits={false}
+                    cudLoading={false}
+                    onCreateToggle={handleCreateToggle}
+                />
             </div>
         </div>
     );

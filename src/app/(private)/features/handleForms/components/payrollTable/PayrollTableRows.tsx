@@ -1,39 +1,29 @@
 'use client';
 
 import { Payroll } from '@/app/(private)/types/formTypes';
+import PayrollFormRow from '../addDataRow/PayrollFormRow';
 
 interface PayrollTableRowsProps {
     data: Payroll[];
+    showCreateRow: boolean;
 }
 
-export default function PayrollTableRows({ data }: PayrollTableRowsProps) {
+export default function PayrollTableRows({ data, showCreateRow }: PayrollTableRowsProps) {
     // Calculate total pay
     const totalPay = data.reduce((sum, row) => sum + row.total_pay, 0);
+    // const existingEmployeeNames = data.map(row => row.employee_name);
 
     return (
         <div className="relative z-10 border border-[#ECECEE] table-input-shadow border-y-2 border-t-0 bg-[#FDFDFD] rounded-bottom relative z-0 py-4">
             <div className="flex flex-col gap-y-3 h-[304px] overflow-y-auto">
                 {/* Empty row for future create functionality */}
-                <div className="table-row-style mx-auto">
-                    <div className="h-[60px] flex flex-col items-center justify-center">
-                        <div className='h-[40px] w-[200px] flex items-center pl-3'></div>
-                    </div>
-                    <div className="h-[60px] flex flex-col items-center justify-center">
-                        <div className='h-[40px] w-[100px] flex items-center pl-3'></div>
-                    </div>
-                    <div className="h-[60px] flex flex-col items-center justify-center">
-                        <div className='h-[40px] w-[100px] flex items-center pl-3'></div>
-                    </div>
-                    <div className="h-[60px] flex flex-col items-center justify-center">
-                        <div className='h-[40px] w-[50px] flex items-center pl-3'></div>
-                    </div>
-                    <div className="h-[60px] flex flex-col items-center justify-center">
-                        <div className='h-[40px] w-[50px] flex items-center pl-3'></div>
-                    </div>
-                    <div className="h-[60px] flex flex-col items-center justify-center">
-                        <div className='h-[40px] w-[100px] flex items-center pl-3'></div>
-                    </div>
-                </div>
+                {showCreateRow && (
+                    <PayrollFormRow 
+                        onInputChange={() => {}}
+                        onSubmit={() => {}}
+                        data={data}
+                    />
+                )}
                 {data.map((row) => (
                     <div key={row.id} className="table-row-style mx-auto">
                         <div className="h-[60px] flex flex-col items-center justify-center">

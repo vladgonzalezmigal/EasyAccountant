@@ -11,6 +11,7 @@ interface PayrollBtnsProps {
     save: boolean;
     clearEdits: boolean;
     cudLoading: boolean;
+    onCreateToggle: () => void;
 }
 
 export default function PayrollBtns({
@@ -18,7 +19,8 @@ export default function PayrollBtns({
     editMode,
     save,
     clearEdits,
-    cudLoading
+    cudLoading,
+    onCreateToggle
 }: PayrollBtnsProps) {
     return (
         <div className="w-full relative h-[148px] bg-[#F2FBFA] border border-t-0 border-[#ECECEE] header-shadow rounded-bottom z-0 mt-[-20px]">
@@ -70,6 +72,7 @@ export default function PayrollBtns({
                 {/* Create Button */}
                 <div className="flex flex-col items-center gap-y-2">
                     <button
+                        onClick={onCreateToggle}
                         disabled={cudLoading}
                         className="cursor-pointer rounded-full w-16 h-16 border-2 border-[#8ABBFD] bg-[#DFF4F3] flex items-center justify-center"
                     >
