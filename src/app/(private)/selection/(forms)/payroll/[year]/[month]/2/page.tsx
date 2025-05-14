@@ -9,6 +9,8 @@ import { getRequest } from "@/app/(private)/features/handleForms/utils/actions/c
 import { Payroll } from "@/app/(private)/types/formTypes";
 import PayrollTable from "@/app/(private)/features/handleForms/components/payrollTable/PayrollTable";
 import { getDaysInMonth } from "@/app/(private)/utils/dateUtils";
+import usePayrollFormCrud from "@/app/(private)/features/handleForms/hooks/usePayrollFormCrud";
+
 
 export default function PayrollDocumentPagePeriod2() {
     const { year, month } = useParams();
@@ -16,7 +18,6 @@ export default function PayrollDocumentPagePeriod2() {
     const lastDayOfMonth = getDaysInMonth(parseInt(month as string) - 1, parseInt(year as string));
     const startDate = `${year}-${(month as string).padStart(2, '0')}-15`;
     const endDate = `${year}-${(month as string).padStart(2, '0')}-${lastDayOfMonth}`;
-    console.log("end date", lastDayOfMonth);
     // fetch logic 
     const [fetchLoading, setFetchLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
@@ -36,7 +37,82 @@ export default function PayrollDocumentPagePeriod2() {
         fetchExpenses();
         
     }, [startDate, endDate]);
-    console.log(payrollData);
+
+     // create mode state 
+     const [newPayrolls, setNewPayrolls] = useState<Payroll[]>([{ // omit id field
+        id: 1,
+        end_date: endDate, // YYYY-MM-DD
+        employee_name: '',
+        wage_type: 'hourly', // default wage type
+        wage_rate: 0,
+        hours: 0,
+        minutes: 0,
+        total_pay: 0
+    }]);
+
+    const newPayrollInputChange = (id: number, field: keyof Payroll, value: string | number) => {
+        // value is validated & formatted by the PayrollForm component
+        setNewPayrolls(prev => {
+            // Create a new array by mapping through the previous array
+            return prev.map(payroll => {
+                // Only update the payroll entry with the matching id
+                if (payroll.id === id) {
+                    return { ...payroll, [field]: value };
+                }
+                // Return unchanged for other entries
+                return payroll;
+            });
+        });
+        return value;
+    };
+
+    // delete mode state 
+    const [rowsToDelete, setRowsToDelete] = useState<number[]>([]);
+    const [deleteMode, setDeleteMode] = useState<boolean>(false);
+
+    // Add delete row selection handler
+    const handleDeleteRowSelect = (id: number) => {
+        setRowsToDelete(prev => 
+            prev.includes(id) 
+                ? prev.filter(rowId => rowId !== id)
+                : [...prev, id]
+        );
+    };
+
+    // Toggle delete mode
+    const handleToggleDeleteMode = () => {
+        setDeleteMode(prev => !prev);
+        if (deleteMode) {
+            setRowsToDelete([]);
+        }
+    };
+
+    // hooks
+    const { handleSubmitCreate, handleSubmitDelete, cudLoading, cudError } = usePayrollFormCrud({ 
+        setPayrollData, 
+        setNewPayrolls, 
+        setRowsToDelete, 
+        setDeleteMode, 
+        endDate, 
+        tableName: 'payroll' 
+    });
+
+    // Create delete config object
+    const deleteConfig = {
+        mode: deleteMode,
+        rows: rowsToDelete,
+        onRowSelect: handleDeleteRowSelect
+    };
+
+    // Handle delete submission
+    const handleDelete = () => {
+        if (deleteMode && rowsToDelete.length > 0) {
+            handleSubmitDelete(rowsToDelete);
+        } else {
+            handleToggleDeleteMode();
+        }
+    };
+
     return (
         <div className="w-full h-full flex flex-col items-center justify-center">
             {fetchLoading ? (
@@ -64,7 +140,19 @@ export default function PayrollDocumentPagePeriod2() {
 
                     {/* Table Component */}
                     <div className="w-full">
-                        <PayrollTable data={payrollData} save={false} onSave={() => {}} onEdit={() => {}} />
+                        <PayrollTable 
+                            data={payrollData} 
+                            save={false} 
+                            onSave={() => {}} 
+                            onEdit={() => {}} 
+                            onCreate={newPayrollInputChange} 
+                            onSubmitCreate={(e) => handleSubmitCreate(e, newPayrolls)}
+                            cudLoading={cudLoading}
+                            cudError={cudError}
+                            deleteConfig={deleteConfig}
+                            handleDelete={handleDelete}
+                            deleteMode={deleteMode}
+                        />
                     </div>
                 </div>
             )}

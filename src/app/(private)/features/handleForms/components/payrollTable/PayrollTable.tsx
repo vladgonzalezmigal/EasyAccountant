@@ -5,22 +5,53 @@ import PayrollTableRows from './PayrollTableRows';
 import PayrollBtns from './PayrollBtns';
 import { useState } from 'react';
 
+interface DeleteConfig {
+    mode: boolean;
+    rows: number[];
+    onRowSelect: (id: number) => void;
+}
+
 interface PayrollTableProps {
     data: Payroll[];
     save: boolean;
     onSave?: () => void;
     onEdit?: () => void;
+    onCreate?: (id: number, field: keyof Payroll, value: string | number) => void;
+    onSubmitCreate: (e: React.FormEvent<HTMLFormElement>) => void;
+    cudLoading: boolean;
+    cudError: string | null;
+    deleteConfig?: DeleteConfig;
+    handleDelete?: () => void;
+    deleteMode: boolean;
 }
 
-export default function PayrollTable({ data, save,  }: PayrollTableProps) {
+export default function PayrollTable({ 
+    data, 
+    save, 
+    onCreate, 
+    onSubmitCreate, 
+    cudLoading, 
+    cudError, 
+    deleteConfig,
+    handleDelete,
+    deleteMode
+}: PayrollTableProps) {
     const [createRow, setCreateRow] = useState(false);
 
     const handleCreateToggle = () => {
         setCreateRow(prev => !prev);
     };
 
+    const canDelete = deleteConfig ? deleteConfig.rows.length > 0 : false;
+
     return (
         <div className="w-full flex flex-col items-center">
+            <div className="h-[20px]">
+                {cudError &&
+                    <div className="text-red-500">
+                        {cudError}
+                    </div>}
+            </div>
             <div className="w-[800px] ">
                 {/* Header */}
                 <div className="px-4 bg-[#F5F5F5] z-30 border border-b-0 border-t-2 border-x-2 border-[#ECECEE] h-[60px] rounded-top header-shadow flex items-center relative z-10">
@@ -45,23 +76,28 @@ export default function PayrollTable({ data, save,  }: PayrollTableProps) {
                         </div>
                     </div>
                 </div>
-                
                 {/* Body */}
-                <PayrollTableRows 
-                    data={data} 
+                <PayrollTableRows
+                    data={data}
                     showCreateRow={createRow}
+                    onCreate={onCreate}
+                    onSubmitCreate={onSubmitCreate}
+                    cudLoading={cudLoading}
+                    deleteConfig={deleteConfig}
                 />
             </div>
-            
+
             {/* Action Button */}
-            <div className="w-[800px]"> 
+            <div className="w-[800px]">
                 <PayrollBtns
-                    deleteMode={false}
+                    deleteMode={deleteMode}
                     editMode={false}
                     save={save}
                     clearEdits={false}
-                    cudLoading={false}
+                    cudLoading={cudLoading}
                     onCreateToggle={handleCreateToggle}
+                    handleDelete={handleDelete}
+                    canDelete={canDelete}
                 />
             </div>
         </div>

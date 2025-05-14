@@ -30,7 +30,7 @@ export interface OperationPerformParams {
 
 // Create-specific parameters
 export interface PerformCreateParams extends OperationPerformParams {
-    createData: FormData; // Data to create
+    createData: FormData | FormData[]; // Data to create
     // user_id: string;
 }
 

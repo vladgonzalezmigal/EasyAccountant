@@ -60,7 +60,7 @@ export function useFormCrud({
         [...(prevExpenses || []), newExpenseData[0]].sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         )
-      );
+      ); // reset create state 
       setNewExpense({
         id: -1,
         date: '',
