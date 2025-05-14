@@ -35,11 +35,18 @@ export abstract class PerformOperationHandler {
 }
 
 // Helper functions
-const omitId = (obj: FormData, arr: string[] = ['id']) =>
+const omitId = (obj: FormData, arr: string[] = ['id']) => 
     Object.fromEntries(Object.entries(obj).filter(([k]) => !arr.includes(k)));
 
-const getQueryColumns = (dataType: FormData): string => {
-    return Object.keys(dataType).join(',');
+const omitIds = <T extends FormData>(objects: T[], arr: string[] = ['id']): T[] => 
+    objects.map(obj => omitId(obj, arr) as T);
+
+const getQueryColumns = (dataType: FormData | FormData[]): string => {
+    if (Array.isArray(dataType)) {
+        return Object.keys(dataType[0]).join(',');
+    } else {
+        return Object.keys(dataType).join(',');
+    }
 }
 
 const handleApiResponse = (apiData: FormData[] | null, apiError: PostgrestError | null): CrudResponseData => {
@@ -67,13 +74,21 @@ export class PerformCreateOperationHandler extends PerformOperationHandler {
     // Perform async operation for create
     async perform(supabase: SupabaseClient): Promise<CrudResponseData> {
         const createParams = this.params as PerformCreateParams;
+        let cleanedData = {}
+        if (Array.isArray(createParams.createData)) {
+            cleanedData = omitIds(createParams.createData)
+        } else {
+            cleanedData = omitId(createParams.createData)
+        }
         try {           
+            // Handle array vs single object insertion
+            const insertData = Array.isArray(cleanedData) 
+                ? cleanedData.map(item => ({ ...item, user_id: this.user_id }))
+                : { ...cleanedData, user_id: this.user_id };
+
             const { data: apiData, error: apiError } = await supabase 
                 .from(createParams.tableName)
-                .insert({
-                    ...omitId(createParams.createData),
-                    user_id: this.user_id
-                })
+                .insert(insertData)
                 .select(getQueryColumns(createParams.createData));
 
             return handleApiResponse(apiData as unknown as FormData[], apiError);
@@ -96,8 +111,8 @@ function buildReadQuery(table: string, params: PerformReadParams, supabase: Supa
     switch (table) {
         case 'sales':
             const dataType = params.dataType as Sales;
-            return baseQuery // todo filter by store_id
-                .eq('store_id', dataType.store_id)
+            return baseQuery 
+                .eq('store_id', dataType.store_id) // filter by store_id
                 .gte('date', params.startDate)
                 .lt('date', params.endDate)
                 .order('date', { ascending: false });
@@ -107,7 +122,6 @@ function buildReadQuery(table: string, params: PerformReadParams, supabase: Supa
                 .lt('date', params.endDate)
                 .order('date', { ascending: false }); // newest first 
         case 'payroll':
-            console.log(params.endDate, "params.endDate");
             return baseQuery
                 .eq('end_date', params.endDate)
                 .order('end_date', { ascending: false });

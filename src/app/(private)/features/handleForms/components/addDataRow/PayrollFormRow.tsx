@@ -1,20 +1,21 @@
 'use client';
 
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { Payroll } from '@/app/(private)/types/formTypes';
 import { validateEmployeeName, checkExistingEmployeeName, validateMinutes } from '../../utils/formValidation/payrollFormValidation';
 import PlusIcon from '@/app/(private)/components/svgs/PlusIcon';
 import { validateAmountInput } from '../../utils/formValidation/formValidation';
 
 interface PayrollFormRowProps {
-    onInputChange: (name: keyof Payroll, value: string | number) => void;
+    onInputChange: (id: number, name: keyof Payroll, value: string | number) => void;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     data: Payroll[];
+    cudLoading: boolean;
 }
 
 const WAGE_TYPES = ['hourly', 'salary'] as const;
 
-export default function PayrollFormRow({ onInputChange, onSubmit, data }: PayrollFormRowProps) {
+export default function PayrollFormRow({ onInputChange, onSubmit, data, cudLoading }: PayrollFormRowProps) {
     // Create array of existing employee names
     const existingEmployeeNames = data.map(row => row.employee_name);
 
@@ -55,7 +56,7 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
         
         if (existingCheck.isValid) {
             setEmployeeName(value);
-            onInputChange('employee_name', value);
+            onInputChange(1, 'employee_name', value);
             setEmployeeNameError(null);
         } else {
             setEmployeeName(value);
@@ -70,7 +71,7 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
         if (validationResult.isValid && existingCheck.isValid) {
             const value = validationResult.value.toUpperCase();
             setEmployeeName(value);
-            onInputChange('employee_name', value);
+            onInputChange(1, 'employee_name', value);
             setEmployeeNameError(null);
         } else {
             setEmployeeNameError(existingCheck.error || validationResult.error || null);
@@ -80,14 +81,14 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
     const handleWageTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value as typeof WAGE_TYPES[number];
         setWageType(value);
-        onInputChange('wage_type', value);
+        onInputChange(1, 'wage_type', value);
         
         // Reset hours and minutes if salary is selected
         if (value === 'salary') {
             setHours('0');
             setMinutes('0');
-            onInputChange('hours', 0);
-            onInputChange('minutes', 0);
+            onInputChange(1, 'hours', 0);
+            onInputChange(1, 'minutes', 0);
         }
         
         // Calculate total pay when wage type changes
@@ -98,7 +99,7 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
             value
         );
         setTotalPay(calculatedTotal);
-        onInputChange('total_pay', calculatedTotal ? parseFloat(calculatedTotal) : 0);
+        onInputChange(1, 'total_pay', calculatedTotal ? parseFloat(calculatedTotal) : 0);
     };
 
     const handleWageRateChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -108,12 +109,12 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
         if (validation.isValid) {
             setWageRateError(null);
             setWageRate(validation.value);
-            onInputChange('wage_rate', validation.value ? parseFloat(validation.value) : 0);
+            onInputChange(1, 'wage_rate', validation.value ? parseFloat(validation.value) : 0);
             
             // Calculate total pay when wage rate changes and is valid
             const calculatedTotal = calculateTotalPay(hours, minutes, validation.value, wageType);
             setTotalPay(calculatedTotal);
-            onInputChange('total_pay', calculatedTotal ? parseFloat(calculatedTotal) : 0);
+            onInputChange(1, 'total_pay', calculatedTotal ? parseFloat(calculatedTotal) : 0);
         } else {
             setWageRate(validation.value);
             setWageRateError(validation.error || null);
@@ -125,13 +126,13 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
         // Only allow whole numbers
         if (/^\d*$/.test(value)) {
             setHours(value);
-            onInputChange('hours', value ? parseInt(value) : 0);
+            onInputChange(1, 'hours', value ? parseInt(value) : 0);
             setHoursError(null);
             
             // Calculate total pay when hours change and are valid
             const calculatedTotal = calculateTotalPay(value, minutes, wageRate, wageType);
             setTotalPay(calculatedTotal);
-            onInputChange('total_pay', calculatedTotal ? parseFloat(calculatedTotal) : 0);
+            onInputChange(1, 'total_pay', calculatedTotal ? parseFloat(calculatedTotal) : 0);
         }
     };
 
@@ -141,14 +142,14 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
         if (/^\d*$/.test(value)) {
             const validationResult = validateMinutes(value);
             setMinutes(value);
-            onInputChange('minutes', value ? parseInt(value) : 0);
+            onInputChange(1, 'minutes', value ? parseInt(value) : 0);
             setMinutesError(validationResult.isValid ? null : validationResult.error || null);
             
             // Calculate total pay when minutes change and are valid
             if (validationResult.isValid) {
                 const calculatedTotal = calculateTotalPay(hours, value, wageRate, wageType);
                 setTotalPay(calculatedTotal);
-                onInputChange('total_pay', calculatedTotal ? parseFloat(calculatedTotal) : 0);
+                onInputChange(1, 'total_pay', calculatedTotal ? parseFloat(calculatedTotal) : 0);
             }
         }
     };
@@ -160,12 +161,14 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
         setTotalPay(validation.value);
         if (validation.isValid) {
             setTotalPayError(null);
-            onInputChange('total_pay', validation.value ? parseFloat(validation.value) : 0);
+            onInputChange(1, 'total_pay', validation.value ? parseFloat(validation.value) : 0);
         } else {
             setTotalPay(validation.value);
             setTotalPayError(validation.error || null);
         }
     };
+
+    const formRef = useRef<HTMLFormElement>(null);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -192,6 +195,12 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
         if (!hasError) {
             onSubmit(e);
             // Reset form
+            // Reset the form after a small delay to ensure state updates are complete
+            setTimeout(() => {
+                if (formRef.current) {
+                    formRef.current.reset();
+                }
+            }, 0);
             setEmployeeName('');
             setWageType('hourly');
             setWageRate('');
@@ -284,14 +293,17 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data }: Payrol
                 {/* Add submit button */}
                 <button
                     type="submit"
-                    disabled={formError}
+                    disabled={formError || cudLoading}
                     className='cursor-pointer disabled:cursor-not-allowed absolute right-[10px] top-1/2 transform -translate-y-1/2'
                 >
                     <div className={`flex text-lg justify-center items-center rounded-full ml-[3.5px] ${
+                        cudLoading ? 'bg-gray-400' :
                         formError ? 'bg-red-500 cursor-not-allowed' : 'bg-[#DFF4F3] cursor-pointer border border-[#8ABBFD]'
                     } text-white w-7 h-7`}>
                         <div>
-                            {formError ? 'x' : (
+                            {cudLoading ? (
+                                <span className="text-white">...</span>
+                            ) : formError ? 'x' : (
                                 <div className='h-4 w-4 flex items-center justify-center'>
                                     <PlusIcon className='text-[#0C3C74]' />
                                 </div>

@@ -106,8 +106,10 @@ function findDeleteValidationErrors(params: DeleteValidationParams) : string | b
             return false;
         case 'expenses':
             return false;
+        case 'payroll':
+            return false;
         default:
-            return "table name not found";
+            return `table name ${params.tableName} not found`;
     }
 }
 
