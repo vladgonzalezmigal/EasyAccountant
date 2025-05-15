@@ -290,7 +290,6 @@ export default function PayrollFormRow({ onInputChange, onSubmit, data, cudLoadi
                     </div>
                 </div>
                 
-                {/* Add submit button */}
                 <button
                     type="submit"
                     disabled={formError || cudLoading}

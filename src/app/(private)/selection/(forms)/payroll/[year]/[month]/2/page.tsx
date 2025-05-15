@@ -10,6 +10,7 @@ import { Payroll } from "@/app/(private)/types/formTypes";
 import PayrollTable from "@/app/(private)/features/handleForms/components/payrollTable/PayrollTable";
 import { getDaysInMonth } from "@/app/(private)/utils/dateUtils";
 import usePayrollFormCrud from "@/app/(private)/features/handleForms/hooks/usePayrollFormCrud";
+import CurEmployeeRows from "@/app/(private)/features/handleForms/components/payrollTable/CurEmployeeRows";
 
 
 export default function PayrollDocumentPagePeriod2() {
@@ -138,22 +139,34 @@ export default function PayrollDocumentPagePeriod2() {
                         {fetchError && <div className="text-red-500">{fetchError}</div>}
                     </div>
 
-                    {/* Table Component */}
-                    <div className="w-full">
-                        <PayrollTable 
-                            data={payrollData} 
-                            save={false} 
-                            onSave={() => {}} 
-                            onEdit={() => {}} 
-                            onCreate={newPayrollInputChange} 
-                            onSubmitCreate={(e) => handleSubmitCreate(e, newPayrolls)}
-                            cudLoading={cudLoading}
-                            cudError={cudError}
-                            deleteConfig={deleteConfig}
-                            handleDelete={handleDelete}
-                            deleteMode={deleteMode}
-                        />
-                    </div>
+                     {/* Table Component */}
+                     {payrollData.length === 0 ? (
+                        <div className="w-full mb-8">
+                            <CurEmployeeRows
+                                newPayrolls={newPayrolls}
+                                setNewPayrolls={setNewPayrolls}
+                                endDate={endDate}
+                                onSubmitCreate={(e) => handleSubmitCreate(e, newPayrolls)}
+                                cudLoading={cudLoading}
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-full">
+                            <PayrollTable 
+                                data={payrollData} 
+                                save={false} 
+                                onSave={() => {}} 
+                                onEdit={() => {}} 
+                                onCreate={newPayrollInputChange} 
+                                onSubmitCreate={(e) => handleSubmitCreate(e, newPayrolls)}
+                                cudLoading={cudLoading}
+                                cudError={cudError}
+                                deleteConfig={deleteConfig}
+                                handleDelete={handleDelete}
+                                deleteMode={deleteMode}
+                            />
+                        </div>
+                    )}
                 </div>
             )}
         </div>
