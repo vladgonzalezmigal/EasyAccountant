@@ -25,17 +25,18 @@ interface PayrollTableProps {
     deleteMode: boolean;
 }
 
-export default function PayrollTable({ 
-    data, 
-    save, 
-    onCreate, 
-    onSubmitCreate, 
-    cudLoading, 
-    cudError, 
+export default function PayrollTable({
+    data,
+    save,
+    onCreate,
+    onSubmitCreate,
+    cudLoading,
+    cudError,
     deleteConfig,
     handleDelete,
     deleteMode
 }: PayrollTableProps) {
+    // create mode state 
     const [createRow, setCreateRow] = useState(false);
 
     const handleCreateToggle = () => {
