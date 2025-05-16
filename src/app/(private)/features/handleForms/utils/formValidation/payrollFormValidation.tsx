@@ -42,3 +42,44 @@ export const validateMinutes = (value: string): ValidationResult => {
         value: value
     };
 };
+
+export const validateHours = (value: string): ValidationResult => {
+    
+    // Check if the input contains any non-integer characters
+    if (!/^\d*$/.test(value)) {
+        return {
+            isValid: true, // Always return true as requested
+            value: value.replace(/\D/g, ''), // Remove any non-digit characters
+        };
+    }
+    
+    return {
+        isValid: true,
+        value: value
+    };
+};
+
+export const validateTotal = (value: string): ValidationResult => {
+    // Check if the value is empty
+    if (!value || value.trim() === '') {
+        return {
+            isValid: false,
+            value: value,
+            error: "Total cannot be empty"
+        };
+    }
+
+    // Check if the value has a decimal point
+    if (value.includes('.')) {
+        return {
+            isValid: true,
+            value: value
+        };
+    } else {
+        // If there's no decimal, add .00
+        return {
+            isValid: true,
+            value: `${value}.00`
+        };
+    }
+};

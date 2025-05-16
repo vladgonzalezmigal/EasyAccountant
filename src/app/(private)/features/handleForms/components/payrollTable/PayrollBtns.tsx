@@ -2,25 +2,34 @@
 
 import TrashIcon from "@/app/(private)/components/svgs/TrashIcon";
 import EditIcon from "@/app/(private)/components/svgs/EditIcon";
-import SaveIcon from "@/app/(private)/components/svgs/SaveIcon";
 import PlusIcon from "@/app/(private)/components/svgs/PlusIcon";
+import { Payroll } from "@/app/(private)/types/formTypes";
+import { ValidationResult } from "../../utils/formValidation/formValidation";
+
+interface EditConfig {
+    mode: boolean;
+    editedRows: Payroll[];
+    validationErrors: Record<number, Set<number>>;
+    validationFunction: (key: keyof Payroll, value: string) => ValidationResult;
+    onRowEdit: (id: number, field: keyof Payroll, value: string | number, colNumber: number) => void;
+}
 
 interface PayrollBtnsProps {
     deleteMode: boolean;
-    editMode: boolean;
-    save: boolean;
-    clearEdits: boolean;
+    editConfig: EditConfig
+    onEdit: () => void;
     cudLoading: boolean;
     onCreateToggle: () => void;
     handleDelete?: () => void;
     canDelete: boolean;
 }
 
+
+
 export default function PayrollBtns({
     deleteMode,
-    editMode,
-    save,
-    clearEdits,
+    editConfig,
+    onEdit,
     cudLoading,
     onCreateToggle,
     handleDelete,
@@ -28,7 +37,9 @@ export default function PayrollBtns({
 }: PayrollBtnsProps) {
     // Determine which action is active
     const isDeleteActive = deleteMode;
-    const isEditActive = editMode;
+    const isEditActive = editConfig.mode;
+    const clearEdits = (Object.keys(editConfig.validationErrors).length > 0);
+
     // const isCreateActive = !deleteMode && !editMode;
 
     return (
@@ -55,28 +66,26 @@ export default function PayrollBtns({
                     <p className={`action-btn-text ${isEditActive ? 'opacity-50' : ''}`}>Delete</p>
                 </div>
 
-                {/* Edit/Save Button */}
+                {/* Edit Button */}
                 <div className="flex flex-col items-center gap-y-2">
                     <button
+                        onClick={onEdit}
                         disabled={cudLoading || isDeleteActive}
                         className={`cursor-pointer rounded-full w-16 h-16 border-2 border-[#0C3C74] flex items-center justify-center ${
                             cudLoading ? 'bg-gray-400' :
-                            editMode ? (clearEdits ? 'bg-blue-200' : 'bg-blue-500') : 'bg-blue-200'
+                            isEditActive ? (clearEdits ? 'bg-blue-200' : 'bg-blue-500') : 'bg-blue-200'
                         } ${isDeleteActive ? 'opacity-50' : ''}`}
                     >
                         {cudLoading ? (
                             <span className="text-white">...</span>
                         ) : (
                             <span className="text-white">
-                                {save ? (
-                                    <SaveIcon className={editMode ? (clearEdits ? "text-[#0C3C74]" : "text-white") : "text-[#0C3C74]"} />
-                                ) : (
-                                    <EditIcon className={editMode ? (clearEdits ? "text-[#0C3C74]" : "text-white") : "text-[#0C3C74]"} />
-                                )}
+                                <EditIcon className={isEditActive ? (clearEdits ? "text-[#0C3C74]" : "text-white") : "text-[#0C3C74]"} />
+                               
                             </span>
                         )}
                     </button>
-                    <p className={`action-btn-text ${isDeleteActive ? 'opacity-50' : ''}`}>{save ? 'Save' : 'Edit'}</p>
+                    <p className={`action-btn-text ${isDeleteActive ? 'opacity-50' : ''}`}>Edit</p>
                 </div>
 
                 {/* Create Button */}

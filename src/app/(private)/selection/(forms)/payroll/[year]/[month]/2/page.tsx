@@ -87,16 +87,77 @@ export default function PayrollDocumentPagePeriod2() {
             setRowsToDelete([]);
         }
     };
+    // edit mode state
+    const [editMode, setEditMode] = useState<boolean>(false);
+    const [editedRows, setEditedRows] = useState<Payroll[]>([]);
+    const [validationErrors, setValidationErrors] = useState<Record<number, Set<number>>>({});
+    const clearEdits = Object.keys(validationErrors).length > 0;
+
+    // Toggle edit mode
+    const handleToggleEditMode = () => {
+        setEditMode(prev => !prev);
+        if (editMode) {
+            // Reset edit state when exiting edit mode
+            setEditedRows([]);
+            setValidationErrors({});
+        }
+    };
+
+    // Handle row edit
+    const handleRowEdit = (id: number, field: keyof Payroll, value: string | number, colIndex?: number) => {
+        // Update edited rows
+        const existingRowIndex = editedRows.findIndex(row => row.id === id);
+        
+        if (existingRowIndex !== -1) {
+            // Update existing edited row
+            setEditedRows(prev => {
+                const newRows = [...prev];
+                newRows[existingRowIndex] = {
+                    ...newRows[existingRowIndex],
+                    [field]: value
+                };
+                return newRows;
+            });
+        } else {
+            // Add new edited row
+            const originalRow = payrollData.find(row => row.id === id);
+            if (originalRow) {
+                setEditedRows(prev => [
+                    ...prev,
+                    { ...originalRow, [field]: value }
+                ]);
+            }
+        }
+
+        // Update validation errors if colIndex is provided
+        if (colIndex !== undefined) {
+            setValidationErrors(prev => {
+                // Create a new errors object
+                const newErrors = { ...prev };
+                
+                // If no errors for this row yet, create a new Set
+                if (!newErrors[id]) {
+                    newErrors[id] = new Set<number>();
+                }
+                
+                return newErrors;
+            });
+        }
+    };
 
     // hooks
-    const { handleSubmitCreate, handleSubmitDelete, cudLoading, cudError } = usePayrollFormCrud({ 
+    const { handleSubmitCreate, handleSubmitDelete, handleSubmitEdit, cudLoading, cudError } = usePayrollFormCrud({ 
         setPayrollData, 
         setNewPayrolls, 
         setRowsToDelete, 
-        setDeleteMode, 
+        setDeleteMode,
+        setEditMode,
+        setEditedRows,
+        setValidationErrors,
         endDate, 
         tableName: 'payroll' 
     });
+
 
     // Create delete config object
     const deleteConfig = {
@@ -105,12 +166,29 @@ export default function PayrollDocumentPagePeriod2() {
         onRowSelect: handleDeleteRowSelect
     };
 
+    // Create edit config object
+    const editConfig = {
+        mode: editMode,
+        editedRows: editedRows,
+        validationErrors: validationErrors,
+        onRowEdit: handleRowEdit
+    };
+
     // Handle delete submission
     const handleDelete = () => {
         if (deleteMode && rowsToDelete.length > 0) {
             handleSubmitDelete(rowsToDelete);
         } else {
             handleToggleDeleteMode();
+        }
+    };
+
+    // Handle edit submission
+    const handleSaveEdits = () => {
+        if (editMode && editedRows.length > 0 && Object.keys(validationErrors).length === 0) {
+            handleSubmitEdit(editedRows, validationErrors);
+        } else {
+            handleToggleEditMode();
         }
     };
 
@@ -154,7 +232,6 @@ export default function PayrollDocumentPagePeriod2() {
                         <div className="w-full">
                             <PayrollTable 
                                 data={payrollData} 
-                                save={false} 
                                 onSave={() => {}} 
                                 onEdit={() => {}} 
                                 onCreate={newPayrollInputChange} 
@@ -164,6 +241,10 @@ export default function PayrollDocumentPagePeriod2() {
                                 deleteConfig={deleteConfig}
                                 handleDelete={handleDelete}
                                 deleteMode={deleteMode}
+                                editConfig={editConfig}
+                                editMode={editMode}
+                                clearEdits={clearEdits}
+                                handleSaveEdits={handleSaveEdits}
                             />
                         </div>
                     )}

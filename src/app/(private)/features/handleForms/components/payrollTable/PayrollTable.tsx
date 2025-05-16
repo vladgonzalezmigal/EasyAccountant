@@ -4,6 +4,7 @@ import { Payroll } from '@/app/(private)/types/formTypes';
 import PayrollTableRows from './PayrollTableRows';
 import PayrollBtns from './PayrollBtns';
 import { useState } from 'react';
+import { ValidationResult } from '../../utils/formValidation/formValidation';
 
 interface DeleteConfig {
     mode: boolean;
@@ -11,11 +12,19 @@ interface DeleteConfig {
     onRowSelect: (id: number) => void;
 }
 
+interface EditConfig {
+    mode: boolean;
+    editedRows: Payroll[];
+    validationErrors: Record<number, Set<number>>;
+    validationFunction: (key: keyof Payroll, value: string) => ValidationResult;
+    onRowEdit: (id: number, field: keyof Payroll, value: string | number, colNumber: number) => void;
+}
+
+
+
 interface PayrollTableProps {
     data: Payroll[];
-    save: boolean;
-    onSave?: () => void;
-    onEdit?: () => void;
+    onEdit: () => void;
     onCreate?: (id: number, field: keyof Payroll, value: string | number) => void;
     onSubmitCreate: (e: React.FormEvent<HTMLFormElement>) => void;
     cudLoading: boolean;
@@ -23,18 +32,20 @@ interface PayrollTableProps {
     deleteConfig?: DeleteConfig;
     handleDelete?: () => void;
     deleteMode: boolean;
+    editConfig: EditConfig;
 }
 
 export default function PayrollTable({
     data,
-    save,
     onCreate,
     onSubmitCreate,
     cudLoading,
     cudError,
     deleteConfig,
     handleDelete,
-    deleteMode
+    deleteMode,
+    editConfig,
+    onEdit,
 }: PayrollTableProps) {
     // create mode state 
     const [createRow, setCreateRow] = useState(false);
@@ -85,6 +96,7 @@ export default function PayrollTable({
                     onSubmitCreate={onSubmitCreate}
                     cudLoading={cudLoading}
                     deleteConfig={deleteConfig}
+                    editConfig={editConfig}
                 />
             </div>
 
@@ -92,13 +104,12 @@ export default function PayrollTable({
             <div className="w-[800px]">
                 <PayrollBtns
                     deleteMode={deleteMode}
-                    editMode={false}
-                    save={save}
-                    clearEdits={false}
+                    editConfig={editConfig}
                     cudLoading={cudLoading}
                     onCreateToggle={handleCreateToggle}
                     handleDelete={handleDelete}
                     canDelete={canDelete}
+                    onEdit={onEdit}
                 />
             </div>
         </div>

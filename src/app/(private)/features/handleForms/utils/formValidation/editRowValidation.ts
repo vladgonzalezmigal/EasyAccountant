@@ -1,6 +1,7 @@
 import { validateDateInput, validateAmountInput } from "@/app/(private)/features/handleForms/utils/formValidation/formValidation";
 
-import { Expense, Sales } from '@/app/(private)/types/formTypes';
+import { Expense, Payroll, Sales } from '@/app/(private)/types/formTypes';
+import { validateHours, validateMinutes, validateTotal } from "./payrollFormValidation";
 
 interface ValidationResult {
     isValid: boolean;
@@ -50,6 +51,29 @@ export const validateSalesInput = (
             return validateAmountInput(value);
         case 'taxes':
             return validateAmountInput(value);
+        // Add other sales field validations as needed
+        default:
+            return { isValid: true, value };
+    }
+};
+
+/**
+ * Validates sales form inputs based on field type
+ * @param key The form field key being validated
+ * @param value The value to validate
+ * @returns ValidationResult with validation status and error message if any
+ */
+export const validatePayrollInput = (
+    key: keyof Payroll,
+    value: string,
+): ValidationResult => {
+    switch (key) {
+        case 'hours':
+            return validateHours(value);
+        case 'minutes':
+            return validateMinutes(value);
+        case 'total_pay':
+            return validateTotal(value);
         // Add other sales field validations as needed
         default:
             return { isValid: true, value };
