@@ -1,85 +1,187 @@
 'use client';
 
 import { useState } from 'react';
-
-interface Document {
-  id: string;
-  name: string;
-  selected: boolean;
-}
+import LineBreak from '../../features/userSettings/components/LineBreak';
+import MailIcon from '../../components/svgs/MailIcon';
+import PlusIcon from '../../components/svgs/PlusIcon';
+import MailSearch from '../components/mail/MailSearch';
+import SalesSelect from '../components/mail/select/SalesSelect';
+import ExpenseSelect from '../components/mail/select/ExpenseSelect';
+import PayrollSelect from '../components/mail/select/PayrollSelect';
+import { useStore } from "@/store";
+import { getDaysInMonth } from '@/app/(private)/utils/dateUtils';
 
 export default function MailPage() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [documents, setDocuments] = useState<Document[]>([
-    { id: '1', name: 'Invoice #1234', selected: false },
-    { id: '2', name: 'Receipt #5678', selected: false },
-    { id: '3', name: 'Contract Agreement', selected: false },
-    { id: '4', name: 'Tax Document', selected: false },
-    { id: '5', name: 'Employee Form', selected: false },
-  ]);
+  const today = new Date();
+  const { storeState } = useStore();
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [selectedStores, setSelectedStores] = useState<number[]>([]);
+  const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
+  const [selectedPayrolls, setSelectedPayrolls] = useState<string[]>([]);
+  const expenses = ["Expenses"];
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
+  // Create payroll periods
+  const payrolls = [
+    [
+      `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`,
+      `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`
+    ],
+    [
+      `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`,
+      `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${getDaysInMonth(currentMonth + 1, currentYear)}`
+    ]
+  ];
+
+  const handleMonthChange = (month: number) => {
+    setCurrentMonth(month);
+    // Add any additional logic needed when month changes
   };
 
-  const toggleDocument = (id: string) => {
-    setDocuments(documents.map(doc => 
-      doc.id === id ? { ...doc, selected: !doc.selected } : doc
-    ));
+  const handleYearChange = (year: number) => {
+    setCurrentYear(year);
+    // Add any additional logic needed when year changes
   };
 
-  const selectedCount = documents.filter(doc => doc.selected).length;
+  const handleStoreSelect = (storeId: string) => {
+    const storeIdInt = parseInt(storeId);
+    setSelectedStores(prev => {
+      if (prev.includes(storeIdInt)) {
+        return prev.filter(id => id !== storeIdInt);
+      } else {
+        return [...prev, storeIdInt];
+      }
+    });
+  };
+
+  const handleExpenseSelect = (expense: string) => {
+    setSelectedExpenses(prev => {
+      if (prev.includes(expense)) {
+        return prev.filter(e => e !== expense);
+      } else {
+        return [...prev, expense];
+      }
+    });
+  };
+
+  const handlePayrollSelect = (payroll: string) => {
+    setSelectedPayrolls(prev => {
+      if (prev.includes(payroll)) {
+        return prev.filter(p => p !== payroll);
+      } else {
+        return [...prev, payroll];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    const activeStoreIds = storeState.stores
+      ?.filter(store => store.active)
+      .map(store => store.id) || [];
+    setSelectedStores(activeStoreIds);
+  };
+
+  const handleSelectAllPayrolls = () => {
+    const allPayrolls = payrolls.map(payroll => payroll.join('-'));
+    setSelectedPayrolls(allPayrolls);
+  };
+
+  const handleGenerateDocuments = () => {
+    console.log('Selected Stores:', selectedStores);
+    // generate sales documents 
+    console.log('Selected Expenses:', selectedExpenses);
+    console.log('Selected Payrolls:', selectedPayrolls);
+  };
 
   return (
-    <div className="p-8">
-      <div className="max-w-md">
-        <h1 className="text-2xl font-semibold mb-6">Mail Documents</h1>
-        
-        <div className="mb-6">
-          <div 
-            className="border border-gray-300 rounded-md p-3 flex justify-between items-center cursor-pointer bg-white"
-            onClick={toggleDropdown}
+    <div className="container px-16 py-8 min-h-screen max-h-screen overflow-y-auto bg-[#FAFAFA] min-w-full">
+      {/* Page Title  */}
+      <div className="flex items-center h-[52px] w-full justify-begin mb-4">
+        <MailIcon className="w-8 h-8 text-[#2F2F2F] mr-2" />
+        <h1 className="text-[32px] font-bold text-[#2F2F2F] pl-2">Mail Documents</h1>
+      </div>
+      <LineBreak className="mb-6" />
+
+      {/* Select Month, Year  */}
+      <div className="">
+        <div className="mb-8 flex justify-between pr-16">
+          <MailSearch
+            onMonthChange={handleMonthChange}
+            onYearChange={handleYearChange}
+            currentMonth={currentMonth}
+            currentYear={currentYear}
+          />
+             {/* Generate Documents Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleGenerateDocuments}
+            className="flex items-center gap-x-2 px-6 py-3 bg-[#DFF4F3] border-2 border-[#8ABBFD] rounded-lg hover:bg-[#C5E8E6] transition-colors duration-200"
           >
-            <span>{selectedCount === 0 ? 'Select documents' : `${selectedCount} document${selectedCount > 1 ? 's' : ''} selected`}</span>
-            <svg 
-              className={`w-5 h-5 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </div>
-          
-          {isOpen && (
-            <div className="border border-gray-300 border-t-0 rounded-b-md bg-white">
-              {documents.map(doc => (
-                <div 
-                  key={doc.id} 
-                  className="p-3 border-t border-gray-200 flex items-center"
-                >
-                  <input
-                    type="checkbox"
-                    id={`doc-${doc.id}`}
-                    checked={doc.selected}
-                    onChange={() => toggleDocument(doc.id)}
-                    className="mr-3 h-4 w-4"
-                  />
-                  <label htmlFor={`doc-${doc.id}`} className="cursor-pointer flex-grow">
-                    {doc.name}
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
+            <PlusIcon className="text-[#8ABBFD] w-6 h-6" />
+            <span className="text-[#8ABBFD] font-semibold">Generate Documents</span>
+          </button>
         </div>
-        
-        <button 
-          className="bg-[#0C3C74] text-white px-6 py-2 rounded-md hover:bg-[#0A2E5C] transition-colors"
-        >
-          Create
-        </button>
+        </div>
+        <LineBreak className="mb-6" />
+
+        {/* Store Selection */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-x-4 ">
+              <h2 className="text-[20px] font-semibold text-[#2F2F2F]">Sales</h2>
+              <button
+                onClick={handleSelectAll}
+                className="px-4  text-[14px] text-[#2A7D7B] font-semibold hover:text-[#48B4A0] transition-colors duration-200"
+              >
+                Select All
+              </button>
+            </div>
+          </div>
+          <SalesSelect
+            selectedStores={selectedStores.map(String)}
+            onStoreSelect={handleStoreSelect}
+          />
+        </div>
+        <LineBreak className="mb-6" />
+
+        {/* Expense Selection */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[20px] font-semibold text-[#2F2F2F]">Expenses</h2>
+          </div>
+          <ExpenseSelect 
+            selectedExpenses={selectedExpenses}
+            onExpenseSelect={handleExpenseSelect}
+            expenses={expenses}
+          />
+        </div>
+        <LineBreak className="mb-6" />
+
+        {/* Payroll Selection */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-x-4">
+              <h2 className="text-[20px] font-semibold text-[#2F2F2F]">Payroll</h2>
+              <button
+                onClick={handleSelectAllPayrolls}
+                className="px-4 text-[14px] text-[#2A7D7B] font-semibold hover:text-[#48B4A0] transition-colors duration-200"
+              >
+                Select All
+              </button>
+            </div>
+          </div>
+          <PayrollSelect 
+            selectedPayrolls={selectedPayrolls}
+            onPayrollSelect={handlePayrollSelect}
+            payrolls={payrolls}
+          />
+        </div>
+        <LineBreak className="mb-6" />
+
+        {/* Your mail content will go here */}
+        <div className="w-full">
+          {/* Add your mail content here */}
+        </div>
       </div>
     </div>
   );
