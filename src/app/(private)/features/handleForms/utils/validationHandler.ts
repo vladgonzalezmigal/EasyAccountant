@@ -73,6 +73,8 @@ function findUpdateDataError(params: UpdateValidationParams) : string | boolean 
             return false;
         case 'expenses':
             return false;
+        case 'payroll':
+            return false;
         default:
             return "table name not found";
     }

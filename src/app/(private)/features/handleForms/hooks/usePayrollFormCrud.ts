@@ -7,7 +7,7 @@ import { Payroll } from "@/app/(private)/types/formTypes";
 type PayrollCrudHandlers = {
     handleSubmitCreate: (e: React.FormEvent<HTMLFormElement>, newPayrolls: Payroll[]) => Promise<void>;
     handleSubmitDelete: (rowsToDelete: number[]) => Promise<void>;
-    // handleSubmitEdit: (editedRows: Expense[], validationErrors: Record<number, Set<number>>) => Promise<void>;
+    handleSubmitEdit: (editedRows: Payroll[], validationErrors: Record<number, Set<number>>) => Promise<void>;
     cudLoading: boolean;
     cudError: string | null;
 };
@@ -15,10 +15,10 @@ type PayrollCrudHandlers = {
 type UsePayrollFormCrudProps = {
     setPayrollData: React.Dispatch<React.SetStateAction<Payroll[]>>;
     setNewPayrolls: React.Dispatch<React.SetStateAction<Payroll[]>>;
-    // setEditedRows: React.Dispatch<React.SetStateAction<Expense[]>>;
-    // setValidationErrors: React.Dispatch<React.SetStateAction<Record<number, Set<number>>>>;
+    setEditedRows: React.Dispatch<React.SetStateAction<Payroll[]>>;
+    setValidationErrors: React.Dispatch<React.SetStateAction<Record<number, Set<number>>>>;
     setRowsToDelete: React.Dispatch<React.SetStateAction<number[]>>;
-    // setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
+    setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     setDeleteMode: React.Dispatch<React.SetStateAction<boolean>>;
     endDate: string,
     tableName: string;
@@ -29,6 +29,9 @@ export function usePayrollFormCrud({
     setNewPayrolls,
     setRowsToDelete,
     setDeleteMode,
+    setEditedRows,
+    setValidationErrors,
+    setEditMode,
     endDate,
     tableName = 'payroll'
 }: UsePayrollFormCrudProps): PayrollCrudHandlers {
@@ -55,12 +58,12 @@ export function usePayrollFormCrud({
 
         if (createRes.data) { // success 
             const newPayrollData = createRes.data as Payroll[];
-            setPayrollData((prevPayrolls) => 
+            setPayrollData((prevPayrolls) =>
                 [...(prevPayrolls || []), ...newPayrollData].sort(
                     (a, b) => a.employee_name.localeCompare(b.employee_name)
                 )
             );
-             // reset create state 
+            // reset create state 
             setNewPayrolls([{ // omit id field
                 id: 1,
                 end_date: endDate, // reset to page's enddate
@@ -78,38 +81,79 @@ export function usePayrollFormCrud({
     const handleSubmitDelete = async (rowsToDelete: number[]) => {
 
         setCudLoading(true);
-    
+
         const deleteRes = await postRequest('delete', { tableName, rowsToDelete }, { tableName, rowsToDelete });
-    
+
         if (deleteRes.error) {
-          setCudError(deleteRes.error);
-          setCudLoading(false);
-          return;
+            setCudError(deleteRes.error);
+            setCudLoading(false);
+            return;
         }
-    
+
         setCudError(null);
-    
+
         if (typeof deleteRes !== 'string' && deleteRes.data) {
-          const payrollData = deleteRes.data as Payroll[];
-          const deletedIds: number[] = payrollData.map((payroll: Payroll) => payroll.id);
-          if (tableName === 'payroll' && setPayrollData) {
-            setPayrollData((prevPayrolls) =>
-                prevPayrolls.filter(payroll => !deletedIds.includes(payroll.id))
-            );
-          }
-          setRowsToDelete([]);
-          setDeleteMode(false);
+            const payrollData = deleteRes.data as Payroll[];
+            const deletedIds: number[] = payrollData.map((payroll: Payroll) => payroll.id);
+            if (tableName === 'payroll' && setPayrollData) {
+                setPayrollData((prevPayrolls) =>
+                    prevPayrolls.filter(payroll => !deletedIds.includes(payroll.id))
+                );
+            }
+            setRowsToDelete([]);
+            setDeleteMode(false);
         }
         setCudLoading(false);
-      };
+    };
+
+    const handleSubmitEdit = async (editedRows: Payroll[], validationErrors: Record<number, Set<number>>) => {
+        setCudLoading(true);
+
+        const updateRes = await postRequest('update', { tableName, editedRows }, {
+            editedRows,
+            tableName,
+            validationErrors
+        });
+
+        if (updateRes.error) {
+            setCudError(updateRes.error);
+            setCudLoading(false);
+            return;
+        } else {
+            setCudError(null);
+            const updateData = updateRes.data as Payroll[];
+
+            setPayrollData((prevPayrolls) => {
+                if (!prevPayrolls) return updateData;
+
+                // Create a map of updated expenses by ID for quick lookup
+                const updatedPayrollsMap = new Map(
+                    updateData.map(payroll => [payroll.id, payroll])
+                );
+
+                // Replace existing expenses with updated ones based on ID
+                return prevPayrolls.map(payroll =>
+                    updatedPayrollsMap.has(payroll.id)
+                        ? updatedPayrollsMap.get(payroll.id)!
+                        : payroll
+                );
+            });
+            // clear edit form state 
+            setEditedRows([]);
+            setValidationErrors({});
+            setEditMode(false);
+        }
+        setCudLoading(false);
+
+    }
 
     return {
         handleSubmitCreate,
         handleSubmitDelete,
-        // handleSubmitEdit,
+        handleSubmitEdit,
         cudLoading,
         cudError,
-      };
+    };
 }
 
 export default usePayrollFormCrud
