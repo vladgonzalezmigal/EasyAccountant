@@ -11,6 +11,7 @@ import PayrollTable from "@/app/(private)/features/handleForms/components/payrol
 import { getDaysInMonth } from "@/app/(private)/utils/dateUtils";
 import usePayrollFormCrud from "@/app/(private)/features/handleForms/hooks/usePayrollFormCrud";
 import CurEmployeeRows from "@/app/(private)/features/handleForms/components/payrollTable/CurEmployeeRows";
+import { validatePayrollInput } from "@/app/(private)/features/handleForms/utils/formValidation/editRowValidation";
 
 
 export default function PayrollDocumentPagePeriod2() {
@@ -91,73 +92,90 @@ export default function PayrollDocumentPagePeriod2() {
     const [editMode, setEditMode] = useState<boolean>(false);
     const [editedRows, setEditedRows] = useState<Payroll[]>([]);
     const [validationErrors, setValidationErrors] = useState<Record<number, Set<number>>>({});
-    const clearEdits = Object.keys(validationErrors).length > 0;
+    const editPayrollRowValidation = (key: keyof Payroll, value: string) => {
+        return validatePayrollInput(key, value);
+    }
+    const canEdit = (editedRows.length > 0) && (Object.keys(validationErrors).length === 0);
 
-    // Toggle edit mode
-    const handleToggleEditMode = () => {
-        setEditMode(prev => !prev);
-        if (editMode) {
-            // Reset edit state when exiting edit mode
-            setEditedRows([]);
+    const handleEdit = () => {
+        if (editMode && canEdit) {
+            handleSubmitEdit(editedRows, validationErrors);
+        } else if (editMode && (Object.keys(validationErrors).length > 0)) { // clear case 
+            setEditMode(prevMode => !prevMode);
             setValidationErrors({});
+            setEditedRows([]);
+        } else {
+            setEditMode(prevMode => !prevMode);
         }
     };
 
-    // Handle row edit
-    const handleRowEdit = (id: number, field: keyof Payroll, value: string | number, colIndex?: number) => {
-        // Update edited rows
-        const existingRowIndex = editedRows.findIndex(row => row.id === id);
-        
-        if (existingRowIndex !== -1) {
-            // Update existing edited row
-            setEditedRows(prev => {
-                const newRows = [...prev];
-                newRows[existingRowIndex] = {
-                    ...newRows[existingRowIndex],
-                    [field]: value
-                };
-                return newRows;
-            });
-        } else {
-            // Add new edited row
-            const originalRow = payrollData.find(row => row.id === id);
-            if (originalRow) {
-                setEditedRows(prev => [
-                    ...prev,
-                    { ...originalRow, [field]: value }
-                ]);
-            }
-        }
-
-        // Update validation errors if colIndex is provided
-        if (colIndex !== undefined) {
+    const newRowToEditInputChange = (id: number, key: keyof Payroll, value: string | number, colNumber: number) => {
+        // need to add form validation 
+        const validationResult = editPayrollRowValidation(key as keyof Payroll, value as string);
+        if (!validationResult.isValid) {
+            // Add to validation errors map if validation fails
             setValidationErrors(prev => {
-                // Create a new errors object
                 const newErrors = { ...prev };
-                
-                // If no errors for this row yet, create a new Set
+                // Create a new Set if it doesn't exist for this id
                 if (!newErrors[id]) {
                     newErrors[id] = new Set<number>();
                 }
-                
+                // Add the column number to the Set
+                newErrors[id].add(colNumber);
+                return newErrors;
+            });
+            return;
+        }
+
+        // if validation passes, remove from errors map if it exists
+        if (validationErrors[id] && validationErrors[id].has(colNumber)) {
+            setValidationErrors(prev => {
+                const newErrors = { ...prev };
+                if (newErrors[id]) {
+                    // Remove the column number from the Set
+                    newErrors[id].delete(colNumber);
+                    // If Set is empty, remove the id entry
+                    if (newErrors[id].size === 0) {
+                        delete newErrors[id];
+                    }
+                }
                 return newErrors;
             });
         }
-    };
+
+        // if validation passes add to edited rows
+        const updatedValue = validationResult.value !== undefined ? validationResult.value : value;
+
+        setEditedRows(prev => {
+            const existing = prev.find(row => row.id === id);
+            if (existing) {
+                return prev.map(row =>
+                    row.id === id ? { ...row, [key]: updatedValue } : row
+                );
+            } else {
+                const original = payrollData?.find(row => row.id === id);
+                if (original) {
+                    return [...prev, { ...original, [key]: updatedValue }];
+                } else {
+                    return prev;
+                }
+            }
+        });
+    }
+
 
     // hooks
-    const { handleSubmitCreate, handleSubmitDelete, handleSubmitEdit, cudLoading, cudError } = usePayrollFormCrud({ 
-        setPayrollData, 
-        setNewPayrolls, 
-        setRowsToDelete, 
+    const { handleSubmitCreate, handleSubmitDelete, handleSubmitEdit, cudLoading, cudError } = usePayrollFormCrud({
+        setPayrollData,
+        setNewPayrolls,
+        setRowsToDelete,
         setDeleteMode,
         setEditMode,
         setEditedRows,
         setValidationErrors,
-        endDate, 
-        tableName: 'payroll' 
+        endDate,
+        tableName: 'payroll'
     });
-
 
     // Create delete config object
     const deleteConfig = {
@@ -166,29 +184,12 @@ export default function PayrollDocumentPagePeriod2() {
         onRowSelect: handleDeleteRowSelect
     };
 
-    // Create edit config object
-    const editConfig = {
-        mode: editMode,
-        editedRows: editedRows,
-        validationErrors: validationErrors,
-        onRowEdit: handleRowEdit
-    };
-
     // Handle delete submission
     const handleDelete = () => {
         if (deleteMode && rowsToDelete.length > 0) {
             handleSubmitDelete(rowsToDelete);
         } else {
             handleToggleDeleteMode();
-        }
-    };
-
-    // Handle edit submission
-    const handleSaveEdits = () => {
-        if (editMode && editedRows.length > 0 && Object.keys(validationErrors).length === 0) {
-            handleSubmitEdit(editedRows, validationErrors);
-        } else {
-            handleToggleEditMode();
         }
     };
 
@@ -202,11 +203,11 @@ export default function PayrollDocumentPagePeriod2() {
                 <div className="w-full h-full flex flex-col items-center justify-center gap-y-1">
                     {/* Title */}
                     <div className="w-full text-center w-full flex flex-col items-center">
-                        <TableTitle 
-                            title={`Period Ending ${months[parseInt(month as string) - 1]} ${lastDayOfMonth}`} 
-                            month={month as string} 
-                            year={year as string} 
-                            type="payroll" 
+                        <TableTitle
+                            title={`Period Ending ${months[parseInt(month as string) - 1]} 15`}
+                            month={month as string}
+                            year={year as string}
+                            type="payroll"
                         />
                         <div className="flex flex-col items-center justify-center">
                             <p className="font-semibold text-[#585858]">  </p>
@@ -217,8 +218,8 @@ export default function PayrollDocumentPagePeriod2() {
                         {fetchError && <div className="text-red-500">{fetchError}</div>}
                     </div>
 
-                     {/* Table Component */}
-                     {payrollData.length === 0 ? (
+                    {/* Table Component */}
+                    {payrollData.length === 0 ? (
                         <div className="w-full mb-8">
                             <CurEmployeeRows
                                 newPayrolls={newPayrolls}
@@ -230,21 +231,23 @@ export default function PayrollDocumentPagePeriod2() {
                         </div>
                     ) : (
                         <div className="w-full">
-                            <PayrollTable 
-                                data={payrollData} 
-                                onSave={() => {}} 
-                                onEdit={() => {}} 
-                                onCreate={newPayrollInputChange} 
+                            <PayrollTable
+                                data={payrollData}
+                                onCreate={newPayrollInputChange}
                                 onSubmitCreate={(e) => handleSubmitCreate(e, newPayrolls)}
                                 cudLoading={cudLoading}
                                 cudError={cudError}
                                 deleteConfig={deleteConfig}
                                 handleDelete={handleDelete}
                                 deleteMode={deleteMode}
-                                editConfig={editConfig}
-                                editMode={editMode}
-                                clearEdits={clearEdits}
-                                handleSaveEdits={handleSaveEdits}
+                                onEdit={handleEdit}
+                                editConfig={{
+                                    mode: editMode,
+                                    editedRows: editedRows,
+                                    validationErrors: validationErrors,
+                                    validationFunction: editPayrollRowValidation,
+                                    onRowEdit: newRowToEditInputChange,
+                                }}
                             />
                         </div>
                     )}
