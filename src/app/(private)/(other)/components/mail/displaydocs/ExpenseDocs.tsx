@@ -4,7 +4,7 @@ import React from 'react';
 import {Expense} from '../../../../types/formTypes'
 import { Vendor } from '../../../../features/userSettings/types/vendorTypes'
 import { expenseStyles } from './ExpenseStyles';
-import { Document, Page, Text, View } from '@react-pdf/renderer';
+import { Page, Text, View } from '@react-pdf/renderer';
 
 interface ExpenseDocsProps {
     expenseData: Expense[];
@@ -42,7 +42,6 @@ export default function ExpenseDocs({ expenseData, year, month, vendors }: Expen
     }));
 
     const ExpensePDF = () => (
-        <Document>
             <Page size="A4" style={expenseStyles.page}>
                 {/* Document title */}
                 <View>
@@ -75,10 +74,7 @@ export default function ExpenseDocs({ expenseData, year, month, vendors }: Expen
                     ))}
                 </View>
             </Page>
-        </Document>
     );
 
-    return (
-        <ExpensePDF />
-    );
+    return <ExpensePDF />
 }

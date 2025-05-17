@@ -46,7 +46,7 @@ export default function MailPage() {
     },
     {
       startDate: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`,
-      endDate: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${getDaysInMonth(currentMonth + 1, currentYear)}`
+      endDate: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${getDaysInMonth(currentMonth, currentYear)}`
     }
   ];
 
@@ -117,6 +117,7 @@ export default function MailPage() {
     // set all errors to null 
     let metadatas: DocMetaData[] = [];
     let pdfs: React.ReactNode[] = [];
+
     setGeneratedPdfs([]);
     setDocMetaData(metadatas);
     setSalesError(null);
@@ -259,8 +260,8 @@ export default function MailPage() {
       <LineBreak className="mb-6" />
 
       {/* Select Month, Year  */}
-      <div className="">
-        <div className="mb-8 flex justify-between pr-16">
+      <div className=" max-w-[1000px]">
+        <div className="mb-8 flex justify-between pr-16  w-full">
           <MailSearch
             onMonthChange={handleMonthChange}
             onYearChange={handleYearChange}

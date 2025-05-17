@@ -1,7 +1,7 @@
 'use client';
 
 import { Payroll } from '@/app/(private)/types/formTypes';
-import { Document, Page, Text, View } from '@react-pdf/renderer';
+import {  Page, Text, View } from '@react-pdf/renderer';
 import { payrollStyles } from './PayrollStyles';
 
 interface PayrollDocsProps {
@@ -14,11 +14,10 @@ export default function PayrollDocs({ payrollData, startDate, endDate }: Payroll
     const totalPayroll = payrollData.reduce((sum, payroll) => sum + payroll.total_pay, 0);
 
     const PayrollPDF = () => (
-        <Document>
             <Page size="A4" style={payrollStyles.page}>
                 {/* Document title */}
                 <View>
-                    <Text style={payrollStyles.title}>Payroll Period: {startDate} to {endDate}</Text>
+                    <Text style={payrollStyles.title}>Payroll Period: {startDate.slice(5)} to {endDate.slice(5) + ", " + startDate.slice(0, 4)}</Text>
                 </View>
                 {/* Total */}
                 <View>
@@ -49,10 +48,8 @@ export default function PayrollDocs({ payrollData, startDate, endDate }: Payroll
                     ))}
                 </View>
             </Page>
-        </Document>
     );
 
-    return (
-        <PayrollPDF />
-    );
+    return <PayrollPDF />
+    
 }
