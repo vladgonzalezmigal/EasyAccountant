@@ -13,30 +13,33 @@ export default function SalesSelect({ selectedStores, onStoreSelect }: SalesSele
     const storeSubpages: Store[] | null = storeState.stores?.filter(store => store.active) || null;
 
     return (
-        <div className="flex flex-col gap-y-2.5 pl-10 mt-1">
+        <div className="flex flex-wrap gap-4 ">
             {storeSubpages ? (
                 storeSubpages.map((store, index) => (
-                    <div 
+                    <div
                         key={index}
-                        className="flex items-center pl-2 py-2"
+                        onClick={() => onStoreSelect(store.id.toString())}
+                        className={`p-4 border rounded-2xl shadow-md cursor-pointer w-[270px] flex items-center justify-center ${
+                            selectedStores.includes(store.id.toString())
+                                ? 'bg-[#F2FBFA] border-[#DFDFDF]'
+                                : 'bg-white border-[#DFDFDF]'
+                        }`}
                     >
-                        <input
-                            type="checkbox"
-                            id={`store-${store.id}`}
-                            checked={selectedStores.includes(store.id.toString())}
-                            onChange={() => onStoreSelect(store.id.toString())}
-                            className="w-4 h-4 rounded border-[#5CB8B1] text-[#2A7D7B] focus:ring-[#2A7D7B] mr-2"
-                        />
-                        <label 
-                            htmlFor={`store-${store.id}`}
-                            className={`text-[14px] cursor-pointer ${
-                                selectedStores.includes(store.id.toString()) 
-                                    ? 'text-[#2A7D7B] font-semibold' 
-                                    : 'text-[#6B7280]'
-                            }`}
-                        >
-                            {store.store_name}
-                        </label>
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="checkbox"
+                                checked={selectedStores.includes(store.id.toString())}
+                                onChange={() => {}}
+                                className="w-4 h-4 rounded border-[#8ABBFD] text-[#8ABBFD] focus:ring-[#8ABBFD]"
+                            />
+                            <p className={`text-sm ${
+                                selectedStores.includes(store.id.toString())
+                                    ? 'text-[#2A7D7B] font-bold'
+                                    : 'text-gray-500 font-semibold'
+                            }`}>
+                                {store.store_name}
+                            </p>
+                        </div>
                     </div>
                 ))
             ) : (
