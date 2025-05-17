@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { generateSalesPdfs, generatePayrollPdfs } from '../utils/generateUtils';
+import { generateSalesPdfs, generatePayrollPdfs, generateExpensePdfs } from '../utils/generateUtils';
 import LineBreak from '../../features/userSettings/components/LineBreak';
 import MailIcon from '../../components/svgs/MailIcon';
 import PlusIcon from '../../components/svgs/PlusIcon';
@@ -15,6 +15,7 @@ import { months } from '@/app/(private)/utils/dateUtils';
 import SalesDocs from '../components/mail/displaydocs/SalesDocs';
 import PDFDisplay from '../components/mail/displaydocs/PDFDisplay';
 import PayrollDocs from '../components/mail/displaydocs/PayrollDocs';
+import ExpenseDocs from '../components/mail/displaydocs/ExpenseDocs';
 
 interface DocMetaData {
   subject: string;
@@ -25,7 +26,7 @@ interface DocMetaData {
 
 export default function MailPage() {
   const today = new Date();
-  const { storeState, emailState } = useStore();
+  const { storeState, vendorState, emailState } = useStore();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedStores, setSelectedStores] = useState<number[]>([]);
@@ -110,6 +111,7 @@ export default function MailPage() {
 
   const [salesError, setSalesError] = useState<string | null>(null);
   const [payrollError, setPayrollError] = useState<string | null>(null);
+  const [expenseError, setExpenseError] = useState<string | null>(null);
 
   const handleGenerateDocuments = async () => {
     // set all errors to null 
@@ -138,9 +140,9 @@ export default function MailPage() {
         }
         const salesMetadatas = salesValidResults.map(result => (
           {
-            subject: `Sales for ${result.storeName}`,
+            subject: `Sales for ${result.storeName}, ${months[currentMonth]} ${currentYear}`,
             receiver: emailState.emails![0].recipient_email,
-            bodyText: `Sales for ${result.storeName}, sent by ${emailState.emails![0].sender_email}`,
+            bodyText: `Sales for ${result.storeName}, ${months[currentMonth]} ${currentYear}, sent by ${emailState.emails![0].sender_email}`,
             fileName: `Sales_${months[currentMonth]}_${currentYear}_${result.storeName.replace(/\s+/g, '_')}.pdf`
           }
         ));
@@ -157,6 +159,39 @@ export default function MailPage() {
 
         metadatas = [...metadatas, ...salesMetadatas];
         pdfs = [...pdfs, ...salesPdfs];
+      }
+      // generate expense documents
+      if (selectedExpenses.length > 0) {
+        if (vendorState.vendors?.length === 0 || vendorState.vendors === undefined) {
+          setExpenseError('Please add a vendor to the system or refresh the page');
+          return;
+        }
+        const { data: expenseValidResults, error } = await generateExpensePdfs(selectedExpenses, currentYear, currentMonth);
+        if (error || !expenseValidResults) {
+          setExpenseError(error || 'An error occurred while generating expense documents');
+          return;
+        }
+        const expenseMetadatas = expenseValidResults.map(() => (
+          {
+            subject: `Expenses for ${months[currentMonth]} ${currentYear}`,
+            receiver: emailState.emails![0].recipient_email,
+            bodyText: `Expenses for ${months[currentMonth]} ${currentYear}, sent by ${emailState.emails![0].sender_email}`,
+            fileName: `Expenses_${months[currentMonth]}_${currentYear}}.pdf`
+          }
+        ));
+
+        const expensePdfs = expenseValidResults.map(result => (
+          <ExpenseDocs
+            key={result.expenseName}
+            expenseData={result.expenseData}
+            year={String(currentYear)}
+            month={months[currentMonth]}
+            vendors={vendorState.vendors || []}
+          />
+        ));
+
+        metadatas = [...metadatas, ...expenseMetadatas];
+        pdfs = [...pdfs, ...expensePdfs];
       }
 
       // generate payroll documents 
@@ -274,6 +309,7 @@ export default function MailPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[20px] font-semibold text-[#2F2F2F]">Expenses</h2>
+            {expenseError && <span className="text-[#FF0000] text-sm">{expenseError}</span>}
           </div>
           <ExpenseSelect
             selectedExpenses={selectedExpenses}
