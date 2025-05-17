@@ -204,7 +204,7 @@ export default function PayrollDocumentPagePeriod2() {
                     {/* Title */}
                     <div className="w-full text-center w-full flex flex-col items-center">
                         <TableTitle
-                            title={`Period Ending ${months[parseInt(month as string) - 1]} 15`}
+                            title={`Period Ending ${months[parseInt(month as string) - 1]} ${lastDayOfMonth}`}
                             month={month as string}
                             year={year as string}
                             type="payroll"
