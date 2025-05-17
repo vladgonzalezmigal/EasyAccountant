@@ -1,8 +1,7 @@
-import { Sales } from '@/app/(private)/types/formTypes';
+import { Sales, Payroll, Expense } from '@/app/(private)/types/formTypes';
 import { getMonthDateRange } from '@/app/(private)/utils/dateUtils';
-import { fetchSalesData, fetchPayrollData } from '../utils/mailUtils';
+import { fetchSalesData, fetchPayrollData, fetchExpenseData } from '../utils/mailUtils';
 import { Store } from "../../features/userSettings/types/storeTypes";
-import { Payroll } from '@/app/(private)/types/formTypes';
 
 interface StoreSalesData {
     storeName: string;
@@ -22,6 +21,16 @@ interface PayrollData {
 
 interface PayrollGenerationResult {
     data: PayrollData[];
+    error?: string;
+}
+
+interface ExpenseData {
+    expenseName: string;
+    expenseData: Expense[];
+}
+
+interface ExpenseGenerationResult {
+    data: ExpenseData[];
     error?: string;
 }
 
@@ -83,6 +92,62 @@ export async function generateSalesPdfs(
         return {
             data: [],
             error: error instanceof Error ? error.message : 'An unexpected error occurred while generating sales PDFs'
+        };
+    }
+}
+
+/**
+ * Generates PDFs for expense data
+ * @async
+ * @function generateExpensePdfs
+ * @param {string[]} selectedExpenses - Array of expense types to generate PDFs for
+ * @param {number} currentYear - The year to generate PDFs for
+ * @param {number} currentMonth - The month to generate PDFs for (0-11)
+ * @returns {Promise<ExpenseGenerationResult>} Promise resolving to expense generation result
+ * @throws {Error} If expense data cannot be fetched
+ */
+export async function generateExpensePdfs(
+    selectedExpenses: string[],
+    currentYear: number,
+    currentMonth: number,
+): Promise<ExpenseGenerationResult> {
+    try {
+        const { startDate, endDate } = getMonthDateRange(String(currentYear), String(currentMonth + 1));
+        
+        // Process each expense type
+        const expensePromises = selectedExpenses.map(async (expenseType) => {
+            try {
+                const expenseData = await fetchExpenseData(startDate, endDate);
+                if (expenseData.error || !expenseData.data) {
+                    throw new Error(expenseData.error || 'An error occurred while fetching expense data');
+                }
+
+                return {
+                    expenseName: expenseType,
+                    expenseData: expenseData.data
+                };
+            } catch (error) {
+                throw new Error(`Error processing expense ${expenseType}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
+        });
+
+        const results = await Promise.all(expensePromises);
+        const validResults = results.filter((result): result is ExpenseData => result !== null);
+
+        if (validResults.length === 0) {
+            return {
+                data: [],
+                error: 'No valid expense data found for the selected expenses'
+            };
+        }
+
+        return {
+            data: validResults
+        };
+    } catch (error) {
+        return {
+            data: [],
+            error: error instanceof Error ? error.message : 'An unexpected error occurred while generating expense PDFs'
         };
     }
 }

@@ -1,6 +1,6 @@
 import { getRequest } from "../../features/handleForms/utils/actions/crudOps";
 import { formatSalesData } from "../../features/handleForms/utils/formDataDisplay/formDataDisplay";
-import { Sales, Payroll } from "../../types/formTypes";
+import { Sales, Payroll, Expense } from "../../types/formTypes";
 
 /**
  * Fetches sales data for a specific store within a date range
@@ -91,3 +91,47 @@ export const fetchPayrollData = async (
   }
 };
 
+/**
+ * Fetches expense data within a date range
+ * @param startDate - The start date for the expense data range
+ * @param endDate - The end date for the expense data range (exclusive)
+ * @returns Promise with the expense data or error
+ */
+export const fetchExpenseData = async (
+  startDate: string,
+  endDate: string
+) => {
+  try {
+    const dataType = { 
+      id: -1, 
+      date: '', 
+      payment_type: 'CHECK', 
+      detail: '', 
+      company: -1, 
+      amount: 0 
+    } as Expense;
+    
+    const readRes = await getRequest({ 
+      tableName: 'expenses', 
+      dataType, 
+      startDate, 
+      endDate 
+    });
+    
+    if (typeof readRes !== 'string' && !readRes.data) {
+      return { error: readRes.error, data: null };
+    } else if (typeof readRes !== 'string' && readRes.data) {
+      return { 
+        error: null, 
+        data: readRes.data as Expense[]
+      };
+    }
+    
+    return { error: 'Unknown error occurred', data: null };
+  } catch (error) {
+    return { 
+      error: error instanceof Error ? error.message : 'An unexpected error occurred', 
+      data: null 
+    };
+  }
+};
