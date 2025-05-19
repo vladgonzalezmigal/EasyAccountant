@@ -202,3 +202,8 @@ export async function generatePayrollPdfs(
         };
     }
 } 
+
+/**
+ * Generates PDFs blobls from pdf docuemnts and returns array of pdf blobs 
+ */
+    

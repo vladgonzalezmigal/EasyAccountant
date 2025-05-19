@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { generateSalesPdfs, generatePayrollPdfs, generateExpensePdfs } from '../utils/generateUtils';
 import LineBreak from '../../features/userSettings/components/LineBreak';
 import MailIcon from '../../components/svgs/MailIcon';
@@ -16,15 +16,25 @@ import SalesDocs from '../components/mail/displaydocs/SalesDocs';
 import PDFDisplay from '../components/mail/displaydocs/PDFDisplay';
 import PayrollDocs from '../components/mail/displaydocs/PayrollDocs';
 import ExpenseDocs from '../components/mail/displaydocs/ExpenseDocs';
+import { fetchHealth } from '../utils/mailUtils';
+import { DocMetaData } from '../types/mailTypes';
 
-interface DocMetaData {
-  subject: string;
-  receiver: string;
-  bodyText: string;
-  fileName: string;
+type Doc = {
+  displayPdf: React.ReactNode;
+  metadata: DocMetaData;
 }
 
 export default function MailPage() {
+  useEffect(() => {
+    const awakeBackend = async () => {
+      try {
+        await fetchHealth();
+      } catch {
+        console.log("error occured while checking health")
+      }
+    }
+    awakeBackend();
+  }, []);
   const today = new Date();
   const { storeState, vendorState, emailState } = useStore();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -35,8 +45,7 @@ export default function MailPage() {
   const expenses = ["Expenses"];
 
   // generate document state 
-  const [docMetaData, setDocMetaData] = useState<DocMetaData[]>([]);
-  const [generatedPdfs, setGeneratedPdfs] = useState<React.ReactNode[]>([]);
+  const [generatedDocs, setGeneratedDocs] = useState<Doc[]>([]);
 
   // Create payroll periods
   const payrolls = [
@@ -52,17 +61,15 @@ export default function MailPage() {
 
   const handleMonthChange = (month: number) => {
     setCurrentMonth(month);
-    // Clear docMetaData when month changes
-    setDocMetaData([]);
-    setGeneratedPdfs([]);
+    // Clear generated docs when month changes
+    setGeneratedDocs([]);
     setSelectedStores([]);
   };
 
   const handleYearChange = (year: number) => {
     setCurrentYear(year);
-    // Clear docMetaData when year changes
-    setDocMetaData([]);
-    setGeneratedPdfs([]);
+    // Clear generated docs when year changes
+    setGeneratedDocs([]);
     setSelectedStores([]);
   };
 
@@ -113,13 +120,13 @@ export default function MailPage() {
   const [payrollError, setPayrollError] = useState<string | null>(null);
   const [expenseError, setExpenseError] = useState<string | null>(null);
 
+  const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || "";
+
   const handleGenerateDocuments = async () => {
     // set all errors to null 
-    let metadatas: DocMetaData[] = [];
-    let pdfs: React.ReactNode[] = [];
+    let docs: Doc[] = [];
 
-    setGeneratedPdfs([]);
-    setDocMetaData(metadatas);
+    setGeneratedDocs([]);
     setSalesError(null);
     setPayrollError(null);
 
@@ -139,28 +146,29 @@ export default function MailPage() {
           setSalesError(error || 'An error occurred while generating sales documents');
           return;
         }
-        const salesMetadatas = salesValidResults.map(result => (
-          {
-            subject: `Sales for ${result.storeName}, ${months[currentMonth]} ${currentYear}`,
+
+        const salesDocs = salesValidResults.map(result => ({
+          metadata: {
+            subject: `${COMPANY_NAME} Sales for ${result.storeName}, ${months[currentMonth]} ${currentYear}`,
+            sender: emailState.emails![0].sender_email,
             receiver: emailState.emails![0].recipient_email,
             bodyText: `Sales for ${result.storeName}, ${months[currentMonth]} ${currentYear}, sent by ${emailState.emails![0].sender_email}`,
             fileName: `Sales_${months[currentMonth]}_${currentYear}_${result.storeName.replace(/\s+/g, '_')}.pdf`
-          }
-        ));
+          },
+          displayPdf: (
+            <SalesDocs
+              key={result.storeName}
+              salesData={result.salesData}
+              storeName={result.storeName}
+              year={String(currentYear)}
+              month={months[currentMonth]}
+            />
+          )
+        }));
 
-        const salesPdfs = salesValidResults.map(result => (
-          <SalesDocs
-            key={result.storeName}
-            salesData={result.salesData}
-            storeName={result.storeName}
-            year={String(currentYear)}
-            month={months[currentMonth]}
-          />
-        ));
-
-        metadatas = [...metadatas, ...salesMetadatas];
-        pdfs = [...pdfs, ...salesPdfs];
+        docs = [...docs, ...salesDocs];
       }
+
       // generate expense documents
       if (selectedExpenses.length > 0) {
         if (vendorState.vendors?.length === 0 || vendorState.vendors === undefined) {
@@ -172,27 +180,27 @@ export default function MailPage() {
           setExpenseError(error || 'An error occurred while generating expense documents');
           return;
         }
-        const expenseMetadatas = expenseValidResults.map(() => (
-          {
-            subject: `Expenses for ${months[currentMonth]} ${currentYear}`,
+
+        const expenseDocs = expenseValidResults.map(result => ({
+          metadata: {
+            subject: `${COMPANY_NAME} Expenses for ${months[currentMonth]} ${currentYear}`,
+            sender: emailState.emails![0].sender_email,
             receiver: emailState.emails![0].recipient_email,
             bodyText: `Expenses for ${months[currentMonth]} ${currentYear}, sent by ${emailState.emails![0].sender_email}`,
-            fileName: `Expenses_${months[currentMonth]}_${currentYear}}.pdf`
-          }
-        ));
+            fileName: `Expenses_${months[currentMonth]}_${currentYear}.pdf`
+          },
+          displayPdf: (
+            <ExpenseDocs
+              key={result.expenseName}
+              expenseData={result.expenseData}
+              year={String(currentYear)}
+              month={months[currentMonth]}
+              vendors={vendorState.vendors || []}
+            />
+          )
+        }));
 
-        const expensePdfs = expenseValidResults.map(result => (
-          <ExpenseDocs
-            key={result.expenseName}
-            expenseData={result.expenseData}
-            year={String(currentYear)}
-            month={months[currentMonth]}
-            vendors={vendorState.vendors || []}
-          />
-        ));
-
-        metadatas = [...metadatas, ...expenseMetadatas];
-        pdfs = [...pdfs, ...expensePdfs];
+        docs = [...docs, ...expenseDocs];
       }
 
       // generate payroll documents 
@@ -202,39 +210,35 @@ export default function MailPage() {
           setPayrollError(error || 'An error occurred while generating payroll documents');
           return;
         }
-
-
         if (payrollValidResults.length > 0) {
-          const payrollMetadatas = payrollValidResults.map(result => (
-            {
-              subject: `Payroll Period: ${result.startDate} to ${result.endDate}`,
+          const payrollDocs = payrollValidResults.map(result => ({
+            metadata: {
+              subject: `${COMPANY_NAME} Payroll Period: ${result.startDate.slice(5)} to ${result.endDate.slice(5) + ", " + result.startDate.slice(0, 4)}`,
+              sender: emailState.emails![0].sender_email,
               receiver: (emailState.emails?.[0]?.recipient_email || ""),
-              bodyText: `Payroll for period ${result.startDate} to ${result.endDate}, sent by ${emailState.emails?.[0]?.sender_email || ""}`,
-              fileName: `Payroll_${months[currentMonth]}_${currentYear}.pdf`
-            }
-          ));
+              bodyText: `Payroll for period ${result.startDate.slice(5)} to ${result.endDate.slice(5)}, ${result.startDate.slice(0, 4)}, sent by ${emailState.emails?.[0]?.sender_email || ""}`,
+              fileName: `Payroll_${result.startDate.slice(5)}_to_${result.endDate.slice(5)}_${currentYear}.pdf`
+            },
+            displayPdf: (
+              <PayrollDocs
+                key={`${result.startDate}-${result.endDate}`}
+                payrollData={result.payrollData}
+                startDate={result.startDate}
+                endDate={result.endDate}
+              />
+            )
+          }));
 
-          const payrollPdfs = payrollValidResults.map(result => (
-            <PayrollDocs
-              key={`${result.startDate}-${result.endDate}`}
-              payrollData={result.payrollData}
-              startDate={result.startDate}
-              endDate={result.endDate}
-            />
-          ));
-
-          metadatas = [...metadatas, ...payrollMetadatas];
-          pdfs = [...pdfs, ...payrollPdfs];
+          docs = [...docs, ...payrollDocs];
         }
       }
 
-      setDocMetaData(metadatas);
-      setGeneratedPdfs(pdfs);
+      setGeneratedDocs(docs);
 
     } catch (error) {
       setSalesError('An error occurred while generating the PDF' + error);
     } finally {
-      console.log(docMetaData)
+      console.log(docs)
       setSelectedStores([]);
       setSelectedPayrolls([]);
       setSelectedExpenses([]);
@@ -242,15 +246,14 @@ export default function MailPage() {
   };
 
   const handleClosePdfs = () => {
-    setGeneratedPdfs([]);
-    setDocMetaData([]);
+    setGeneratedDocs([]);
   };
 
   return (
     <div className="container px-16 py-8 min-h-screen h-full max-h-screen overflow-y-auto bg-[#FAFAFA] min-w-full">
       {/* Display generated PDFs */}
-      {generatedPdfs.length > 0 &&
-        <PDFDisplay displayPdfs={generatedPdfs} handleClosePdfs={handleClosePdfs} />
+      {generatedDocs.length > 0 &&
+        <PDFDisplay displayDocs={generatedDocs} receiver={emailState.emails?.[0]?.recipient_email || "NO_EMAIL_SET"} handleClosePdfs={handleClosePdfs} />
       }
       {/* Page Title  */}
       <div className="flex items-center h-[52px] w-full justify-begin mb-4">
