@@ -26,7 +26,7 @@ export default function PayrollDocs({ payrollData, startDate, endDate }: Payroll
 
                 <View style={payrollStyles.table}>
                     {/* Header Row */}
-                    <View style={[payrollStyles.row, payrollStyles.header]}>
+                    <View style={[payrollStyles.rowHeader, payrollStyles.header]} wrap={false}>
                         <Text style={payrollStyles.employeeCell}>Employee</Text>
                         <Text style={payrollStyles.cell}>Pay Type</Text>
                         <Text style={payrollStyles.cell}>Rate</Text>
@@ -37,7 +37,7 @@ export default function PayrollDocs({ payrollData, startDate, endDate }: Payroll
 
                     {/* Data Rows */}
                     {payrollData.map((row) => (
-                        <View style={payrollStyles.row} key={row.id}>
+                        <View style={payrollStyles.row} key={row.id} wrap={false}>
                             <Text style={payrollStyles.employeeCell}>{row.employee_name}</Text>
                             <Text style={payrollStyles.cell}>{row.wage_type}</Text>
                             <Text style={payrollStyles.cell}>${row.wage_rate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>

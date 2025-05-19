@@ -3,6 +3,8 @@
 import React from 'react';
 import { useState } from 'react';
 import ChevronIcon from '@/app/(private)/components/svgs/ChevronIcon';
+import PrinterIcon from '@/app/(private)/components/svgs/PrinterIcon';
+import MailIcon from '@/app/(private)/components/svgs/MailIcon';
 import { PDFViewer, Document } from '@react-pdf/renderer';
 
 interface PDFDisplayProps {
@@ -59,13 +61,17 @@ export default function PDFDisplay({ displayPdfs, handleClosePdfs }: PDFDisplayP
                     <div className='flex items-center justify-center w-full gap-4 text-sm pb-2'>
                         <button
                             onClick={() => { setPrintAll(!printAll); console.log("array length", displayPdfs.length) }}
-                            className="flex items-center justify-center h-[50px] w-[100px] bg-blue-500 cursor-pointer"
+                            className="flex items-center justify-center gap-2 h-[50px] w-[120px] bg-white border-2 border-[#2A7D7B] rounded-lg text-[#2A7D7B] hover:bg-[#2A7D7B] hover:text-white transition-colors cursor-pointer"
                         >
+                            <PrinterIcon className="w-5 h-5" />
                             {printAll ? 'Print One' : 'Print All'}
                         </button>
-                        <div className="flex items-center justify-center h-[50px] w-[100px] bg-green-500 cursor-pointer">
-                            <button className='text-white cursor-pointer'> Email</button>
-                        </div>
+                        <button
+                            className="flex items-center justify-center gap-2 h-[50px] w-[120px] bg-white border-2 border-[#B6E8E4] rounded-lg text-[#2A7D7B] hover:bg-[#2A7D7B] hover:text-white transition-colors cursor-pointer"
+                        >
+                            <MailIcon className="w-5 h-5 text-[#B6E8E4]" />
+                            Email
+                        </button>
                     </div>
                     <div className="w-[800px] h-[700px]">
                         <PDFViewer key={printAll ? 'all' : `single-${currentIndex}`} className="w-full h-full">
