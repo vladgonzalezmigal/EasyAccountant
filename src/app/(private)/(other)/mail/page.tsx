@@ -238,7 +238,6 @@ export default function MailPage() {
     } catch (error) {
       setSalesError('An error occurred while generating the PDF' + error);
     } finally {
-      console.log(docs)
       setSelectedStores([]);
       setSelectedPayrolls([]);
       setSelectedExpenses([]);

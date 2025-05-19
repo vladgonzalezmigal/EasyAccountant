@@ -50,7 +50,6 @@ export default function PDFDisplay({ displayDocs, receiver, handleClosePdfs }: P
     }
 
     const handleSendEmail = async () => {
-        console.log("sending email");
         setSendingEmail(true);
         // Create new array of documents with metadata
         const documentsWithMetadata = displayDocs.map((doc, index) => ({
@@ -68,15 +67,12 @@ export default function PDFDisplay({ displayDocs, receiver, handleClosePdfs }: P
                     .then(blob => new File([blob], `${metadata.fileName}`, { type: 'application/pdf' }))
                 )
               );
-              console.log("files", files);
             if (files.length !== documentsWithMetadata.length) {
                 throw new Error("Couldn't generate right # of PDFs");
             }
         } catch (error) {
             setEmailError('Failed to generate PDFs: ' + error);
-        } finally {
-            console.log("files length", files.length);
-        }
+        } 
         // send email with files and metadata
         try {
             await sendEmail(files, metadatas);
@@ -119,7 +115,7 @@ export default function PDFDisplay({ displayDocs, receiver, handleClosePdfs }: P
                     {/* Button Headers */}
                     <div className='flex items-center justify-center w-full gap-4 text-sm pb-2'>
                         <button
-                            onClick={() => { setPrintAll(!printAll); console.log("array length", displayPdfs.length) }}
+                            onClick={() => { setPrintAll(!printAll) }}
                             className="flex items-center justify-center gap-2 h-[50px] w-[120px] bg-white border-2 border-[#2A7D7B] rounded-lg text-[#2A7D7B] hover:bg-[#2A7D7B] hover:text-white transition-colors cursor-pointer"
                         >
                             <PrinterIcon className="w-5 h-5" />
