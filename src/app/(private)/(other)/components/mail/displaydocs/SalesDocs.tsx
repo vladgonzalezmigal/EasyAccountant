@@ -3,7 +3,7 @@
 import { Sales } from '@/app/(private)/types/formTypes';
 import { formatSalesData } from '@/app/(private)/features/handleForms/utils/formDataDisplay/formDataDisplay';
 import { salesStyles } from './SalesStyles';
-import { Document, Page, Text, View } from '@react-pdf/renderer';
+import { Page, Text, View } from '@react-pdf/renderer';
 
 interface SalesDocsProps {
     salesData: Sales[];
@@ -17,7 +17,6 @@ export default function SalesDocs({ salesData, storeName, year, month }: SalesDo
     const totalSales = formattedData.length > 0 ? formattedData[0].cumulative_total : 0;
 
     const SalesPDF = () => (
-        <Document>
             <Page size="A4" style={salesStyles.page}>
                 {/* Document title */}
                 <View>
@@ -50,10 +49,7 @@ export default function SalesDocs({ salesData, storeName, year, month }: SalesDo
                     ))}
                 </View>
             </Page>
-        </Document>
     );
 
-    return (
-        <SalesPDF />
-    );
+    return <SalesPDF />
 }

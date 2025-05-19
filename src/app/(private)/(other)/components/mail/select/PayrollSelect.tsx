@@ -31,7 +31,7 @@ export default function PayrollSelect({ selectedPayrolls, onPayrollSelect, payro
                                 ? 'text-[#2A7D7B] font-bold'
                                 : 'text-gray-500 font-semibold'
                         }`}>
-                            Period {index + 1}: {payroll.startDate} to {payroll.endDate}
+                            Period {index + 1}: {payroll.startDate.slice(5)} to {payroll.endDate.slice(5) + ", " + payroll.startDate.slice(0, 4)}
                         </p>
                     </div>
                 </div>

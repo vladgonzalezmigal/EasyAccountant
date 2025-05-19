@@ -63,7 +63,7 @@ export default function ExpenseForm({ onInputChange, onSubmit }: ExpenseFormProp
 
         const validation = validateDateInput(
             value,
-            parseInt(month as string) - 1,
+            parseInt(month as string),
             parseInt(year as string)
         );
 
