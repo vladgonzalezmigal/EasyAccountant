@@ -61,11 +61,11 @@ export default function PayrollTableRows({
         if (validationResult.value) {
             e.target.value = validationResult.value;
         }
-
+        console.log("currentValue", e.target.value);
         // Get the current row
         const currentRow = data.find(row => row.id === id);
         if (!currentRow) return;
-
+        console.log("currentValue after row validation", e.target.value);
         // Update the edited value
         editConfig.onRowEdit(id, name as keyof Payroll, value, colNumber);
 
@@ -82,7 +82,7 @@ export default function PayrollTableRows({
                 editedRow.wage_type
             );
             
-        //     // Update total pay
+             // Update total pay
             editConfig.onRowEdit(id, 'total_pay', (parseFloat(calculatedTotal)).toString(), 5);
         }
     };
@@ -172,7 +172,6 @@ export default function PayrollTableRows({
                                             className={`w-full h-full px-1 border rounded ${
                                                 rowErrors.has(5) ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
                                             }`}
-                                            readOnly
                                         />
                                     ) : (
                                         <p className='table-row-text'>${row.total_pay.toFixed(2)}</p>
