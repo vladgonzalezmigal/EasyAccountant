@@ -57,7 +57,7 @@ export function useFormCrud({
     if (createRes.data) {
       const newExpenseData = createRes.data as Expense[];
       setExpenses((prevExpenses) =>
-        [...(prevExpenses || []), newExpenseData[0]].sort(
+        [newExpenseData[0], ...(prevExpenses || [])].sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         )
       ); // reset create state 
