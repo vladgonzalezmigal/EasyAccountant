@@ -24,7 +24,7 @@ export default function CurEmployeeRows({
 }: CurEmployeeRowsProps) {
     const [showCurrentEmployees, setShowCurrentEmployees] = useState(false);
     const { currentEmployeeState } = useStore();
-    
+
     // Add state for delete mode and rows to delete
     const [deleteMode, setDeleteMode] = useState(false);
     const [rowsToDelete, setRowsToDelete] = useState<number[]>([]);
@@ -32,7 +32,7 @@ export default function CurEmployeeRows({
     const handleUseCurrentEmployees = () => {
         // Get active employees from the store
         const activeEmployees = currentEmployeeState.currentEmployees?.filter(employee => employee.active) || [];
-        
+
         // Create payroll entries from active employees
         const payrollEntries = activeEmployees.map((employee, index) => ({
             id: index + 1, // Temporary ID for the form
@@ -44,7 +44,7 @@ export default function CurEmployeeRows({
             minutes: 0,
             total_pay: employee.wage_type === 'salary' ? employee.wage_rate : 0
         } as Payroll));
-        
+
         // Update state
         setNewPayrolls(payrollEntries);
         setShowCurrentEmployees(true);
@@ -55,21 +55,23 @@ export default function CurEmployeeRows({
             return prev.map(payroll => {
                 if (payroll.id === id) {
                     const updatedPayroll = { ...payroll, [field]: value };
-                    
+
                     // Recalculate total_pay if hours, minutes, or wage_rate changes
                     if (field === 'hours' || field === 'minutes' || field === 'wage_rate') {
                         if (updatedPayroll.wage_type === 'hourly') {
-                            const hours = typeof updatedPayroll.hours === 'number' ? updatedPayroll.hours : 0;
-                            const minutes = typeof updatedPayroll.minutes === 'number' ? updatedPayroll.minutes : 0;
-                            const wageRate = typeof updatedPayroll.wage_rate === 'number' ? updatedPayroll.wage_rate : 0;
-                            
-                            updatedPayroll.total_pay = (hours * wageRate) + (minutes * (wageRate / 60));
+                            const hours = Number(updatedPayroll.hours) || 0;
+                            const minutes = Number(updatedPayroll.minutes) || 0;
+                            const wageRate = Number(updatedPayroll.wage_rate) || 0;
+
+
+                            updatedPayroll.total_pay = Number(((hours * wageRate) + (minutes * (wageRate / 60))).toFixed(2));
+                            console.log("updatedPayroll.total_pay", updatedPayroll.total_pay);
                         } else if (field === 'wage_rate') {
                             // For salary, total_pay equals wage_rate
                             updatedPayroll.total_pay = typeof value === 'number' ? value : 0;
                         }
                     }
-                    
+
                     return updatedPayroll;
                 }
                 return payroll;
@@ -84,8 +86,8 @@ export default function CurEmployeeRows({
 
     // Handle delete row selection
     const handleDeleteRowSelect = (id: number) => {
-        setRowsToDelete(prev => 
-            prev.includes(id) 
+        setRowsToDelete(prev =>
+            prev.includes(id)
                 ? prev.filter(rowId => rowId !== id)
                 : [...prev, id]
         );
@@ -167,21 +169,21 @@ export default function CurEmployeeRows({
                                             <p className='table-row-text'>{employee.employee_name}</p>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Wage Type (non-editable) */}
                                     <div className="h-[60px] flex flex-col items-center justify-center">
                                         <div className='h-[40px] w-[100px] flex items-center pl-3'>
                                             <p className='table-row-text'>{employee.wage_type}</p>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Wage Rate (non-editable) */}
                                     <div className="h-[60px] flex flex-col items-center justify-center">
                                         <div className='h-[40px] w-[100px] flex items-center pl-3'>
                                             <p className='table-row-text'>${employee.wage_rate.toFixed(2)}</p>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Hours (editable) */}
                                     <div className="h-[60px] flex flex-col items-center justify-center">
                                         <div className='h-[40px] w-[70px] flex items-center pl-4'>
@@ -189,12 +191,22 @@ export default function CurEmployeeRows({
                                                 type="text"
                                                 value={employee.hours}
                                                 onChange={(e) => {
-                                                    // Allow only numbers
+                                                    // Allow only numbers or empty string
                                                     if (/^\d*$/.test(e.target.value)) {
                                                         handleInputChange(
                                                             employee.id,
                                                             'hours',
-                                                            e.target.value ? parseInt(e.target.value) : 0
+                                                            e.target.value ? parseInt(e.target.value) : ''
+                                                        );
+                                                    }
+                                                }}
+                                                onBlur={(e) => {
+                                                    // Set to 0 if empty on blur
+                                                    if (!e.target.value) {
+                                                        handleInputChange(
+                                                            employee.id,
+                                                            'hours',
+                                                            0
                                                         );
                                                     }
                                                 }}
@@ -204,7 +216,7 @@ export default function CurEmployeeRows({
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     {/* Minutes (editable) */}
                                     <div className="h-[60px] flex flex-col items-center justify-center">
                                         <div className='h-[40px] w-[50px] flex items-center pl-3'>
@@ -212,12 +224,22 @@ export default function CurEmployeeRows({
                                                 type="text"
                                                 value={employee.minutes}
                                                 onChange={(e) => {
-                                                    // Allow only numbers 0-59
+                                                    // Allow only numbers 0-59 or empty string
                                                     if (/^\d*$/.test(e.target.value) && (!e.target.value || parseInt(e.target.value) <= 59)) {
                                                         handleInputChange(
                                                             employee.id,
                                                             'minutes',
-                                                            e.target.value ? parseInt(e.target.value) : 0
+                                                            e.target.value
+                                                        );
+                                                    }
+                                                }}
+                                                onBlur={(e) => {
+                                                    // Set to 0 if empty on blur
+                                                    if (!e.target.value) {
+                                                        handleInputChange(
+                                                            employee.id,
+                                                            'minutes',
+                                                            0
                                                         );
                                                     }
                                                 }}
@@ -227,13 +249,13 @@ export default function CurEmployeeRows({
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     {/* Total Pay (editable for advanced cases) */}
                                     <div className="h-[60px] flex flex-col items-center justify-center">
                                         <div className='h-[40px] w-[100px] flex items-center pl-3'>
                                             <input
                                                 type="text"
-                                                value={employee.total_pay.toFixed(2)}
+                                                value={employee.total_pay}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
                                                     // Allow decimal numbers
@@ -245,6 +267,21 @@ export default function CurEmployeeRows({
                                                         );
                                                     }
                                                 }}
+                                                onBlur={(e) => {
+                                                    if (!e.target.value) {
+                                                        handleInputChange(
+                                                            employee.id,
+                                                            'total_pay',
+                                                            0
+                                                        );
+                                                    } else {
+                                                        handleInputChange(
+                                                            employee.id,
+                                                            'total_pay',
+                                                            parseFloat(employee.total_pay.toFixed(2))
+                                                        )
+                                                    }
+                                                }}
                                                 className="payroll-input-field"
                                                 placeholder="0.00"
                                                 disabled={deleteMode}
@@ -254,26 +291,24 @@ export default function CurEmployeeRows({
 
                                     {/* Delete Selection Circle */}
                                     {deleteMode && (
-                                        <div 
+                                        <div
                                             onClick={() => handleDeleteRowSelect(employee.id)}
-                                            className={`cursor-pointer absolute top-1/2 right-[5px] transform -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-full ${
-                                                rowsToDelete.includes(employee.id) 
-                                                    ? 'bg-red-100 border border-red-300' 
+                                            className={`cursor-pointer absolute top-1/2 right-[5px] transform -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-full ${rowsToDelete.includes(employee.id)
+                                                    ? 'bg-red-100 border border-red-300'
                                                     : 'bg-[#F6F6F6] border border-[#DFDFDF]'
-                                            }`}
+                                                }`}
                                         >
-                                            <TrashIcon className={`w-4 h-4 ${
-                                                rowsToDelete.includes(employee.id) 
-                                                    ? 'text-red-500' 
+                                            <TrashIcon className={`w-4 h-4 ${rowsToDelete.includes(employee.id)
+                                                    ? 'text-red-500'
                                                     : 'text-[#585858]'
-                                            }`} />
+                                                }`} />
                                         </div>
                                     )}
                                 </div>
                             ))
                         )}
                     </div>
-                    
+
                     {/* Sum Row - always visible */}
                     <div>
                         <div className="rounded-full bg-[#DFDFDF] w-[772px] h-[4px] mx-auto"></div>
@@ -283,9 +318,9 @@ export default function CurEmployeeRows({
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Using the updated CurEmployeeBtns component with delete functionality */}
-                <CurEmployeeBtns 
+                <CurEmployeeBtns
                     showCurrentEmployees={showCurrentEmployees}
                     onSubmit={handleSubmit}
                     onDelete={handleDelete}
