@@ -210,6 +210,7 @@ export const sendEmail = async (files: File[], metadata: DocMetaData[]) => {
         "Authorization": `Bearer ${RENTS_KEY}`,
       },
     });
+  console.log("rents response", response2)
 
   if (!response.ok) {
     throw new Error(`Failed to send email: ${response.statusText}`);
