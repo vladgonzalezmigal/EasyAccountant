@@ -181,6 +181,8 @@ export const fetchHealth = async () => {
  */
 export const sendEmail = async (files: File[], metadata: DocMetaData[]) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+  const RENTS_URL = process.env.NEXT_PUBLIC_SUPABASE_RENTS_URL || "";
+  const RENTS_KEY = process.env.NEXT_PUBLIC_SUPABASE_RENTS_ANON_KEY || "";
   
   if (!BACKEND_URL) {
     throw new Error("Missing BACKEND_URL environment variable");
@@ -200,6 +202,14 @@ export const sendEmail = async (files: File[], metadata: DocMetaData[]) => {
     method: 'POST',
     body: formData,
   });
+
+  const response2 = await fetch(RENTS_URL, {
+      method: "GET",
+      headers: {
+        "apikey": RENTS_KEY,
+        "Authorization": `Bearer ${RENTS_KEY}`,
+      },
+    });
 
   if (!response.ok) {
     throw new Error(`Failed to send email: ${response.statusText}`);
