@@ -13,6 +13,9 @@ import {
     SalesGenerationResult,
 } from "../utils/generateUtils";
 import { Expense, Payroll } from "../../types/formTypes";
+import { Loading } from "@/app/components/Loading";
+import ProfitGraph from "../components/analytics/ProfitGraph";
+import TotalRow from "../components/analytics/TotalSection";
 
 export default function AnalyticsPage() {
     const { storeState } = useStore();
@@ -21,7 +24,10 @@ export default function AnalyticsPage() {
     const [currentEndMonth, setCurrentEndMonth] = useState(today.getMonth());
     const [currentYear, setCurrentYear] = useState(today.getFullYear());
     const [salesError, setSalesError] = useState<string | null>(null);
-    const [selectedStores, setSelectedStores] = useState<number[]>([]);
+    const [selectedStores, setSelectedStores] = useState<number[]>(() => {
+        return storeState.stores?.filter(store => store.active).map(store => store.id) || []
+    }
+    );
     const [loadingGraph, setLoadingGraph] = useState(false);
     const [analysisData, setAnalysisData] = useState<{
         sales: SalesGenerationResult | null;
@@ -99,45 +105,43 @@ export default function AnalyticsPage() {
 
     const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-    function groupByMonthYear(
-        expenses: Expense[],
-        payrolls: Payroll[],
-        salesResult: SalesGenerationResult
-    ): CombinedResult {
-        const result: CombinedResult = {};
-        const getMonthKey = (date: string) => {
-            return `${date.substring(0, 4)}-${date.substring(5, 7)}`;
-        };
-
-        // Expenses
-        expenses.forEach(exp => {
-            const key = getMonthKey(exp.date);
-            if (!result[key]) result[key] = { expenses: 0, payroll: 0, sales: 0 };
-            result[key].expenses = round2(result[key].expenses + exp.amount);
-        });
-
-        // Payroll
-        payrolls.forEach(pay => {
-            const key = getMonthKey(pay.end_date);
-            if (!result[key]) result[key] = { expenses: 0, payroll: 0, sales: 0 };
-            result[key].payroll = round2(result[key].payroll + pay.total_pay);
-        });
-
-        // Sales
-        salesResult.data.forEach(store => {
-            store.salesData.forEach(sale => {
-                const key = getMonthKey(sale.date);
-                if (!result[key]) result[key] = { expenses: 0, payroll: 0, sales: 0 };
-                result[key].sales = round2(result[key].sales + sale.sales);
-            });
-        });
-
-        return result;
-    }
-    console.log(loadingGraph)
-
     const graphData = useMemo(() => {
         if (!analysisData.expenses || !analysisData.payroll || !analysisData.sales) return {};
+        function groupByMonthYear(
+            expenses: Expense[],
+            payrolls: Payroll[],
+            salesResult: SalesGenerationResult
+        ): CombinedResult {
+            const result: CombinedResult = {};
+            const getMonthKey = (date: string) => {
+                return `${date.substring(0, 4)}-${date.substring(5, 7)}`;
+            };
+
+            // Expenses
+            expenses.forEach(exp => {
+                const key = getMonthKey(exp.date);
+                if (!result[key]) result[key] = { expenses: 0, payroll: 0, sales: 0 };
+                result[key].expenses = round2(result[key].expenses + exp.amount);
+            });
+
+            // Payroll
+            payrolls.forEach(pay => {
+                const key = getMonthKey(pay.end_date);
+                if (!result[key]) result[key] = { expenses: 0, payroll: 0, sales: 0 };
+                result[key].payroll = round2(result[key].payroll + pay.total_pay);
+            });
+
+            // Sales
+            salesResult.data.forEach(store => {
+                store.salesData.forEach(sale => {
+                    const key = getMonthKey(sale.date);
+                    if (!result[key]) result[key] = { expenses: 0, payroll: 0, sales: 0 };
+                    result[key].sales = round2(result[key].sales + sale.sales);
+                });
+            });
+
+            return result;
+        }
         return groupByMonthYear(
             analysisData.expenses.data,
             analysisData.payroll.data,
@@ -160,7 +164,7 @@ export default function AnalyticsPage() {
                     onClick={generateData}
                     className="px-4 py-4 cursor-pointer text-[14px] text-[#2F2F2F] font-semibold bg-[#B6E8E4] rounded-full hover:bg-[#DFF4F3] transition-colors duration-200"
                 >
-                    Generate Analysis
+                    Generate Report
                 </button>
             </div>
 
@@ -187,8 +191,20 @@ export default function AnalyticsPage() {
                 />
                 <LineBreak className="my-6" />
                 {/* Debug output */}
-                Please choose a store
-                {/* <pre>{JSON.stringify(graphData, null, 2)}</pre> */}
+                <div className="max-h-[500px] w-full overflow-y-auto flex justify-center items-center">
+                    {loadingGraph ? <Loading /> :
+                        Object.keys(graphData).length > 0 ?
+                            <div className="min-w-[1000px] min-h-[460px]">
+                                <ProfitGraph graphData={graphData} />
+                                <TotalRow totalSales={Object.keys(graphData).map((key) => graphData[key].sales).reduce((sum, val) => sum + val, 0)}
+                                    totalExpenses={Object.keys(graphData).map((key) => graphData[key].expenses).reduce((sum, val) => sum + val, 0)}
+                                    totalPayroll={Object.keys(graphData).map((key) => graphData[key].payroll).reduce((sum, val) => sum + val, 0)} />
+                            </div> :
+                            <div>
+                                <p className="text-[#2F2F2F] text-[16px]">Please generate a report</p>
+                            </div>
+                    }
+                </div>
             </div>
         </div>
     );
