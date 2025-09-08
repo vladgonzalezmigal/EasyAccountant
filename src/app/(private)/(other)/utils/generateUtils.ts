@@ -2,13 +2,14 @@ import { Sales, Payroll, Expense } from '@/app/(private)/types/formTypes';
 import { getMonthDateRange } from '@/app/(private)/utils/dateUtils';
 import { fetchSalesData, fetchPayrollData, fetchExpenseData } from '../utils/mailUtils';
 import { Store } from "../../features/userSettings/types/storeTypes";
+import { createClient } from '@/utils/supabase/client';
 
 interface StoreSalesData {
     storeName: string;
     salesData: Sales[];
 }
 
-interface SalesGenerationResult {
+export interface SalesGenerationResult {
     data: StoreSalesData[];
     error?: string;
 }
@@ -53,7 +54,7 @@ export async function generateSalesPdfs(
 ): Promise<SalesGenerationResult> {
     try {
         const { startDate, endDate } = getMonthDateRange(String(currentYear), String(currentMonth + 1));
-        
+
         // Process each store
         const storePromises = selectedStores.map(async (storeId) => {
             try {
@@ -113,7 +114,7 @@ export async function generateExpensePdfs(
 ): Promise<ExpenseGenerationResult> {
     try {
         const { startDate, endDate } = getMonthDateRange(String(currentYear), String(currentMonth + 1));
-        
+
         // Process each expense type
         const expensePromises = selectedExpenses.map(async (expenseType) => {
             try {
@@ -201,9 +202,131 @@ export async function generatePayrollPdfs(
             error: error instanceof Error ? error.message : 'An unexpected error occurred while generating payroll PDFs'
         };
     }
-} 
+}
 
 /**
- * Generates PDFs blobls from pdf docuemnts and returns array of pdf blobs 
+ * Generates PDFs for sales data across multiple stores
+ * @async
+ * @function generateSalesData
+ * @param {number[]} selectedStores - Array of store IDs to generate PDFs for
+ * @param {Store[]} stores - Array of store objects containing store information
+ * @param {string} startDate - The year to generate PDFs for
+ * @param {string} endDate - The month to generate PDFs for (0-11)
+ * @returns {Promise<SalesGenerationResult>} Promise resolving to sales generation result
+ * @throws {Error} If store is not found or sales data cannot be fetched
  */
-    
+export async function generateSalesData(
+    selectedStores: number[],
+    stores: Store[],
+    startDate: string,
+    endDate: string,
+): Promise<SalesGenerationResult> {
+    try {
+        // Process each store
+        const storePromises = selectedStores.map(async (storeId) => {
+            try {
+                const store = stores?.find(s => s.id === storeId);
+                if (!store) {
+                    throw new Error(`Store with ID ${storeId} not found`);
+                }
+                const salesData = await fetchSalesData(storeId, startDate, endDate);
+                if (salesData.error || !salesData.data) {
+                    throw new Error(salesData.error || 'An error occurred while fetching sales data');
+                }
+
+                return {
+                    storeName: store.store_name,
+                    salesData: salesData.data as Sales[]
+                };
+            } catch (error) {
+                throw new Error(`Error processing store ${storeId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
+        });
+
+        const results = await Promise.all(storePromises);
+        const validResults = results.filter((result): result is StoreSalesData => result !== null);
+
+        if (validResults.length === 0) {
+            return {
+                data: [],
+                error: 'No valid sales data found for the selected stores'
+            };
+        }
+
+        return {
+            data: validResults
+        };
+    } catch (error) {
+        return {
+            data: [],
+            error: error instanceof Error ? error.message : 'An unexpected error occurred while generating sales PDFs'
+        };
+    }
+}
+
+/**
+ * Generates PDFs for expense data
+ * @async
+ * @function generateExpenseData
+ * @param {string} startDate - The year to generate PDFs for
+ * @param {string} endDate - The month to generate PDFs for (0-11)
+ * @returns {Promise<{data: Expense[]; error?: string}>} Promise resolving to expense generation result
+ * @throws {Error} If expense data cannot be fetched
+ */
+export async function generateExpenseData(
+    startDate: string,
+    endDate: string,
+): Promise<{ data: Expense[]; error?: string }> {
+    try {
+        const expenseData = await fetchExpenseData(startDate, endDate);
+        if (expenseData.error || !expenseData.data) {
+            throw new Error(expenseData.error || 'An error occurred while fetching expense data');
+        }
+        return {
+            data: expenseData.data
+        };
+    } catch (error) {
+        return {
+            data: [],
+            error: error instanceof Error ? error.message : 'An unexpected error occurred while generating expense PDFs'
+        };
+    }
+}
+
+/**
+ * Generates PDFs for payroll data for selected periods
+ * @async
+ * @function generatePayrollData
+ * @param {string} startDate - The start date for the payroll data range (inclusive)
+ * @param {string} endDate - The end date for the payroll data range (inclusive)
+ * @returns {Promise<{ data: Payroll[]; error?: string }>} Promise resolving to payroll generation result
+ * @throws {Error} If payroll data cannot be fetched
+ */
+export async function generatePayrollData(
+    startDate: string,
+    endDate: string,
+): Promise<{ data: Payroll[]; error?: string }> {
+    try {
+        const supabase = createClient();
+        
+        const { data, error } = await supabase
+            .from('payroll')
+            .select('*')
+            .gte('end_date', startDate)
+            .lte('end_date', endDate);
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        return {
+            data: data as Payroll[],
+        };
+    } catch (error) {
+        return {
+            data: [],
+            error: error instanceof Error ? error.message : 'An unexpected error occurred while generating payroll data'
+        };
+    }
+}
+
